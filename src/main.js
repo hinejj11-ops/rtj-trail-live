@@ -2,6 +2,7 @@ import {createClient} from '@supabase/supabase-js';
 import {SUPABASE_URL,SUPABASE_ANON_KEY} from './config.js';
 import {names,rounds,roundPlayers,courseHandicap,heartbreakerStrokes,teams} from './data.js';
 import {championship} from './championship.js';
+import {roundSnapshot} from './round-snapshot.js';
 import './style.css';
 const db=SUPABASE_URL&&SUPABASE_ANON_KEY?createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 let me=null,roundId='silver-am',tab='scores',scores=[],skills=[],holes=[],submissions=[],ready=false,testMode=false,notice='',target=null,channel=null,timer=null;
@@ -57,8 +58,10 @@ function render(){
   }
   body+='</section>';
  }
- const players=roundPlayers(r());
- body+='<section class="panel"><h3>'+esc(r().name)+' · live round snapshot</h3><p class="small">Modified net Stableford hole points for comparison only; this is not the scoring format for every event.</p>'+players.map(p=>({p,pts:sf(p),done:scores.filter(s=>s.round_id===roundId&&s.player===p).length})).sort((a,b)=>b.pts-a.pts).map((x,i)=>'<div class="row"><b>'+(i+1)+'. '+x.p+'</b><span>'+x.done+'/'+r().holes+' holes</span><strong>'+x.pts+' SF</strong></div>').join('')+'</section>';
+ const snapshot=roundSnapshot(roundId,scores,engine);
+ body+='<section class="panel"><h3>'+esc(r().name)+' · Live round leaderboard</h3><p class="small">'+esc(snapshot.format)+' · Updates with the selected round, not the date. Results are provisional until the round is complete.</p>';
+ body+=snapshot.rows.length?snapshot.rows.map(x=>'<div class="row"><span><strong>'+esc(x.title)+'</strong><br><small>'+esc(x.detail)+'</small></span><span class="small">'+x.played+'/'+x.required+' holes</span></div>').join(''):'<p>No scores yet.</p>';
+ body+='<details><summary>Golfer hole progress</summary>'+snapshot.players.map(p=>'<div class="row"><span>'+esc(p)+'</span><strong>'+snapshot.progress[p]+'/'+snapshot.holes+' holes</strong></div>').join('')+'</details></section>';
  }else if(tab==='skills'){
  body+='<section class="panel"><h2>CTP & Long Drive</h2><p>Record the winner of each designated contest. Winners earn one point; Sunday–Monday contests also count toward Wild Card Skills.</p>';
  for(const kind of ['ctp','ld']){let s=skills.find(x=>x.round_id===roundId&&x.kind===kind);body+='<label>'+(kind==='ctp'?'Closest to pin':'Long drive')+' <select data-skill="'+kind+'"><option value="">No winner yet</option>'+roundPlayers(r()).map(n=>'<option '+(s?.winner===n?'selected':'')+'>'+n+'</option>').join('')+'</select></label>';}
