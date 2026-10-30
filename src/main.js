@@ -1,0 +1,67 @@
+import {createClient} from '@supabase/supabase-js';
+import {SUPABASE_URL,SUPABASE_ANON_KEY} from './config.js';
+import {names,rounds,roundPlayers,courseHandicap,heartbreakerStrokes,teams} from './data.js';
+import './style.css';
+const db=SUPABASE_URL&&SUPABASE_ANON_KEY?createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+let me=null,roundId='silver-am',tab='scores',scores=[],skills=[],holes=[],ready=false,notice='',target=null,channel=null,timer=null;
+const $=s=>document.querySelector(s),r=()=>rounds.find(x=>x.id===roundId);
+const esc=s=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+const group=()=>r().groups.find(g=>g.includes(me))||[];
+const hole=(h)=>holes.find(x=>x.round_id===roundId&&x.hole===h);
+const par=h=>hole(h)?.par??(r().id==='backyard'||r().id==='short'||(r().id==='silver-pm'&&h>9)?3:4);
+const rank=h=>hole(h)?.stroke_index??h;
+const strokes=(player,h)=>{
+ if(r().id==='backyard'||(r().id==='silver-pm'&&h>9))return 0;
+ if(r().id==='silver-pm'){let n=heartbreakerStrokes[player]||0;return h<=9?Math.floor(n/9)+(rank(h)<=n%9?1:0):0;}
+ const eligible=r().format==='match'?group():roundPlayers(r());
+ const base=Math.min(...eligible.map(n=>courseHandicap(r(),n)));
+ const n=Math.max(0,courseHandicap(r(),player)-base);
+ return Math.floor(n/18)+(rank(h)<=n%18?1:0);
+};
+const score=(p,h)=>scores.find(s=>s.round_id===roundId&&s.player===p&&s.hole===h);
+const net=(p,h)=>{let s=score(p,h);return s?s.gross-strokes(p,h)+(s.lifeline?1:0):null;};
+const sf=(p)=>{let n=0;for(let h=1;h<=r().holes;h++){let x=net(p,h);if(x===null)continue;let d=x-par(h);n+=d<=-1?3:d===0?2:d===1?1:0;}return n;};
+function render(){
+ let body='';
+ if(!me){body='<section class="panel"><h2>Who’s on the tee?</h2><p>Choose your name. Only one active device can claim each player.</p>'+names.map(n=>'<button class="player" data-login="'+n+'">'+n+' <span>→</span></button>').join('')+'</section>';}
+ else{
+ const tabs=[['scores','Scorecard'],['matches','Live matches'],['boards','Leaderboards'],['skills','CTP & LD'],['settings','Course setup']];
+ body='<nav class="tabs">'+tabs.map(([id,label])=>'<button data-tab="'+id+'" class="'+(tab===id?'chosen':'')+'">'+label+'</button>').join('')+'</nav>';
+ body+='<label>Round <select id="round">'+rounds.map(x=>'<option value="'+x.id+'" '+(x.id===roundId?'selected':'')+'>'+x.date+' · '+x.name+'</option>').join('')+'</select></label>';
+ if(tab==='scores'){
+ let players=group();if(!target||!players.includes(target))target=players[0];
+ body+='<section class="panel"><h2>'+esc(r().name)+'</h2><p>'+r().date+' · '+r().time+' CST · '+r().format.toUpperCase()+'</p><p><strong>Playing group:</strong> '+players.join(' · ')+'</p>';
+ if(!ready)body+='<div class="warning">Official scoring is locked until the organizer verifies hole pars and stroke indexes in Course setup.</div>';
+ if(players.length){body+='<label>Enter scores for <select id="target">'+players.map(p=>'<option '+(target===p?'selected':'')+'>'+p+'</option>').join('')+'</select></label>';
+ body+='<div class="score-head"><span>Hole</span><span>Par</span><span>Strokes</span><span>Gross</span><span>Net</span></div>';
+ for(let h=1;h<=r().holes;h++){let s=score(target,h),st=strokes(target,h);body+='<div class="score-row"><b>'+h+'</b><span>'+par(h)+'</span><span class="stroke">'+(st?'●'.repeat(st):'—')+'</span><span class="hole-input"><button data-step="-1" data-hole="'+h+'" '+(!ready?'disabled':'')+'>−</button><strong>'+(s?.gross??'—')+'</strong><button data-step="1" data-hole="'+h+'" '+(!ready?'disabled':'')+'>+</button></span><b>'+(net(target,h)??'—')+'</b></div>';}}
+ body+='<p class="small">All golfers in this group may enter or correct one another’s scores. ● indicates a handicap stroke. Net values are provisional until hole stroke indexes are verified.</p></section>';
+ }else if(tab==='matches'){
+ body+='<section class="panel"><h2>Live match center</h2>';
+ if(r().format==='match'){for(const g of r().groups){for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){if(g[i]==='Mason'||g[j]==='Mason')continue;let a=0,b=0,halves=0,played=0;for(let h=1;h<=r().holes;h++){let x=net(g[i],h),y=net(g[j],h);if(x===null||y===null)continue;played++;if(x<y)a++;else if(y<x)b++;else halves++;}let lead=a-b;body+='<div class="row"><span>'+g[i]+' vs '+g[j]+'</span><strong>'+(played===0?'Not started':lead===0?'All square':(lead>0?g[i]:g[j])+' '+Math.abs(lead)+' UP')+'</strong><small>'+played+'/'+r().holes+'</small></div>';}}}
+ else body+='<p>Round format: '+r().format+'. See score snapshots and team pairings below.</p>';
+ if(teams[roundId])body+='<p><strong>Teams:</strong> '+teams[roundId].map(t=>t.join(' + ')).join(' · ')+'</p>';
+ body+='</section>';
+ }else if(tab==='boards'){
+ const players=roundPlayers(r());
+ body+='<section class="panel"><h2>Live round leaderboard</h2><p class="small">Net Stableford preview; this is not yet the final championship points engine.</p>'+players.map(p=>({p,pts:sf(p),done:scores.filter(s=>s.round_id===roundId&&s.player===p).length})).sort((a,b)=>b.pts-a.pts).map((x,i)=>'<div class="row"><b>'+(i+1)+'. '+x.p+'</b><span>'+x.done+'/'+r().holes+' holes</span><strong>'+x.pts+' SF</strong></div>').join('')+'</section>';
+ body+='<section class="panel"><h3>Championship events</h3><p>Individual Trail Championship · $250</p><p>RTJ Cup · $125</p><p>Wild Card Challenge · $125</p><p>Overall Skills · $75</p><p>Wild Card Skills · $50</p><p class="warning">The five cumulative championship leaderboards require final scoring-rule integration. Do not use this preview to settle prizes.</p></section>';
+ }else if(tab==='skills'){
+ body+='<section class="panel"><h2>CTP & Long Drive</h2><p>Record the winner of each designated contest. Winners earn one point; Sunday–Monday contests also count toward Wild Card Skills.</p>';
+ for(const kind of ['ctp','ld']){let s=skills.find(x=>x.round_id===roundId&&x.kind===kind);body+='<label>'+(kind==='ctp'?'Closest to pin':'Long drive')+' <select data-skill="'+kind+'"><option value="">No winner yet</option>'+roundPlayers(r()).map(n=>'<option '+(s?.winner===n?'selected':'')+'>'+n+'</option>').join('')+'</select></label>';}
+ body+='</section><section class="panel"><h3>Overall skills</h3>'+names.slice(0,6).map(n=>'<div class="row">'+n+' <b>'+skills.filter(s=>s.winner===n).length+' pts</b></div>').join('')+'</section><section class="panel"><h3>Wild Card skills</h3>'+names.map(n=>'<div class="row">'+n+' <b>'+skills.filter(s=>s.winner===n&&['valley','ridge','ross','backyard'].includes(s.round_id)).length+' pts</b></div>').join('')+'</section>';
+ }else if(tab==='settings'){
+ body+='<section class="panel"><h2>Hole information</h2><p class="warning">Default hole pars and stroke indexes are placeholders. Verify every hole against the actual scorecards before enabling official scoring.</p>';
+ if(me==='Jimmy'){body+='<div class="par-grid">'+Array.from({length:r().holes},(_,i)=>{let h=i+1;return '<label>Hole '+h+'<input type="number" min="3" max="6" data-par="'+h+'" value="'+par(h)+'"><input type="number" min="1" max="18" data-rank="'+h+'" value="'+rank(h)+'"></label>';}).join('')+'</div><label><input type="checkbox" id="ready" '+(ready?'checked':'')+'> I have verified ALL rounds’ pars and stroke indexes.</label>';}
+ else body+='<p>Only the organizer (Jimmy) can edit the course setup.</p>';
+ body+='</section>';
+ }
+ }
+ $('#app').innerHTML='<header><div class="eyebrow gold">ROBERT TRENT JONES GOLF TRAIL</div><h1>TRAIL CHAMPIONSHIP</h1><div class="session"><span>6–11 NOV 2026</span>'+(me?'<strong>'+me+'</strong><button data-logout>Sign out</button>':'')+'</div></header><main>'+(notice?'<div class="notice">'+esc(notice)+'</div>':'')+body+'</main><div class="footer">THE EXPEDITION EDITION · LIVE SCORING</div>';
+}
+async function refresh(){if(!db||!me)return;let results=await Promise.all([db.from('scores').select('*'),db.from('skills').select('*'),db.from('course_holes').select('*'),db.from('app_settings').select('*')]);if(results.some(x=>x.error)){notice='Database error: '+results.find(x=>x.error).error.message;render();return;}[scores,skills,holes]=results.slice(0,3).map(x=>x.data);ready=results[3].data.find(x=>x.key==='scoring_ready')?.value==='true';notice='';render();}
+async function login(name){try{if(!db)throw Error('Supabase environment variables are not configured');let {data:{session}}=await db.auth.getSession();if(!session){let a=await db.auth.signInAnonymously();if(a.error)throw a.error;}let a=await db.rpc('claim_player',{p_player:name});if(a.error)throw a.error;if(!a.data)throw Error(name+' is already active on another device. Try again after that player signs out or disconnects for about 100 seconds.');me=name;sessionStorage.setItem('rtj-player',name);await refresh();if(channel)db.removeChannel(channel);channel=db.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'scores'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'skills'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'course_holes'},refresh).subscribe();clearInterval(timer);timer=setInterval(async()=>{let x=await db.rpc('heartbeat',{p_player:me});if(x.error||!x.data){me=null;sessionStorage.removeItem('rtj-player');notice='Session expired. Please select your name again.';render();}},25000);}catch(e){notice=e.message;render();}}
+async function save(h,d){if(!ready)return;let old=score(target,h),gross=Math.max(1,Math.min(20,(old?.gross??par(h))+d));let a=await db.from('scores').upsert({round_id:roundId,player:target,hole:h,gross,updated_at:new Date().toISOString()});if(a.error)notice=a.error.message;await refresh();}
+$('#app').addEventListener('click',async e=>{let b=e.target.closest('button');if(!b)return;if(b.dataset.login){await login(b.dataset.login);return;}if(b.hasAttribute('data-logout')){await db.rpc('release_player',{p_player:me});me=null;sessionStorage.removeItem('rtj-player');clearInterval(timer);if(channel)db.removeChannel(channel);render();return;}if(b.dataset.tab){tab=b.dataset.tab;render();return;}if(b.dataset.step){await save(+b.dataset.hole,+b.dataset.step);}});
+$('#app').addEventListener('change',async e=>{let t=e.target;if(t.id==='round'){roundId=t.value;target=null;render();}else if(t.id==='target'){target=t.value;render();}else if(t.dataset.skill){let a=await db.from('skills').upsert({round_id:roundId,kind:t.dataset.skill,winner:t.value||me});if(a.error)notice=a.error.message;await refresh();}else if(t.dataset.par||t.dataset.rank){let h=+(t.dataset.par||t.dataset.rank),v=+t.value;let old=hole(h);let a=await db.from('course_holes').upsert({round_id:roundId,hole:h,par:t.dataset.par?v:(old?.par??par(h)),stroke_index:t.dataset.rank?v:(old?.stroke_index??rank(h))});if(a.error)notice=a.error.message;await refresh();}else if(t.id==='ready'){let a=await db.rpc('set_scoring_ready',{p_ready:t.checked});if(a.error)notice=a.error.message;await refresh();}});
+(async()=>{render();if(!db)return;let p=sessionStorage.getItem('rtj-player');if(p)await login(p);})();
