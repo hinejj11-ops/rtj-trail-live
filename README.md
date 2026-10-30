@@ -18,6 +18,12 @@ Mobile-first website with forest green/gold design, seven name-based player sess
    - `VITE_SUPABASE_ANON_KEY` = your public publishable/anon key
 4. Deploy. If variables are added after the initial deployment, redeploy.
 
+## Test Mode (run migration 002 first)
+
+If you already ran migration 001, run [`migrations/002_test_mode.sql`](migrations/002_test_mode.sql) in Supabase SQL Editor before testing the updated app. This adds a separate `test_scores` table and organizer-only test-mode and reset functions. It does **not** erase existing official scores.
+
+Sign in as Jimmy, open Course setup, and enable Test Mode. The Scorecard buttons will become active even while official scoring remains locked. Test scores are kept separate from official scores. To remove them, use **Clear ALL test scores** under Course setup; this affects all golfers and rounds but does not touch official scores. Disable Test Mode after testing. Other devices may need to reload after a mode change.
+
 ## First phone test
 
 1. Open the Vercel URL in your phone browser.
@@ -34,7 +40,7 @@ Mobile-first website with forest green/gold design, seven name-based player sess
 - The organizer must verify actual scorecard pars and hole stroke indexes; defaults are placeholders. Heartbreaker house strokes are preconfigured, but Heartbreaker hole ranks must be entered correctly.
 - Group scoring is restricted in the database to the designated playing group for the round. Name selection has no PIN; a session lock is a convenience feature, not identity verification.
 - Sessions expire if their heartbeat stops for about 100 seconds.
-- The score editor uses plus/minus controls; test data must be cleared before the event. There is no built-in reset yet.
+- The score editor uses plus/minus controls. Test Mode has a separate score table and organizer-only reset; disable it before the event.
 - Skills contest **hole assignments** must be verified against the championship guide before official use.
 - The scoring code has not yet been verified on two devices or against every championship format. Do not settle prizes from this build.
 
