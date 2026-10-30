@@ -1,0 +1,7 @@
+{
+  "name": "rtj-trail-live",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {"dev":"vite --host 0.0.0.0","build":"vite","preview":"vite preview --host 0.0.0.0"},
+  "dependencies": {"@supabase/supabase-js":"^2.49.0","vite":"^6.1.0"}
+}
