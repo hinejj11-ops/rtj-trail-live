@@ -16,7 +16,8 @@ export function liveFormat(id,score,net,par,rank,esc){
   }
   const hasScores=rows.some(row=>row.some(cell=>!cell.includes('>—</td>')));
   const leader=mode==='holes'?(compared===0?'Not started':wins[0]===wins[1]?'All square':esc(players[wins[0]>wins[1]?0:1])+' '+Math.abs(wins[0]-wins[1])+' UP'):(!hasScores?'Not started':totals.every(x=>x===totals[0])?'Tied':esc(players[totals.indexOf(highWins?Math.max(...totals):Math.min(...totals))])+' leads · '+(highWins?Math.max(...totals):Math.min(...totals))+(mode==='credits'?' credits':mode==='skins'?' skins':' pts'));
-  return '<details class="match-card"><summary><span>'+esc(title)+'</span><strong>'+leader+'</strong><small>'+(thru===n?'F':thru?'Thru '+thru:'—')+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>'+(mode==='holes'?'Won':'Total')+'</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+players.map((p,i)=>'<tr><th>'+esc(p)+'</th>'+rows[i].join('')+'<td>'+(mode==='holes'?wins[i]+' won':totals[i])+'</td></tr>').join('')+'</tbody></table></div></details>';
+  const playerThrough=rows.map(row=>{let h=0;while(h<n&&row[h]&&!row[h].includes('>—</td>'))h++;return h===n?'F':h?'Thru '+h:'—';});
+  return '<details class="match-card"><summary><span>'+esc(title)+'</span><strong>'+leader+'</strong><small>'+(thru===n?'F':thru?'Thru '+thru:'—')+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>'+(mode==='holes'?'Won':'Total')+'</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+players.map((p,i)=>'<tr><th>'+esc(p)+(mode==='points'?' · '+playerThrough[i]:'')+'</th>'+rows[i].join('')+'<td>'+(mode==='holes'?wins[i]+' won':totals[i])+'</td></tr>').join('')+'</tbody></table></div></details>';
  };
  let html='';
  if(id==='valley'||id==='lake'){
