@@ -22,7 +22,7 @@ export function strokesOnHole(id,player,hole,rank,mode='primary'){
  return holeStrokes(n,rank,18);
 }
 export function lifelineEligible(id,hole,rank){
- if(!lifelineLimits[id])return false;
+ if(!lifelineLimits[id]||(id==='silver-pm'&&hole>9))return false;
  const modes=id==='valley'||id==='ridge'||id==='ross'?['primary','stableford']:['primary'];
  return modes.every(mode=>strokesOnHole(id,'Richie',hole,rank,mode)>0);
 }
