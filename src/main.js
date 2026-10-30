@@ -37,7 +37,24 @@ function render(){
  body+='<div class="panel"><h3>End-of-round verification</h3><p class="small">Applies only to '+esc(target)+' on '+esc(r().name)+'.</p>'+(locked?'<p>🔒 Verified against physical scorecard and locked by Jimmy.</p>':!testMode&&ready?(me==='Jimmy'?'<button id="submit-card" class="primary" '+(completed!==r().holes?'disabled':'')+'>Verify & finalize '+esc(target)+' scorecard</button><p class="small">Compare all '+r().holes+' holes with the physical scorecard before finalizing.</p>':'<p class="small">Awaiting Jimmy’s physical-scorecard verification. Scores remain editable until finalized.</p>'):'<p>Official submission is available only when official scoring is enabled and Test Mode is off.</p>')+'<div style="margin-top:12px">'+(me==='Jimmy'?'<button id="reset-player">Reset '+esc(target)+' '+(testMode?'TEST':'OFFICIAL')+' scores for this round</button>':'<p class="small">Only Jimmy can clear scorecards.</p>')+'</div>'+(locked&&me==='Jimmy'?'<button id="unlock-card">Unlock '+esc(target)+' scorecard (organizer)</button>':'')+'</div>';body+='<p class="small">Everyone may enter scores for their playing group. Jimmy checks physical scorecards and alone finalizes, unlocks, or clears any golfer’s scorecard. ● indicates a handicap stroke. Net values are provisional until hole stroke indexes are verified.</p></section>';
  }else if(tab==='matches'){
  body+='<section class="panel"><h2>Live match center</h2>';
- if(r().format==='match'){for(const g of r().groups){for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){if(g[i]==='Mason'||g[j]==='Mason')continue;let a=0,b=0,halves=0,played=0;for(let h=1;h<=r().holes;h++){let x=net(g[i],h),y=net(g[j],h);if(x===null||y===null)continue;played++;if(x<y)a++;else if(y<x)b++;else halves++;}let lead=a-b;body+='<div class="row"><span>'+g[i]+' vs '+g[j]+'</span><strong>'+(played===0?'Not started':lead===0?'All square':(lead>0?g[i]:g[j])+' '+Math.abs(lead)+' UP')+'</strong><small>'+played+'/'+r().holes+'</small></div>';}}}
+ if(r().format==='match'){for(const g of r().groups){for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){
+  if(g[i]==='Mason'||g[j]==='Mason')continue;
+  const p1=g[i],p2=g[j];let a=0,b=0,halves=0,played=0,through=0;
+  const cells=[];
+  for(let h=1;h<=r().holes;h++){
+   const x=net(p1,h),y=net(p2,h),sx=score(p1,h),sy=score(p2,h);
+   const ready=x!==null&&y!==null;
+   if(ready){played++;if(x<y)a++;else if(y<x)b++;else halves++;}
+   if(ready&&h===through+1)through=h;
+   const winner=ready?(x<y?p1:y<x?p2:'Halved'):'—';
+   const resultClass=!ready?'':x<y?'match-win-a':y<x?'match-win-b':'match-halved';
+   cells.push('<tr class="'+resultClass+'"><td>'+h+'</td><td>'+(sx?esc(sx.gross):'—')+'</td><td>'+(x??'—')+'</td><td>'+(sy?esc(sy.gross):'—')+'</td><td>'+(y??'—')+'</td><td>'+(ready?esc(winner):'Pending')+'</td></tr>');
+  }
+  const lead=a-b;
+  const status=played===0?'Not started':lead===0?'All square':(lead>0?p1:p2)+' '+Math.abs(lead)+' UP';
+  const thru=through===0?'—':through===r().holes?'F':'Thru '+through;
+  body+='<details class="match-card"><summary><span>'+esc(p1)+' vs '+esc(p2)+'</span><strong>'+esc(status)+'</strong><small>'+thru+'</small></summary><div class="match-table-wrap"><table class="match-table"><thead><tr><th>Hole</th><th>'+esc(p1)+' Gross</th><th>'+esc(p1)+' Net</th><th>'+esc(p2)+' Gross</th><th>'+esc(p2)+' Net</th><th>Hole winner</th></tr></thead><tbody>'+cells.join('')+'</tbody></table></div><p class="small">Green highlights the lower net score; tied holes are halved. '+a+'–'+b+' holes won · '+halves+' halved.</p></details>';
+ }}}
  else body+='<p>Round format: '+r().format+'. See score snapshots and team pairings below.</p>';
  if(teams[roundId])body+='<p><strong>Teams:</strong> '+teams[roundId].map(t=>t.join(' + ')).join(' · ')+'</p>';
  body+='</section>';
