@@ -16,7 +16,7 @@ export function roundSnapshot(id,scores,engine,holes=[]){
   for(const g of r.groups){const ps=g.filter(p=>six.includes(p));for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){
    const a=ps[i],b=ps[j];let aw=0,bw=0;const played=group([a,b],h=>{const x=net(a,h),y=net(b,h);if(x<y)aw++;else if(y<x)bw++;});
    const lead=aw-bw;const state=played===0?'Not started':lead===0?'All square':(lead>0?a:b)+' '+Math.abs(lead)+' UP';
-   rows.push(result(a+' vs '+b,state+' · '+aw+'–'+bw+' holes won',played));
+   rows.push(result(a+' vs '+b,state+' · '+aw+'–'+bw+' holes won',played,r.holes,[a,b]));
   }}
  }else if(id==='silver-pm'){
   const ts=teams[id],tot=[0,0,0],counts=[0,0],ninePts=[null,null];
@@ -37,21 +37,21 @@ export function roundSnapshot(id,scores,engine,holes=[]){
     ninePts[k]=award;award.forEach((v,i)=>tot[i]+=v);
    }
   }
-  ts.forEach((t,i)=>rows.push(result(t.join(' + '),'HB '+(ninePts[0]?.[i]??'pending')+' pts · Short '+(ninePts[1]?.[i]??'pending')+' pts · Combined '+tot[i]+' pts',counts[0]+counts[1])));
+  ts.forEach((t,i)=>rows.push(result(t.join(' + '),'HB '+(ninePts[0]?.[i]??'pending')+' pts · Short '+(ninePts[1]?.[i]??'pending')+' pts · Combined '+tot[i]+' pts',counts[0]+counts[1],r.holes,t)));
  }else if(id==='valley'||id==='lake'){
   const ts=teams[id],best=(t,h)=>Math.min(...t.map(p=>net(p,h)));
   for(let i=0;i<ts.length;i++)for(let j=i+1;j<ts.length;j++){
    let a=0,b=0;const played=group([...ts[i],...ts[j]],h=>{const x=best(ts[i],h),y=best(ts[j],h);if(x<y)a++;else if(y<x)b++;});
-   rows.push(result(ts[i].join(' + ')+' vs '+ts[j].join(' + '),(a===b?'All square':(a>b?ts[i]:ts[j]).join(' + ')+' '+Math.abs(a-b)+' UP')+' · '+a+'–'+b+' holes won',played));
+   rows.push(result(ts[i].join(' + ')+' vs '+ts[j].join(' + '),(a===b?'All square':(a>b?ts[i]:ts[j]).join(' + ')+' '+Math.abs(a-b)+' UP')+' · '+a+'–'+b+' holes won',played,r.holes,[...ts[i],...ts[j]]));
   }
  }else if(id==='ross'){
-  players.forEach(p=>rows.push(result(p,progress[p]?'Net Stableford '+engine.stable(id,p)+' pts':'Not started',progress[p])));
+  players.forEach(p=>rows.push(result(p,progress[p]?'Net Stableford '+engine.stable(id,p)+' pts':'Not started',progress[p],r.holes,[p])));
   rows.sort((a,b)=>Number((b.detail.match(/\d+(?= pts)/)||[0])[0])-Number((a.detail.match(/\d+(?= pts)/)||[0])[0]));
  }else if(id==='backyard'){
   const contests=[{label:'Team skins',groups:teams.backyard},{label:'Individual skins',groups:players.map(p=>[p])}];
   for(const contest of contests){const wins=contests[0]===contest?teams.backyard.map(()=>0):players.map(()=>0);let carry=0,played=0;
    for(let h=1;h<=9;h++){if(!ready(players,h))break;played++;carry++;const vals=contest.groups.map(t=>Math.min(...t.map(p=>gross(p,h)))),low=Math.min(...vals),w=vals.map((v,i)=>v===low?i:-1).filter(i=>i>=0);if(w.length===1){wins[w[0]]+=carry;carry=0;}}
-   contest.groups.forEach((t,i)=>rows.push(result(contest.label+' · '+t.join(' + '),wins[i]+' skins'+(carry?' · '+carry+' pending carry':''),played,9)));
+   contest.groups.forEach((t,i)=>rows.push(result(contest.label+' · '+t.join(' + '),wins[i]+' skins'+(carry?' · '+carry+' pending carry':''),played,9,players)));
   }
  }else if(id==='short'){
   const credits=Object.fromEntries(six.map(p=>[p,0]));
