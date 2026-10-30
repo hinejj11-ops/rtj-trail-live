@@ -1,13 +1,13 @@
 export const names=['Jimmy','Brittany','Kevin','Jeff','Nate','Richie','Mason'];
 export const handicaps={Jimmy:6.8,Brittany:10,Kevin:11.2,Jeff:18,Nate:21.7,Richie:30,Mason:14};
 export const rounds=[
-{id:'silver-am',name:'Silver Lakes · Backbreaker / Mindbreaker',date:'Sat Nov 7',time:'7:00 AM',holes:18,rating:69.4,slope:131,par:72,format:'match',groups:[['Jimmy','Brittany','Kevin'],['Jeff','Nate','Richie']]},
+{id:'silver-am',name:'Silver Lakes · Backbreaker / Mindbreaker',date:'Sat Nov 7',time:'7:00 AM',holes:18,rating:69.4,slope:131,par:72,format:'match',groups:[['Jeff','Nate','Richie'],['Jimmy','Brittany','Kevin']]},
 {id:'silver-pm',name:'Silver Lakes · Heartbreaker / Short',date:'Sat Nov 7',time:'12:30 PM',holes:18,format:'vegas',groups:[['Jimmy','Nate','Brittany'],['Jeff','Kevin','Richie']]},
 {id:'valley',name:'Oxmoor Valley · Valley',date:'Sun Nov 8',time:'7:40 AM',holes:18,rating:69.3,slope:130,par:72,format:'triple',groups:[['Jimmy','Brittany','Richie','Mason'],['Kevin','Jeff','Nate']]},
-{id:'ridge',name:'Oxmoor Valley · Ridge',date:'Sun Nov 8',time:'1:00 PM',holes:18,rating:70.3,slope:133,par:72,format:'match',groups:[['Jimmy','Brittany','Jeff'],['Kevin','Nate','Richie','Mason']]},
+{id:'ridge',name:'Oxmoor Valley · Ridge',date:'Sun Nov 8',time:'1:00 PM',holes:18,rating:70.3,slope:133,par:72,format:'match',groups:[['Kevin','Nate','Richie','Mason'],['Jimmy','Brittany','Jeff']]},
 {id:'ross',name:'Ross Bridge',date:'Mon Nov 9',time:'9:00 AM',holes:18,rating:69.6,slope:129,par:72,format:'stableford',groups:[['Brittany','Kevin','Nate'],['Jimmy','Jeff','Richie','Mason']]},
 {id:'backyard',name:'Oxmoor Valley · Backyard',date:'Mon Nov 9',time:'3:22 PM',holes:9,format:'skins',groups:[['Jimmy','Kevin','Jeff'],['Brittany','Nate','Richie','Mason']]},
-{id:'links',name:'Grand National · Links',date:'Tue Nov 10',time:'12:30 PM',holes:18,rating:70.5,slope:128,par:72,format:'match',groups:[['Jimmy','Kevin','Nate'],['Brittany','Jeff','Richie']]},
+{id:'links',name:'Grand National · Links',date:'Tue Nov 10',time:'12:30 PM',holes:18,rating:70.5,slope:128,par:72,format:'match',groups:[['Brittany','Jeff','Richie'],['Jimmy','Kevin','Nate']]},
 {id:'lake',name:'Grand National · Lake',date:'Wed Nov 11',time:'7:40 AM',holes:18,rating:70.2,slope:131,par:72,format:'bestball',groups:[['Jimmy','Jeff','Nate'],['Brittany','Kevin','Richie']]},
 {id:'short',name:'Grand National · Short',date:'Wed Nov 11',time:'1:30 PM',holes:18,rating:53.7,slope:89,par:54,format:'finale',groups:[['Kevin','Brittany','Jeff'],['Jimmy','Nate','Richie']]}
 ];
