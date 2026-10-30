@@ -70,3 +70,7 @@ npm run dev
 - `src/style.css`: forest-green/gold design
 - `migrations/001_original_schema_to_live_app.sql`: migration for the user's existing database\n- `schema.sql`: initial alternate schema (not for use over the existing database)
 - `vercel.json`: SPA routing
+
+## Backyard skins — confirmed house rule
+
+For both RTJ Cup two-person team gross skins and Wild Card seven-player individual gross skins, tied lowest gross scores carry the outstanding skins forward to the next hole. A unique lowest gross score wins the current hole and all carried skins. **Any skins still carried after hole 9 expire without a winner**; there is no playoff or additional tiebreak hole. This rule was confirmed by the organizer and must be used by the championship leaderboard scoring engine.
