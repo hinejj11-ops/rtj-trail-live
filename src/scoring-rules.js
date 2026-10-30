@@ -33,5 +33,5 @@ export function netScore(id,player,hole,score,rank,mode='primary'){
 export function vegasDigit(id,player,hole,score,par,rank){
  if(!score)return null;
  const cappedGross=Math.min(score.gross,par*2,par===5?9:Infinity);
- return Math.max(0,cappedGross-strokesOnHole(id,player,hole,rank));
+ return Math.max(0,cappedGross-strokesOnHole(id,player,hole,rank)+(player==='Richie'&&score.lifeline&&lifelineEligible(id,hole,rank)?1:0));
 }
