@@ -39,8 +39,8 @@ function render(){
  if(teams[roundId])body+='<p><strong>Teams:</strong> '+teams[roundId].map(t=>t.join(' + ')).join(' · ')+'</p>';
  body+='</section>';
  }else if(tab==='boards'){
- const engine=championship(scores,skills,holes,submissions);
- body+='<section class="panel"><h2>Championship standings</h2><p class="small">'+(testMode?'🧪 TEST MODE — standings use test scores.':'Official scores · Points post after every eligible scorecard is complete.')+'</p><p class="small">Five separate titles · $625 total prizes. A tied position splits the points for occupied places.</p></section>';
+ const engine=championship(scores,skills,holes,submissions,!testMode);
+ body+='<section class="panel"><h2>Championship standings</h2><p class="small">'+(testMode?'🧪 TEST MODE — standings use test scores.':'Official scores · Championship points post after Jimmy verifies every eligible physical scorecard.')+'</p><p class="small">Five separate titles · $625 total prizes. A tied position splits the points for occupied places.</p></section>';
  for(const b of engine.boards){
   const sorted=[...b.eligible].sort((a,c)=>b.values[c]-b.values[a]||((b.ctp?.[c]||0)-(b.ctp?.[a]||0))||((b.ld?.[c]||0)-(b.ld?.[a]||0)));
   body+='<section class="panel"><h3>'+esc(b.name)+' <span class="prize">$'+b.prize+'</span></h3><p class="small">'+b.rounds+'/'+b.expected+' '+(b.id==='overall'||b.id==='wildSkills'?'skills contests recorded':'events completed')+' · '+(b.rounds===b.expected?'All events scored':'Provisional standings')+'</p>';
