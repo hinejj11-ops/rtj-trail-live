@@ -76,6 +76,8 @@ export function championship(scores,skills,holes,submissions=[]){
  for(const entry of skills){
   const allowed=skillsHoles[entry.round_id];
   if(!allowed||!Object.hasOwn(allowed,entry.kind)||!entry.winner)continue;
+  const wcRound=wildCardSkillsRounds.includes(entry.round_id);
+  if(entry.winner==='NO_WINNER'){overallRecorded++;if(wcRound)wildRecorded++;continue;}
   const eligible=six.includes(entry.winner),wc=wildCardSkillsRounds.includes(entry.round_id);
   if(eligible){
    overall[entry.winner]++;overallRecorded++;
