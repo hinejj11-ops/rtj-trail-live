@@ -19,15 +19,22 @@ export function championship(scores,skills,holes,submissions=[],requireVerificat
  const rankAwards=(values,prizes)=>{const ordered=Object.entries(values).sort((a,b)=>b[1]-a[1]),out=points(Object.keys(values));let i=0;while(i<ordered.length){let j=i+1;while(j<ordered.length&&Math.abs(ordered[j][1]-ordered[i][1])<1e-8)j++;const pts=ordered.slice(i,j).reduce((a,_,k)=>a+(prizes[i+k]||0),0)/(j-i);for(let k=i;k<j;k++)out[ordered[k][0]]=pts;i=j;}return out;};
  const stable=(id,p)=>Array.from({length:18},(_,i)=>{const h=i+1,n=net(id,p,h,'stableford');if(n===null)return 0;const d=n-par(id,h);return d<=-1?3:d===0?2:d===1?1:0;}).reduce((a,b)=>a+b,0);
  const match=(id,a,b)=>{let aw=0,bw=0,half=0;for(let h=1;h<=18;h++){const x=net(id,a,h),y=net(id,b,h);if(x<y)aw++;else if(y<x)bw++;else half++;}return {a:aw,b:bw,half};};
+ const verifiedMatchRounds=new Set();
  for(const id of ['silver-am','ridge','links']){
-  const r=byId(id);if(!complete(id,six))continue;
-  const out=points(six);
-  for(const group of r.groups){const ps=group.filter(p=>six.includes(p));for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){
-   const a=ps[i],b=ps[j],m=match(id,a,b);
-   out[a]+=(m.a>m.b?1:m.a===m.b?.5:0)+(m.a+.5*m.half)/18;
-   out[b]+=(m.b>m.a?1:m.a===m.b?.5:0)+(m.b+.5*m.half)/18;
-  }}
-  add(trail,'trail',out);
+  const r=byId(id),out=points(six);
+  let anyGroup=false,allGroups=true;
+  for(const group of r.groups){
+   const ps=group.filter(p=>six.includes(p));
+   if(!complete(id,ps)){allGroups=false;continue;}
+   anyGroup=true;
+   for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){
+    const a=ps[i],b=ps[j],m=match(id,a,b);
+    out[a]+=(m.a>m.b?1:m.a===m.b?.5:0)+(m.a+.5*m.half)/18;
+    out[b]+=(m.b>m.a?1:m.a===m.b?.5:0)+(m.b+.5*m.half)/18;
+   }
+  }
+  if(anyGroup)add(trail,'trail',out);
+  if(allGroups)verifiedMatchRounds.add(id);
  }
  if(complete('ross',six))add(trail,'trail',rankAwards(Object.fromEntries(six.map(p=>[p,stable('ross',p)])),[6,4,3,2,1,0]));
  if(complete('short',six)){
@@ -89,7 +96,7 @@ export function championship(scores,skills,holes,submissions=[],requireVerificat
   }
  }
  const tieKeys={};
- if(details.trail.length===5){
+ if(details.trail.length===5&&verifiedMatchRounds.size===3){
   const finale=details.trail[4];
   tieKeys.trail=Object.fromEntries(six.map(p=>{
    const sum=(start,end,id='short')=>Array.from({length:end-start+1},(_,i)=>net(id,p,start+i)).reduce((a,b)=>a+b,0);
@@ -111,7 +118,7 @@ export function championship(scores,skills,holes,submissions=[],requireVerificat
   return 0;
  };
  const boards=[
-  {id:'trail',name:'Individual Trail Championship',prize:250,values:trail,eligible:six,rounds:details.trail.length,expected:5},
+  {id:'trail',name:'Individual Trail Championship',prize:250,values:trail,eligible:six,rounds:verifiedMatchRounds.size+Number(complete('ross',six))+Number(complete('short',six)),expected:5},
   {id:'cup',name:'RTJ Cup',prize:125,values:cup,eligible:six,rounds:details.cup.length,expected:4},
   {id:'wild',name:'Wild Card Challenge',prize:125,values:wild,eligible:seven,rounds:details.wild.length,expected:4},
   {id:'overall',name:'Overall Skills',prize:75,values:overall,eligible:six,rounds:overallRecorded,expected:16,ctp,ld},
