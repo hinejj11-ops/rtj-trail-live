@@ -111,3 +111,24 @@ test('Stableford seven-way tie splits Wild Card placement points',()=>{
  assert.ok(Object.values(wild.values).every(v=>Number.isFinite(v)));
  assert.equal(Object.values(wild.values).reduce((a,b)=>a+b,0),6);
 });
+
+test('match-play three-way group awards one point per win plus hole bonus',()=>{
+ const id='silver-am',scores=[];
+ for(let h=1;h<=18;h++){
+  for(const p of six)scores.push({round_id:id,player:p,hole:h,gross:p==='Jimmy'?3:p==='Brittany'?4:5});
+ }
+ const result=championship(scores,[],[],[],false);
+ const trail=result.boards.find(b=>b.id==='trail');
+ assert.equal(trail.rounds,1);
+ assert.ok(trail.values.Jimmy>trail.values.Brittany);
+ assert.ok(trail.values.Brittany>trail.values.Kevin);
+ assert.ok(Object.values(trail.values).every(v=>v>=0&&v<=4));
+});
+test('Lake best ball distributes exactly two points per pair-v-pair match',()=>{
+ const id='lake',scores=six.flatMap(p=>Array.from({length:18},(_,i)=>({round_id:id,player:p,hole:i+1,gross:4})));
+ const result=championship(scores,[],[],[],false);
+ const cup=result.boards.find(b=>b.id==='cup');
+ assert.equal(cup.rounds,1);
+ assert.equal(Object.values(cup.values).reduce((a,b)=>a+b,0),12);
+ for(const t of teams.lake)assert.equal(cup.values[t[0]],cup.values[t[1]]);
+});
