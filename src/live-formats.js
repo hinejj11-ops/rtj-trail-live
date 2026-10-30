@@ -25,6 +25,21 @@ export function liveFormat(id,score,net,par,rank,esc){
   html+=card('Trail Stableford',six,(i,h)=>stable(six[i],h,false));
   html+=card('Wild Card Stableford',seven,(i,h)=>stable(seven[i],h,true));
   html+='<p class="small">Cells show Stableford points earned on each hole. Higher total leads.</p>';
+ }else if(id==='backyard'){
+  const contests=[['Team skins',ts],['Individual skins',seven.map(p=>[p])]];
+  for(const [title,groups] of contests){
+   const awarded=groups.map(()=>Array(9).fill(null));let carry=0;
+   for(let h=1;h<=9;h++){
+    const values=groups.map(t=>t.every(p=>gross(p,h)!==null)?Math.min(...t.map(p=>gross(p,h))):null);
+    if(values.some(x=>x===null))continue;
+    carry++;
+    const low=Math.min(...values),winners=values.map((v,i)=>v===low?i:-1).filter(i=>i>=0);
+    awarded.forEach(row=>row[h-1]=0);
+    if(winners.length===1){awarded[winners[0]][h-1]=carry;carry=0;}
+   }
+   html+=card(title,groups.map(label),(i,h)=>awarded[i][h-1],9);
+  }
+  html+='<p class="small">Gross skins awarded after a unique low score; ties carry forward.</p>';
  }else if(id==='short'){
   const credits=six.map(()=>Array(18).fill(null));
   for(let h=1;h<=18;h++){const v=six.map(p=>net(p,h));if(v.some(x=>x===null))continue;const low=Math.min(...v),n=v.filter(x=>x===low).length;v.forEach((x,i)=>credits[i][h-1]=x===low?1/n:0);}
