@@ -14,7 +14,8 @@ export function liveFormat(id,score,net,par,rank,esc){
    if(valid){compared++;if(mode==='holes'){const winners=v.map((x,i)=>x===best?i:-1).filter(i=>i>=0);if(winners.length===1)wins[winners[0]]++;}}
    v.forEach((x,i)=>{if(x!==null)totals[i]+=x;const cls=valid&&x===best?(v.filter(y=>y===best).length===1?'match-hole-win':'match-hole-half'):'';rows[i].push('<td class="'+cls+'">'+(x??'—')+'</td>');});
   }
-  const leader=mode==='holes'?(compared===0?'Not started':wins[0]===wins[1]?'All square':esc(players[wins[0]>wins[1]?0:1])+' '+Math.abs(wins[0]-wins[1])+' UP'):(totals.every(x=>x===0)&&!compared?'Not started':totals.every(x=>x===totals[0])?'Tied':esc(players[totals.indexOf(highWins?Math.max(...totals):Math.min(...totals))])+' leads · '+(highWins?Math.max(...totals):Math.min(...totals))+' pts');
+  const hasScores=rows.some(row=>row.some(cell=>!cell.includes('>—</td>')));
+  const leader=mode==='holes'?(compared===0?'Not started':wins[0]===wins[1]?'All square':esc(players[wins[0]>wins[1]?0:1])+' '+Math.abs(wins[0]-wins[1])+' UP'):(!hasScores?'Not started':totals.every(x=>x===totals[0])?'Tied':esc(players[totals.indexOf(highWins?Math.max(...totals):Math.min(...totals))])+' leads · '+(highWins?Math.max(...totals):Math.min(...totals))+(mode==='credits'?' credits':mode==='skins'?' skins':' pts'));
   return '<details class="match-card"><summary><span>'+esc(title)+'</span><strong>'+leader+'</strong><small>'+(thru===n?'F':thru?'Thru '+thru:'—')+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>'+(mode==='holes'?'Won':'Total')+'</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+players.map((p,i)=>'<tr><th>'+esc(p)+'</th>'+rows[i].join('')+'<td>'+(mode==='holes'?wins[i]+' won':totals[i])+'</td></tr>').join('')+'</tbody></table></div></details>';
  };
  let html='';
@@ -39,13 +40,13 @@ export function liveFormat(id,score,net,par,rank,esc){
     awarded.forEach(row=>row[h-1]=0);
     if(winners.length===1){awarded[winners[0]][h-1]=carry;carry=0;}
    }
-   html+=card(title,groups.map(label),(i,h)=>awarded[i][h-1],9,true);
+   html+=card(title,groups.map(label),(i,h)=>awarded[i][h-1],9,true,'skins');
   }
   html+='<p class="small">Gross skins awarded after a unique low score; ties carry forward.</p>';
  }else if(id==='short'){
   const credits=six.map(()=>Array(18).fill(null));
   for(let h=1;h<=18;h++){const v=six.map(p=>net(p,h));if(v.some(x=>x===null))continue;const low=Math.min(...v),n=v.filter(x=>x===low).length;v.forEach((x,i)=>credits[i][h-1]=x===low?1/n:0);}
-  html+=card('GN Short finale credits',six,(i,h)=>credits[i][h-1],18,true);
+  html+=card('GN Short finale credits',six,(i,h)=>credits[i][h-1],18,true,'credits');
   html+='<p class="small">Each hole awards one credit to the lowest net score, shared on ties.</p>';
  }
  return html;
