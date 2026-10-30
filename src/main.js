@@ -78,7 +78,7 @@ function render(){
    }
   }
  }
- else if(['valley','lake','ross','short','backyard'].includes(roundId))body+=liveFormat(roundId,score,net,par,rank,esc);
+ else if(['valley','lake','ross','short','backyard'].includes(roundId))body+=liveFormat(roundId,score,net,par,rank,esc)+(roundId==='valley'?wildCardStableford(roundId,score,par,rank,esc):'');
  else body+='<p>Round format: '+r().format+'. See score snapshots and team pairings below.</p>';
  if(teams[roundId])body+='<p><strong>Teams:</strong> '+teams[roundId].map(t=>t.join(' + ')).join(' · ')+'</p>';
  body+='</section>';
