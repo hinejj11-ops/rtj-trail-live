@@ -3,6 +3,7 @@ import {SUPABASE_URL,SUPABASE_ANON_KEY} from './config.js';
 import {names,rounds,roundPlayers,courseHandicap,heartbreakerStrokes,teams,skillsHoles,wildCardSkillsRounds,lifelineLimits} from './data.js';
 import {championship} from './championship.js';
 import {roundSnapshot} from './round-snapshot.js';
+import {liveFormat} from './live-formats.js';
 import {strokesOnHole,netScore,lifelineEligible,vegasDigit} from './scoring-rules.js';
 import './style.css';
 const db=SUPABASE_URL&&SUPABASE_ANON_KEY?createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
