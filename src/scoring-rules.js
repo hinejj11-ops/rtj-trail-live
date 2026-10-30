@@ -28,7 +28,7 @@ export function lifelineEligible(id,hole,rank){
 }
 export function netScore(id,player,hole,score,rank,mode='primary'){
  if(!score)return null;
- return score.gross-strokesOnHole(id,player,hole,rank,mode)+(player==='Richie'&&score.lifeline?1:0);
+ return score.gross-strokesOnHole(id,player,hole,rank,mode)+(player==='Richie'&&score.lifeline&&lifelineEligible(id,hole,rank)?1:0);
 }
 export function vegasDigit(id,player,hole,score,par,rank){
  if(!score)return null;
