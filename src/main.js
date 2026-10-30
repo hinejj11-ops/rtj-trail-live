@@ -58,7 +58,7 @@ function render(){
   }
   body+='</section>';
  }
- const snapshot=roundSnapshot(roundId,scores,engine);
+ const snapshot=roundSnapshot(roundId,scores,engine,holes);
  body+='<section class="panel"><h3>'+esc(r().name)+' · Live round leaderboard</h3><p class="small">'+esc(snapshot.format)+' · Updates with the selected round, not the date. Results are provisional until the round is complete.</p>';
  body+=snapshot.rows.length?snapshot.rows.map(x=>'<div class="row"><span><strong>'+esc(x.title)+'</strong><br><small>'+esc(x.detail)+'</small></span><span class="small">'+x.played+'/'+x.required+' holes</span></div>').join(''):'<p>No scores yet.</p>';
  body+='<details><summary>Golfer hole progress</summary>'+snapshot.players.map(p=>'<div class="row"><span>'+esc(p)+'</span><strong>'+snapshot.progress[p]+'/'+snapshot.holes+' holes</strong></div>').join('')+'</details></section>';
