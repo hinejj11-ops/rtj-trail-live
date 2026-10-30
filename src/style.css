@@ -17,3 +17,5 @@
 .match-table .match-win-a td:nth-child(2),.match-table .match-win-a td:nth-child(3),.match-table .match-win-b td:nth-child(4),.match-table .match-win-b td:nth-child(5){background:#d9efe0;color:#14532d;font-weight:800}
 .match-table .match-halved td:last-child{color:#66786c;font-style:italic}
 .match-card>p{padding:4px 12px 12px;margin:0}
+
+.match-horizontal{width:max-content;min-width:100%}.match-horizontal th,.match-horizontal td{min-width:40px;text-align:center}.match-horizontal th:first-child{position:sticky;left:0;min-width:100px;text-align:left;background:#eef1e9}.match-horizontal .match-par-row{background:#f5f5ed;color:#66786c}.match-horizontal td.match-hole-win{background:#d9efe0;color:#14532d;font-weight:800}.match-horizontal td.match-hole-half{background:#ecefeb;color:#536459;font-weight:700}
