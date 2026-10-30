@@ -15,8 +15,10 @@ export function allowance(id,player,mode='primary',hole=1){
 export function strokesOnHole(id,player,hole,rank,mode='primary'){
  const n=allowance(id,player,mode,hole);
  if(id==='backyard')return 0;
- if(id==='silver-pm')const nineRank=hole>9&&rank>9?rank-9:rank;
- return holeStrokes(n,nineRank,9);
+ if(id==='silver-pm'){
+  const nineRank=hole>9&&rank>9?rank-9:rank;
+  return holeStrokes(n,nineRank,9);
+ }
  return holeStrokes(n,rank,18);
 }
 export function lifelineEligible(id,hole,rank){
