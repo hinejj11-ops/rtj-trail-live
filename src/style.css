@@ -21,3 +21,6 @@
 .match-horizontal{width:max-content;min-width:100%}.match-horizontal th,.match-horizontal td{min-width:40px;text-align:center}.match-horizontal th:first-child{position:sticky;left:0;min-width:100px;text-align:left;background:#eef1e9}.match-horizontal .match-par-row{background:#f5f5ed;color:#66786c}.match-horizontal td.match-hole-win{background:#d9efe0;color:#14532d;font-weight:800}.match-horizontal td.match-hole-half{background:#ecefeb;color:#536459;font-weight:700}
 
 .match-net-value{display:inline-flex;align-items:flex-start;justify-content:center;gap:2px;min-width:18px}.match-stroke-dots{display:inline-flex;gap:2px;align-self:flex-start;margin-top:1px}.match-stroke-dot{display:block;width:5px;height:5px;border:1px solid currentColor;border-radius:50%;background:currentColor;opacity:.75;flex-shrink:0}
+
+.leaderboard-column-headings{border-bottom:1px solid #cbd5cd;padding-bottom:7px;margin-bottom:4px;color:#536459;font-size:.82rem;letter-spacing:.01em}
+.leaderboard-column-headings strong:last-child{text-align:right}
