@@ -44,11 +44,11 @@ function render(){
   const row1=[],row2=[],parRow=[],holeRow=[];
   for(let h=1;h<=r().holes;h++){
    const x=net(p1,h),y=net(p2,h),ready=x!==null&&y!==null;
-   const par=holes.find(v=>v.round_id===roundId&&v.hole===h)?.par??'—';
+   const holePar=par(h);
    if(ready){played++;if(x<y)a++;else if(y<x)b++;else halves++;}
    if(ready&&h===through+1)through=h;
    holeRow.push('<th scope="col">'+h+'</th>');
-   parRow.push('<td>'+par+'</td>');
+   parRow.push('<td>'+holePar+'</td>');
    const dots=p=>{const strokesReceived=strokes(p,h);return strokesReceived>0?'<span class="match-stroke-dots" aria-label="'+strokesReceived+' handicap stroke'+(strokesReceived===1?'':'s')+'" title="'+strokesReceived+' handicap stroke'+(strokesReceived===1?'':'s')+'">'+Array.from({length:strokesReceived},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'';};
    row1.push('<td class="'+(ready&&x<y?'match-hole-win':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(x??'—')+dots(p1)+'</span></td>');
    row2.push('<td class="'+(ready&&y<x?'match-hole-win':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(y??'—')+dots(p2)+'</span></td>');
