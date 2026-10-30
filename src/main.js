@@ -89,6 +89,8 @@ function render(){
  for(const b of engine.boards){
   const sorted=[...b.eligible].sort((a,c)=>engine.compare(b,a,c));
   body+='<section class="panel"><h3>'+esc(b.name)+' <span class="prize">$'+b.prize+'</span></h3><p class="small">'+b.rounds+'/'+b.expected+' '+(b.id==='overall'||b.id==='wildSkills'?'skills contests recorded':'events completed')+' · '+(b.rounds===b.expected?'All events scored':'Provisional standings')+'</p>';
+  const pointsLabel={trail:'Trail Points',cup:'RTJ Cup Points',wild:'Wild Card Points',overall:'Overall Skills Points',wildSkills:'Wild Card Skills Points'}[b.id]||'Points';
+  body+='<div class="row leaderboard-column-headings"><strong>Rank / Golfer</strong><strong>'+esc(pointsLabel)+'</strong></div>';
   sorted.forEach((p,i)=>{const tied=(i>0&&engine.compare(b,p,sorted[i-1])===0)||(i<sorted.length-1&&engine.compare(b,p,sorted[i+1])===0);const first=sorted.findIndex(q=>engine.compare(b,p,q)===0)+1;const place=tied?'T'+first:(i+1)+'.';body+='<div class="row"><b>'+place+' '+esc(p)+'</b><strong>'+Number(b.values[p].toFixed(3))+' pts</strong></div>';});
   if(engine.details[b.id]?.length){const eventNames={trail:['Silver Lakes AM · Match','Oxmoor Ridge · Match','Grand National Links · Match','Ross Bridge · Stableford','GN Short · Finale'],cup:['Silver Lakes PM · Vegas','Oxmoor Valley · Triple Threat','Backyard · Team skins','GN Lake · Best ball'],wild:['Valley · Stableford','Ridge · Stableford','Ross Bridge · Stableford','Backyard · Individual skins']};
    body+='<details><summary>Event point breakdown</summary>';
