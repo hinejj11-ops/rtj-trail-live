@@ -6,9 +6,10 @@ export function roundSnapshot(id,scores,engine,holes=[]){
  const gross=(p,h)=>engine.gross(id,p,h),net=(p,h)=>engine.net(id,p,h);
  const par=h=>holes.find(x=>x.round_id===id&&x.hole===h)?.par??(id==='backyard'||id==='short'||(id==='silver-pm'&&h>9)?3:4);
  const progress=Object.fromEntries(players.map(p=>[p,Array.from({length:r.holes},(_,i)=>gross(p,i+1)).filter(v=>v!==null).length]));
+ const through=Object.fromEntries(players.map(p=>{let h=0;while(h<r.holes&&gross(p,h+1)!==null)h++;return [p,h];}));
  const ready=(ps,h)=>ps.every(p=>gross(p,h)!==null);
  const group=(ps,fn)=>{let holes=0;for(let h=1;h<=r.holes;h++)if(ready(ps,h)){holes++;fn(h);}return holes;};
- const result=(title,detail,played,required=r.holes)=>({title,detail,played,required});
+ const result=(title,detail,played,required=r.holes,participants=[])=>({title,detail,played,required,through:participants.length?Math.min(...participants.map(p=>through[p]??0)):played});
  const compare=(a,b)=>a>b?'WIN':a<b?'LOSS':'TIED';
  const rows=[];
  if(r.format==='match'){
@@ -69,7 +70,7 @@ export function roundSnapshot(id,scores,engine,holes=[]){
    const d=g-strokes+(p==='Richie'&&entry?.lifeline?1:0)-par(h);
    pts+=d<=-1?3:d===0?2:d===1?1:0;
   }
-  return {player:p,points:pts,played};
+  return {player:p,points:pts,played,through:through[p]};
  }).sort((a,b)=>b.points-a.points||b.played-a.played):[];
- return {wildStableford,rows,progress,players,holes:r.holes,format:{match:'3-way net match play',vegas:'Net / gross Vegas',triple:'Triple Threat · team best ball',stableford:'Net Stableford',skins:'Gross team + individual skins',bestball:'Team best ball',finale:'Individual finale'}[r.format]};
+ return {wildStableford,rows,progress,through,players,holes:r.holes,format:{match:'3-way net match play',vegas:'Net / gross Vegas',triple:'Triple Threat · team best ball',stableford:'Net Stableford',skins:'Gross team + individual skins',bestball:'Team best ball',finale:'Individual finale'}[r.format]};
 }
