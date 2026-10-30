@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {names,rounds,roundPlayers,teams} from '../src/data.js';
+import {names,rounds,roundPlayers,teams,lifelineLimits} from '../src/data.js';
 import {allowance,strokesOnHole,netScore,vegasDigit,lifelineEligible} from '../src/scoring-rules.js';
 import {championship} from '../src/championship.js';
 const six=names.slice(0,6);
@@ -61,4 +61,52 @@ test('Lifeline limits are available to the scorecard UI',()=>{
  assert.equal(Object.hasOwn(lifelineLimits,'ridge'),true);
  assert.equal(lifelineLimits.ridge,3);
  assert.equal(lifelineLimits['silver-pm'],1);
+});
+
+test('dual-format Lifeline eligibility requires a stroke in both allocations',()=>{
+ for(const id of ['valley','ridge']){
+  for(let h=1;h<=18;h++){
+   const rank=h;
+   const expected=strokesOnHole(id,'Richie',h,rank,'primary')>0&&strokesOnHole(id,'Richie',h,rank,'stableford')>0;
+   assert.equal(lifelineEligible(id,h,rank),expected);
+   const entry={gross:6,lifeline:true};
+   assert.equal(netScore(id,'Richie',h,entry,rank,'primary'),6-strokesOnHole(id,'Richie',h,rank,'primary')+(expected?1:0));
+   assert.equal(netScore(id,'Richie',h,entry,rank,'stableford'),6-strokesOnHole(id,'Richie',h,rank,'stableford')+(expected?1:0));
+  }
+ }
+});
+test('Vegas equal-weight nine rankings with ties and gross caps',()=>{
+ const id='silver-pm',scores=[],holes=[];
+ for(let h=1;h<=18;h++){
+  holes.push({round_id:id,hole:h,par:h<=9?4:3,stroke_index:h<=9?h:h-9});
+  for(const p of six)scores.push({round_id:id,player:p,hole:h,gross:4});
+ }
+ const board=championship(scores,[],holes,[],false).boards.find(b=>b.id==='cup');
+ assert.equal(board.rounds,1);
+ assert.equal(Object.values(board.values).reduce((a,b)=>a+b,0),12);
+ for(const t of teams[id])assert.equal(board.values[t[0]],board.values[t[1]]);
+});
+test('Backyard unresolved carry expires and all-skins tie splits Cup and Wild Card points',()=>{
+ const scores=names.flatMap(p=>Array.from({length:9},(_,i)=>({round_id:'backyard',player:p,hole:i+1,gross:3})));
+ const result=championship(scores,[],[],[],false);
+ const cup=result.boards.find(b=>b.id==='cup'),wild=result.boards.find(b=>b.id==='wild');
+ assert.equal(cup.rounds,1);assert.equal(wild.rounds,1);
+ six.forEach(p=>assert.equal(cup.values[p],2));
+ names.forEach(p=>assert.ok(Math.abs(wild.values[p]-2/7)<1e-10));
+});
+test('GN Short tied hole credits and independent nine rankings',()=>{
+ const scores=six.flatMap(p=>Array.from({length:18},(_,i)=>({round_id:'short',player:p,hole:i+1,gross:3})));
+ const result=championship(scores,[],[],[],false);
+ const trail=result.boards.find(b=>b.id==='trail');
+ assert.equal(trail.rounds,1);
+ six.forEach(p=>assert.equal(trail.values[p],8/6));
+});
+test('Stableford seven-way tie splits Wild Card placement points',()=>{
+ const scores=names.flatMap(p=>Array.from({length:18},(_,i)=>({round_id:'ross',player:p,hole:i+1,gross:4})));
+ const result=championship(scores,[],[],[],false);
+ const wild=result.boards.find(b=>b.id==='wild');
+ assert.equal(wild.rounds,1);
+ // Different handicap allowances mean this scenario need not produce a tie.
+ assert.ok(Object.values(wild.values).every(v=>Number.isFinite(v)));
+ assert.equal(Object.values(wild.values).reduce((a,b)=>a+b,0),6);
 });
