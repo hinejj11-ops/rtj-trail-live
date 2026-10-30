@@ -97,14 +97,6 @@ function render(){
   }
   body+='</section>';
  }
- const snapshot=roundSnapshot(roundId,scores,engine,holes);
- body+='<section class="panel"><h3>'+esc(r().name)+' · Live round leaderboard</h3><p class="small">'+esc(snapshot.format)+' · Updates with the selected round, not the date. Results are provisional until the round is complete.</p>';
- body+=snapshot.rows.length?snapshot.rows.map(x=>'<div class="row"><span><strong>'+esc(x.title)+'</strong><br><small>'+esc(x.detail)+'</small></span><span class="small">'+throughLabel(x.through,x.required)+'</span></div>').join(''):'<p>No scores yet.</p>';
- if(snapshot.wildStableford.length){
-  body+='<h4>Wild Card · Live Net Stableford</h4><p class="small">All seven golfers · 3 net birdie or better / 2 net par / 1 net bogey / 0 net double or worse. These are running hole points; Wild Card championship points (3 / 2 / 1) are awarded when all seven scorecards are complete.</p>';
-  snapshot.wildStableford.forEach((x,i,all)=>{const tied=(i>0&&x.points===all[i-1].points)||(i<all.length-1&&x.points===all[i+1].points);const first=all.findIndex(y=>y.points===x.points)+1;body+='<div class="row"><b>'+(tied?'T'+first:(i+1)+'.')+' '+esc(x.player)+'</b><span class="small">'+throughLabel(x.through,18)+'</span><strong>'+x.points+' SF</strong></div>';});
- }
- body+='<details><summary>Golfer hole progress</summary>'+snapshot.players.map(p=>'<div class="row"><span>'+esc(p)+'</span><strong>'+throughLabel(snapshot.through[p],snapshot.holes)+'</strong></div>').join('')+'</details></section>';
  }else if(tab==='skills'){
  const designated=skillsHoles[roundId]||{};
  const locked=skillsLocks.some(x=>x.round_id===roundId);
