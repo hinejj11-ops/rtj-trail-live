@@ -4,21 +4,23 @@ export function liveFormat(id,score,net,par,rank,esc){
  const six=names.slice(0,6),seven=names,ts=teams[id];
  const gross=(p,h)=>score(p,h)?.gross??null;
  const label=t=>t.join(' + ');
- const card=(title,players,value,n=18,highWins=false)=>{
-  const heads=[],pars=[],rows=players.map(()=>[]),totals=players.map(()=>0);let thru=0;
+ const card=(title,players,value,n=18,highWins=false,mode='points')=>{
+  const heads=[],pars=[],rows=players.map(()=>[]),totals=players.map(()=>0),wins=players.map(()=>0);let thru=0,compared=0;
   for(let h=1;h<=n;h++){
    heads.push('<th>'+h+'</th>');pars.push('<td>'+par(h)+'</td>');
    const v=players.map((_,i)=>value(i,h)),valid=v.every(x=>x!==null);
    if(valid&&h===thru+1)thru++;
    const best=valid?(highWins?Math.max(...v):Math.min(...v)):null;
+   if(valid){compared++;if(mode==='holes'){const winners=v.map((x,i)=>x===best?i:-1).filter(i=>i>=0);if(winners.length===1)wins[winners[0]]++;}}
    v.forEach((x,i)=>{if(x!==null)totals[i]+=x;const cls=valid&&x===best?(v.filter(y=>y===best).length===1?'match-hole-win':'match-hole-half'):'';rows[i].push('<td class="'+cls+'">'+(x??'—')+'</td>');});
   }
-  return '<details class="match-card"><summary><span>'+esc(title)+'</span><strong>Live</strong><small>'+(thru===n?'F':thru?'Thru '+thru:'—')+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+players.map((p,i)=>'<tr><th>'+esc(p)+'</th>'+rows[i].join('')+'<td>'+totals[i]+'</td></tr>').join('')+'</tbody></table></div></details>';
+  const leader=mode==='holes'?(compared===0?'Not started':wins[0]===wins[1]?'All square':esc(players[wins[0]>wins[1]?0:1])+' '+Math.abs(wins[0]-wins[1])+' UP'):(totals.every(x=>x===0)&&!compared?'Not started':totals.every(x=>x===totals[0])?'Tied':esc(players[totals.indexOf(highWins?Math.max(...totals):Math.min(...totals))])+' leads · '+(highWins?Math.max(...totals):Math.min(...totals))+' pts');
+  return '<details class="match-card"><summary><span>'+esc(title)+'</span><strong>'+leader+'</strong><small>'+(thru===n?'F':thru?'Thru '+thru:'—')+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+players.map((p,i)=>'<tr><th>'+esc(p)+'</th>'+rows[i].join('')+'<td>'+totals[i]+'</td></tr>').join('')+'</tbody></table></div></details>';
  };
  let html='';
  if(id==='valley'||id==='lake'){
   const best=(t,h)=>t.every(p=>net(p,h)!==null)?Math.min(...t.map(p=>net(p,h))):null;
-  for(let i=0;i<ts.length;i++)for(let j=i+1;j<ts.length;j++)html+=card(label(ts[i])+' vs '+label(ts[j]),[label(ts[i]),label(ts[j])],(k,h)=>best(ts[k===0?i:j],h));
+  for(let i=0;i<ts.length;i++)for(let j=i+1;j<ts.length;j++)html+=card(label(ts[i])+' vs '+label(ts[j]),[label(ts[i]),label(ts[j])],(k,h)=>best(ts[k===0?i:j],h),18,false,'holes');
   html+='<p class="small">Team best net ball. Lowest net score wins the hole.</p>';
  }else if(id==='ross'){
   const stable=(p,h,wild)=>{const s=score(p,h);if(!s)return null;const n=wild?s.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&s.lifeline?1:0):net(p,h),d=n-par(h);return d<=-1?3:d===0?2:d===1?1:0;};
