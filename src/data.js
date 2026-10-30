@@ -15,3 +15,5 @@ export const teams={ 'silver-pm':[['Jimmy','Brittany'],['Kevin','Jeff'],['Nate',
 export const roundPlayers=r=>['valley','ridge','ross','backyard'].includes(r.id)?names:names.slice(0,6);
 export const courseHandicap=(r,n)=>r.rating==null?0:Math.floor(handicaps[n]*r.slope/113+r.rating-r.par+0.5);
 export const heartbreakerStrokes={Jimmy:0,Brittany:1,Kevin:2,Jeff:6,Nate:8,Richie:13};
+
+// Skills contest locations are maintained in the championship scoring module.
