@@ -139,3 +139,13 @@ test('Heartbreaker Lifeline applies Vegas stroke penalty only on the first nine'
  assert.equal(lifelineEligible('silver-pm',10,1),false);
  assert.equal(vegasDigit('silver-pm','Richie',10,used,3,1),vegasDigit('silver-pm','Richie',10,normal,3,1));
 });
+
+ test('event breakdown labels identify actual rounds when earlier events are incomplete',()=>{
+ const ids=['short','lake','backyard'];
+ const scores=rounds.filter(r=>ids.includes(r.id)).flatMap(r=>roundPlayers(r).flatMap(player=>Array.from({length:r.holes},(_,i)=>({round_id:r.id,player,hole:i+1,gross:3}))));
+ const result=championship(scores,[],[],[],false);
+ assert.deepEqual(result.eventLabels.trail,['Wed Nov 11 · Grand National · Short']);
+ assert.deepEqual(result.eventLabels.cup,['Mon Nov 9 · Oxmoor Valley · Backyard','Wed Nov 11 · Grand National · Lake']);
+ assert.deepEqual(result.eventLabels.wild,['Mon Nov 9 · Oxmoor Valley · Backyard']);
+ for(const id of ['trail','cup','wild'])assert.equal(result.eventLabels[id].length,result.details[id].length);
+ });
