@@ -4,7 +4,7 @@ const six=names.slice(0,6);
 export function roundSnapshot(id,scores,engine,holes=[]){
  const r=rounds.find(x=>x.id===id),players=roundPlayers(r);
  const gross=(p,h)=>engine.gross(id,p,h),net=(p,h)=>engine.net(id,p,h);
- const par=h=>holes.find(x=>x.round_id===id&&x.hole===h)?.par??(h>9?3:4);
+ const par=h=>holes.find(x=>x.round_id===id&&x.hole===h)?.par??(id==='backyard'||id==='short'||(id==='silver-pm'&&h>9)?3:4);
  const progress=Object.fromEntries(players.map(p=>[p,Array.from({length:r.holes},(_,i)=>gross(p,i+1)).filter(v=>v!==null).length]));
  const ready=(ps,h)=>ps.every(p=>gross(p,h)!==null);
  const group=(ps,fn)=>{let holes=0;for(let h=1;h<=r.holes;h++)if(ready(ps,h)){holes++;fn(h);}return holes;};
