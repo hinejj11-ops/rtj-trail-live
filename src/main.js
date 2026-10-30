@@ -60,7 +60,41 @@ function render(){
  $('#app').innerHTML='<header><div class="eyebrow gold">ROBERT TRENT JONES GOLF TRAIL</div><h1>TRAIL CHAMPIONSHIP</h1><div class="session"><span>6–11 NOV 2026</span>'+(me?'<strong>'+me+'</strong><button data-logout>Sign out</button>':'')+'</div></header><main>'+(notice?'<div class="notice">'+esc(notice)+'</div>':'')+body+'</main><div class="footer">THE EXPEDITION EDITION · LIVE SCORING</div>';
 }
 async function refresh(){if(!db||!me)return;let results=await Promise.all([db.from('scores').select('*'),db.from('skills').select('*'),db.from('course_pars').select('*'),db.from('app_settings').select('*'),db.from('test_scores').select('*'),db.from('scorecard_submissions').select('*')]);if(results.some(x=>x.error)){notice='Database error: '+results.find(x=>x.error).error.message;render();return;}[scores,skills,holes]=results.slice(0,3).map(x=>x.data);ready=results[3].data.find(x=>x.key==='scoring_ready')?.value==='true';testMode=results[3].data.find(x=>x.key==='test_mode')?.value==='true';scores=testMode?results[4].data:results[0].data;submissions=results[5].data;notice='';render();}
-async function login(name){notice='Connecting as '+name+'…';render();try{if(!db)throw Error('Supabase environment variables are not configured');let {data:{session},error:sessionError}=await Promise.race([db.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(Error('Sign-in timed out. Check your internet connection and refresh.')),12000))]);if(sessionError)throw sessionError;if(!session){let a=await db.auth.signInAnonymously();if(a.error)throw a.error;}let a=await db.rpc('claim_player',{p_player:name});if(a.error)throw a.error;if(!a.data)throw Error(name+' is already active on another device. Try again after that player signs out or disconnects for about 100 seconds.');me=name;sessionStorage.setItem('rtj-player',name);await refresh();if(channel)db.removeChannel(channel);channel=db.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'scores'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'skills'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'course_pars'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'test_scores'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'scorecard_submissions'},refresh).subscribe();clearInterval(timer);timer=setInterval(async()=>{let x=await db.rpc('heartbeat',{p_player:me});if(x.error||!x.data){me=null;sessionStorage.removeItem('rtj-player');notice='Session expired. Please select your name again.';render();}},25000);}catch(e){console.error('RTJ sign-in error',e);notice='Sign-in failed: '+(e?.message||String(e));render();}}
+const withTimeout=(promise,label,ms=12000)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+' timed out after '+Math.round(ms/1000)+' seconds')),ms))]);
+async function login(name){
+ const status=message=>{notice=message;render();};
+ status('Connecting as '+name+' — checking session…');
+ try{
+  if(!db)throw Error('Supabase environment variables are not configured');
+  const sessionResult=await withTimeout(db.auth.getSession(),'Session check');
+  if(sessionResult.error)throw sessionResult.error;
+  if(!sessionResult.data?.session){
+   status('Connecting as '+name+' — signing in…');
+   const authResult=await withTimeout(db.auth.signInAnonymously(),'Anonymous sign-in');
+   if(authResult.error)throw authResult.error;
+  }
+  status('Connecting as '+name+' — claiming player…');
+  const claim=await withTimeout(db.rpc('claim_player',{p_player:name}),'Player claim');
+  if(claim.error)throw claim.error;
+  if(!claim.data)throw Error(name+' is already active on another device. Sign out there or wait about 100 seconds.');
+  me=name;
+  sessionStorage.setItem('rtj-player',name);
+  status('Connecting as '+name+' — loading scores…');
+  await withTimeout(refresh(),'Scorecard loading',15000);
+  if(channel)db.removeChannel(channel);
+  channel=db.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'scores'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'skills'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'course_pars'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'test_scores'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'scorecard_submissions'},refresh).subscribe();
+  clearInterval(timer);
+  timer=setInterval(async()=>{
+   try{let x=await withTimeout(db.rpc('heartbeat',{p_player:me}),'Heartbeat',12000);
+    if(x.error||!x.data){me=null;sessionStorage.removeItem('rtj-player');notice='Session expired. Please select your name again.';render();}
+   }catch(e){console.warn('RTJ heartbeat failed',e);}
+  },25000);
+ }catch(e){
+  console.error('RTJ sign-in error',e);
+  notice='Sign-in failed: '+(e?.message||String(e));
+  render();
+ }
+}
 async function save(h,d){if(!(ready||testMode))return;let old=score(target,h),gross=Math.max(1,Math.min(20,(old?.gross??par(h))+d));let a=await db.from(testMode?'test_scores':'scores').upsert({round_id:roundId,player:target,hole:h,gross,updated_by:(await db.auth.getUser()).data.user.id,updated_at:new Date().toISOString()});if(a.error)notice=a.error.message;await refresh();}
 $('#app').addEventListener('click',async e=>{let b=e.target.closest('button');if(!b)return;if(b.dataset.login){b.disabled=true;await login(b.dataset.login);return;}if(b.hasAttribute('data-logout')){await db.rpc('release_player',{p_player:me});me=null;sessionStorage.removeItem('rtj-player');clearInterval(timer);if(channel)db.removeChannel(channel);render();return;}if(b.dataset.tab){tab=b.dataset.tab;render();return;}if(b.id==='reset-player'){const label=(testMode?'TEST':'OFFICIAL');if(!confirm('Delete '+target+'\'s '+label+' scores for '+r().name+'? This cannot be undone.'))return;let a=await db.rpc('reset_player_scorecard',{p_round:roundId,p_player:target,p_test:testMode});if(a.error)alert(a.error.message);else{await refresh();alert('Deleted '+a.data+' scores for '+target+'.');}return;}if(b.id==='submit-card'){if(!confirm('Submit and LOCK '+target+'\'s scorecard for '+r().name+'?'))return;let a=await db.rpc('submit_scorecard',{p_round:roundId,p_player:target,p_holes:r().holes});if(a.error)alert(a.error.message);else{await refresh();alert('Scorecard submitted and locked.');}return;}if(b.id==='unlock-card'){if(!confirm('Unlock '+target+'\'s submitted scorecard?'))return;let a=await db.rpc('unlock_scorecard',{p_round:roundId,p_player:target});if(a.error)alert(a.error.message);else await refresh();return;}if(b.id==='reset-test'){if(!confirm('Delete ALL test scores for every round and golfer? Official scores will not be touched.'))return;let a=await db.rpc('clear_test_scores');if(a.error){alert(a.error.message);}else{await refresh();alert('Cleared '+a.data+' test scores.');}return;}if(b.dataset.step){await save(+b.dataset.hole,+b.dataset.step);}});
 $('#app').addEventListener('change',async e=>{let t=e.target;if(t.id==='test-mode'){let a=await db.rpc('set_test_mode',{p_enabled:t.checked});if(a.error)alert(a.error.message);await refresh();}else if(t.id==='round'){roundId=t.value;target=null;render();}else if(t.id==='target'){target=t.value;render();}else if(t.dataset.skill){let a=await db.from('skills').upsert({round_id:roundId,kind:t.dataset.skill,winner:t.value||me,updated_by:(await db.auth.getUser()).data.user.id});if(a.error)notice=a.error.message;await refresh();}else if(t.dataset.par||t.dataset.rank){let h=+(t.dataset.par||t.dataset.rank),v=+t.value;let old=hole(h);let a=await db.from('course_pars').upsert({round_id:roundId,hole:h,par:t.dataset.par?v:(old?.par??par(h)),stroke_index:t.dataset.rank?v:(old?.stroke_index??rank(h))});if(a.error)notice=a.error.message;await refresh();}else if(t.id==='ready'){let a=await db.rpc('set_scoring_ready',{p_ready:t.checked});if(a.error)notice=a.error.message;await refresh();}});
