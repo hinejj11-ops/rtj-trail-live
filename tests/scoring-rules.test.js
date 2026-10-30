@@ -132,3 +132,10 @@ test('Lake best ball distributes exactly two points per pair-v-pair match',()=>{
  assert.equal(Object.values(cup.values).reduce((a,b)=>a+b,0),12);
  for(const t of teams.lake)assert.equal(cup.values[t[0]],cup.values[t[1]]);
 });
+
+test('Heartbreaker Lifeline applies Vegas stroke penalty only on the first nine',()=>{
+ const normal={gross:5},used={gross:5,lifeline:true};
+ assert.equal(vegasDigit('silver-pm','Richie',1,used,4,1),vegasDigit('silver-pm','Richie',1,normal,4,1)+1);
+ assert.equal(lifelineEligible('silver-pm',10,1),false);
+ assert.equal(vegasDigit('silver-pm','Richie',10,used,3,1),vegasDigit('silver-pm','Richie',10,normal,3,1));
+});
