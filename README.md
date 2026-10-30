@@ -6,7 +6,7 @@ Mobile-first website with forest green/gold design, seven name-based player sess
 
 1. Create a Supabase Free project.
 2. In Authentication > Providers, enable **Anonymous Sign-ins**.
-3. In SQL Editor, run the complete `schema.sql` in this repository. **If you previously ran an older schema, use a fresh test project or review migrations before applying this file.**
+3. **If you already ran the original schema:** run only [`migrations/001_original_schema_to_live_app.sql`](migrations/001_original_schema_to_live_app.sql) in SQL Editor. It preserves your existing tables and data. **Do not rerun `schema.sql` over the original database.** If creating a completely new database, `schema.sql` is a separate fresh-install path and requires corresponding app/schema alignment.
 4. In Supabase Project Settings, copy the Project URL and **publishable / anon key**. Never use a service-role or secret key in Vercel.
 
 ## Deploy on Vercel
@@ -51,5 +51,5 @@ npm run dev
 - `src/main.js`: mobile UI and Supabase operations
 - `src/data.js`: golfers, rounds, teams, handicap indexes
 - `src/style.css`: forest-green/gold design
-- `schema.sql`: tables, row-level security, name leases, realtime
+- `migrations/001_original_schema_to_live_app.sql`: migration for the user's existing database\n- `schema.sql`: initial alternate schema (not for use over the existing database)
 - `vercel.json`: SPA routing
