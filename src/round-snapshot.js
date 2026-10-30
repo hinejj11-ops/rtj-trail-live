@@ -1,4 +1,5 @@
-import {names,rounds,teams,roundPlayers,courseHandicap} from './data.js';
+import {names,rounds,teams,roundPlayers} from './data.js';
+import {strokesOnHole,vegasDigit} from './scoring-rules.js';
 const six=names.slice(0,6);
 export function roundSnapshot(id,scores,engine,holes=[]){
  const r=rounds.find(x=>x.id===id),players=roundPlayers(r);
@@ -17,14 +18,25 @@ export function roundSnapshot(id,scores,engine,holes=[]){
    rows.push(result(a+' vs '+b,state+' · '+aw+'–'+bw+' holes won',played));
   }}
  }else if(id==='silver-pm'){
-  const ts=teams[id],margins=[0,0,0],counts=[0,0];
+  const ts=teams[id],tot=[0,0,0],counts=[0,0],ninePts=[null,null];
   for(const [k,start] of [1,10].entries()){
+   const sums=[0,0,0];
    for(let h=start;h<start+9;h++)if(ready(six,h)){
-    counts[k]++;const vals=ts.map(t=>{const v=t.map(p=>Math.max(0,Math.min(9,Math.min(par(h)+2,h<=9?net(p,h):gross(p,h))))).sort((a,b)=>a-b);return 10*v[0]+v[1];});
-    for(let i=0;i<3;i++)for(let j=i+1;j<3;j++){const d=Math.max(-15,Math.min(15,vals[j]-vals[i]));margins[i]+=d;margins[j]-=d;}
+    counts[k]++;
+    ts.forEach((t,i)=>{const digits=t.map(p=>{
+     const entry=scores.find(s=>s.round_id===id&&s.player===p&&s.hole===h);
+     const rank=holes.find(x=>x.round_id===id&&x.hole===h)?.stroke_index??h;
+     return vegasDigit(id,p,h,entry,par(h),rank);
+    }).sort((a,b)=>a-b);sums[i]+=10*digits[0]+digits[1];});
+   }
+   if(counts[k]===9){
+    const order=[0,1,2].sort((a,b)=>sums[a]-sums[b]);
+    const award=[0,0,0];
+    for(let i=0;i<3;){let j=i+1;while(j<3&&sums[order[i]]===sums[order[j]])j++;const pts=Array.from({length:j-i},(_,v)=>3-(i+v)).reduce((x,y)=>x+y,0)/(j-i);for(let q=i;q<j;q++)award[order[q]]=pts;i=j;}
+    ninePts[k]=award;award.forEach((v,i)=>tot[i]+=v);
    }
   }
-  ts.forEach((t,i)=>rows.push(result(t.join(' + '),margins[i]+' net Vegas margin · HB '+counts[0]+'/9 · Short '+counts[1]+'/9',counts[0]+counts[1])));
+  ts.forEach((t,i)=>rows.push(result(t.join(' + '),'HB '+(ninePts[0]?.[i]??'pending')+' pts · Short '+(ninePts[1]?.[i]??'pending')+' pts · Combined '+tot[i]+' pts',counts[0]+counts[1])));
  }else if(id==='valley'||id==='lake'){
   const ts=teams[id],best=(t,h)=>Math.min(...t.map(p=>net(p,h)));
   for(let i=0;i<ts.length;i++)for(let j=i+1;j<ts.length;j++){
@@ -47,16 +59,14 @@ export function roundSnapshot(id,scores,engine,holes=[]){
   rows.sort((a,b)=>parseFloat(b.detail)-parseFloat(a.detail));
  }
  const wildStableford=['valley','ridge','ross'].includes(id)?names.map(p=>{
-  const base=courseHandicap(r,'Jimmy');
-  const allowance=Math.max(0,courseHandicap(r,p)-base);
   let pts=0,played=0;
   for(let h=1;h<=18;h++){
    const g=gross(p,h);if(g===null)continue;
    played++;
    const index=holes.find(x=>x.round_id===id&&x.hole===h)?.stroke_index??h;
-   const strokes=Math.floor(allowance/18)+(index<=allowance%18?1:0);
+   const strokes=strokesOnHole(id,p,h,index,'stableford');
    const entry=scores.find(x=>x.round_id===id&&x.player===p&&x.hole===h);
-   const d=g-strokes+(entry?.lifeline?1:0)-par(h);
+   const d=g-strokes+(p==='Richie'&&entry?.lifeline?1:0)-par(h);
    pts+=d<=-1?3:d===0?2:d===1?1:0;
   }
   return {player:p,points:pts,played};
