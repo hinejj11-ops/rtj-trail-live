@@ -67,21 +67,21 @@ function render(){
  const overallValid=valid.filter(x=>names.slice(0,6).includes(x.winner));
  const wildValid=valid.filter(x=>wildCardSkillsRounds.includes(x.round_id));
  const eligible=wildCardSkillsRounds.includes(roundId)?names:names.slice(0,6);
- const recorded=Object.keys(designated).filter(kind=>valid.some(x=>x.round_id===roundId&&x.kind===kind)).length;
+ const recorded=Object.keys(designated).filter(kind=>skills.some(x=>x.round_id===roundId&&x.kind===kind&&x.winner)).length;
  body+='<section class="panel"><h2>CTP & Long Drive</h2><p class="small">All golfers can view results. Only Jimmy can select or change winners.</p><p><strong>'+esc(r().name)+'</strong> · '+(locked?'🔒 Locked results':'Provisional · '+recorded+'/'+Object.keys(designated).length+' selected')+'</p>';
  for(const kind of ['ctp','ld']){
   if(!Object.hasOwn(designated,kind))continue;
   const existing=skills.find(x=>x.round_id===roundId&&x.kind===kind);
   const label=(kind==='ctp'?'Closest to Pin':'Long Drive')+' — Hole '+designated[kind];
   if(me==='Jimmy'&&!locked){
-   body+='<label>'+label+'<select data-skill="'+kind+'"><option value="">No winner yet</option>'+eligible.map(n=>'<option value="'+esc(n)+'" '+(existing?.winner===n?'selected':'')+'>'+esc(n)+'</option>').join('')+'</select></label>';
+   body+='<label>'+label+'<select data-skill="'+kind+'"><option value="">No winner yet</option><option value="NO_WINNER" '+(existing?.winner==='NO_WINNER'?'selected':'')+'>No qualifying shot</option>'+eligible.map(n=>'<option value="'+esc(n)+'" '+(existing?.winner===n?'selected':'')+'>'+esc(n)+'</option>').join('')+'</select></label>';
   }else{
-   body+='<div class="row"><span>'+label+'</span><strong>'+esc(existing?.winner||'No winner yet')+'</strong></div>';
+   body+='<div class="row"><span>'+label+'</span><strong>'+esc(existing?.winner==='NO_WINNER'?'No qualifying shot':existing?.winner||'No winner yet')+'</strong></div>';
   }
  }
  if(me==='Jimmy'){
   body+='<button id="skills-lock" data-locked="'+(locked?'1':'0')+'" '+(!locked&&recorded!==Object.keys(designated).length?'disabled':'')+'>'+(locked?'Unlock Results':'Lock In Results')+'</button>';
-  body+='<p class="small">'+(locked?'Unlock to correct a winner. Changes are visible to all golfers.':'Choose all designated winners before locking this round. Selections are visible to everyone immediately.')+'</p>';
+  body+='<p class="small">'+(locked?'Unlock to correct a winner. Changes are visible to all golfers.':'Record a winner or No qualifying shot for each contest before locking this round. Selections are visible to everyone immediately.')+'</p>';
  }
  body+='<p class="small">'+(wildCardSkillsRounds.includes(roundId)?'These contests count toward both championships for eligible golfers; Mason earns Wild Card Skills points only.':'These contests count toward Overall Skills only.')+'</p></section>';
  body+='<section class="panel"><h3>Overall Skills · '+overallValid.length+'/16 selected</h3>'+names.slice(0,6).map(n=>'<div class="row"><span>'+esc(n)+'</span><strong>'+overallValid.filter(x=>x.winner===n).length+' pts</strong></div>').join('')+'</section>';
@@ -134,8 +134,14 @@ async function login(name){
 }
 async function save(h,d){if(!(me==='Jimmy'||group().includes(target))||!(ready||testMode)||(!testMode&&submissions.some(x=>x.round_id===roundId&&x.player===target)))return;let old=score(target,h),gross=old?Math.max(1,Math.min(20,old.gross+d)):par(h);let a=await db.from(testMode?'test_scores':'scores').upsert({round_id:roundId,player:target,hole:h,gross,updated_by:(await db.auth.getUser()).data.user.id,updated_at:new Date().toISOString()});if(a.error)notice=a.error.message;await refresh();}
 $('#app').addEventListener('click',async e=>{let b=e.target.closest('button');if(!b)return;if(b.dataset.login){b.disabled=true;await login(b.dataset.login);return;}if(b.hasAttribute('data-logout')){await db.rpc('release_player',{p_player:me});me=null;sessionStorage.removeItem('rtj-player');clearInterval(timer);if(channel)db.removeChannel(channel);render();return;}if(b.dataset.tab){tab=b.dataset.tab;render();return;}if(b.id==='reset-player'){if(me!=='Jimmy')return;const label=(testMode?'TEST':'OFFICIAL');if(!confirm('Delete '+target+'\'s '+label+' scores for '+r().name+'? This cannot be undone.'))return;let a=await db.rpc('reset_player_scorecard',{p_round:roundId,p_player:target,p_test:testMode});if(a.error)alert(a.error.message);else{await refresh();alert('Deleted '+a.data+' scores for '+target+'.');}return;}if(b.id==='submit-card'){if(me!=='Jimmy')return;if(!confirm('I have compared '+target+'\'s app scores against the physical card. Finalize and LOCK this scorecard?'))return;let a=await db.rpc('submit_scorecard',{p_round:roundId,p_player:target,p_holes:r().holes});if(a.error)alert(a.error.message);else{await refresh();alert('Scorecard verified and finalized.');}return;}if(b.id==='unlock-card'){if(me!=='Jimmy')return;if(!confirm('Unlock '+target+'\'s submitted scorecard?'))return;let a=await db.rpc('unlock_scorecard',{p_round:roundId,p_player:target});if(a.error)alert(a.error.message);else await refresh();return;}if(b.id==='reset-test'){if(!confirm('Delete ALL test scores for every round and golfer? Official scores will not be touched.'))return;let a=await db.rpc('clear_test_scores');if(a.error){alert(a.error.message);}else{await refresh();alert('Cleared '+a.data+' test scores.');}return;}if(b.id==='skills-lock'){if(me!=='Jimmy')return;const locked=b.dataset.locked==='1';if(!confirm(locked?'Unlock skills results for this round so you can edit them?':'Lock in all CTP and Long Drive winners for this round?'))return;const a=await db.rpc('set_skills_round_lock',{p_round:roundId,p_locked:!locked});if(a.error){alert(a.error.message);notice=a.error.message;}await refresh();return;}if(b.dataset.step){await save(+b.dataset.hole,+b.dataset.step);}});
-$('#app').addEventListener('change',async e=>{let t=e.target;if(t.id==='test-mode'){let a=await db.rpc('set_test_mode',{p_enabled:t.checked});if(a.error)alert(a.error.message);await refresh();}else if(t.id==='round'){roundId=t.value;target=null;render();}else if(t.id==='target'){target=t.value;render();}else if(t.dataset.skill){
- const kind=t.dataset.skill,eligible=wildCardSkillsRounds.includes(roundId)?names:names.slice(0,6);
+$('#app').addEventListener('change',async e=>{let t=e.target;if(t.id==='test-mode'){let a=await db.rpc('set_test_mode',{p_enabled:t.checked});if(a.error)alert(a.error.message);await refresh();}else if(t.id==='round'){roundId=t.value;target=null;render();}else if(t.id==='target'){target=t.value;render();}else if(t.dataset.lifeline){
+ const h=Number(t.dataset.lifeline);
+ if(target!=='Richie'||!lifelineEligible(roundId,h,rank(h))||!score('Richie',h)){alert('Lifeline is not eligible on this hole.');await refresh();return;}
+ const a=await db.rpc('set_richie_lifeline',{p_round:roundId,p_hole:h,p_enabled:t.checked,p_test:testMode});
+ if(a.error)alert(a.error.message);
+ await refresh();
+ }else if(t.dataset.skill){
+ const kind=t.dataset.skill,eligible=[...(wildCardSkillsRounds.includes(roundId)?names:names.slice(0,6)),'NO_WINNER'];
  if(me!=='Jimmy'||skillsLocks.some(x=>x.round_id===roundId)||!Object.hasOwn(skillsHoles[roundId]||{},kind)||(t.value&&!eligible.includes(t.value))){notice='Not authorized or invalid contest';render();return;}
  const a=await db.rpc('set_skill_winner',{p_round:roundId,p_kind:kind,p_winner:t.value});
  if(a.error){alert('Unable to save skills result: '+a.error.message);notice=a.error.message;}
