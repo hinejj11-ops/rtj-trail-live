@@ -50,6 +50,11 @@ function render(){
   const sorted=[...b.eligible].sort((a,c)=>b.values[c]-b.values[a]||((b.ctp?.[c]||0)-(b.ctp?.[a]||0))||((b.ld?.[c]||0)-(b.ld?.[a]||0)));
   body+='<section class="panel"><h3>'+esc(b.name)+' <span class="prize">$'+b.prize+'</span></h3><p class="small">'+b.rounds+'/'+b.expected+' '+(b.id==='overall'||b.id==='wildSkills'?'skills contests recorded':'events completed')+' · '+(b.rounds===b.expected?'All events scored':'Provisional standings')+'</p>';
   sorted.forEach((p,i)=>{const tied=i>0&&Math.abs(b.values[p]-b.values[sorted[i-1]])<1e-8;const place=tied?'=':(i+1)+'.';body+='<div class="row"><b>'+place+' '+esc(p)+'</b><strong>'+Number(b.values[p].toFixed(3))+' pts</strong></div>';});
+  if(engine.details[b.id]?.length){const eventNames={trail:['Silver Lakes AM · Match','Oxmoor Ridge · Match','Grand National Links · Match','Ross Bridge · Stableford','GN Short · Finale'],cup:['Silver Lakes PM · Vegas','Oxmoor Valley · Triple Threat','Backyard · Team skins','GN Lake · Best ball'],wild:['Valley · Stableford','Ridge · Stableford','Ross Bridge · Stableford','Backyard · Individual skins']};
+   body+='<details><summary>Event point breakdown</summary>';
+   engine.details[b.id].forEach((ev,i)=>{body+='<div class="small"><strong>Completed event '+(i+1)+'</strong></div>'+b.eligible.map(p=>'<div class="row"><span>'+esc(p)+'</span><span>'+Number((ev[p]||0).toFixed(3))+' pts</span></div>').join('');});
+   body+='</details>';
+  }
   body+='</section>';
  }
  const players=roundPlayers(r());
