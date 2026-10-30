@@ -2,7 +2,7 @@ import {names,rounds,teams,skillsHoles,wildCardSkillsRounds} from './data.js';
 import {netScore,vegasDigit} from './scoring-rules.js';
 const six=names.slice(0,6),seven=names;
 const byId=id=>rounds.find(r=>r.id===id);
-export function championship(scores,skills,holes,submissions=[]){
+export function championship(scores,skills,holes,submissions=[],requireVerification=true){
  const sm=new Map(scores.map(s=>[s.round_id+'|'+s.player+'|'+s.hole,s]));
  const hm=new Map(holes.map(h=>[h.round_id+'|'+h.hole,h]));
  const sub=new Set(submissions.map(s=>s.round_id+'|'+s.player));
@@ -11,7 +11,7 @@ export function championship(scores,skills,holes,submissions=[]){
  const gross=(id,p,h)=>sm.get(id+'|'+p+'|'+h)?.gross??null;
  const net=(id,p,h,mode='primary')=>netScore(id,p,h,sm.get(id+'|'+p+'|'+h),rank(id,h),mode);
  const done=(id,p)=>Array.from({length:byId(id).holes},(_,i)=>gross(id,p,i+1)!==null).every(Boolean);
- const complete=(id,ps)=>ps.every(p=>done(id,p));
+ const complete=(id,ps)=>ps.every(p=>done(id,p)&&(!requireVerification||sub.has(id+'|'+p)));
  const points=(ps)=>Object.fromEntries(ps.map(p=>[p,0]));
  const trail=points(six),cup=points(six),wild=points(seven),overall=points(six),wildSkills=points(seven);
  const details={trail:[],cup:[],wild:[],overall:[],wildSkills:[]};
