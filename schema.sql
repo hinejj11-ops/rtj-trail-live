@@ -10,16 +10,6 @@ alter table public.scores enable row level security;
 alter table public.skills enable row level security;
 alter table public.course_holes enable row level security;
 alter table public.app_settings enable row level security;
-create policy "read scores" on public.scores for select to authenticated using(true);
-create policy "write scores" on public.scores for insert to authenticated with check(public.is_active_player(auth.uid(),round_id,player));
-create policy "update scores" on public.scores for update to authenticated using(public.is_active_player(auth.uid(),round_id,player)) with check(public.is_active_player(auth.uid(),round_id,player));
-create policy "read skills" on public.skills for select to authenticated using(true);
-create policy "write skills" on public.skills for insert to authenticated with check(exists(select 1 from public.player_sessions where owner=auth.uid() and last_seen>now()-interval '100 seconds'));
-create policy "update skills" on public.skills for update to authenticated using(true) with check(exists(select 1 from public.player_sessions where owner=auth.uid() and last_seen>now()-interval '100 seconds'));
-create policy "read holes" on public.course_holes for select to authenticated using(true);
-create policy "write holes" on public.course_holes for insert to authenticated with check(exists(select 1 from public.player_sessions where player='Jimmy' and owner=auth.uid() and last_seen>now()-interval '100 seconds'));
-create policy "update holes" on public.course_holes for update to authenticated using(true) with check(exists(select 1 from public.player_sessions where player='Jimmy' and owner=auth.uid() and last_seen>now()-interval '100 seconds'));
-create policy "read settings" on public.app_settings for select to authenticated using(true);
 create or replace function public.claim_player(p_player text) returns boolean language plpgsql security definer set search_path=public as $$
 begin
  if p_player not in ('Jimmy','Brittany','Kevin','Jeff','Nate','Richie','Mason') then return false; end if;
@@ -52,6 +42,16 @@ begin
  if not exists(select 1 from public.player_sessions where player='Jimmy' and owner=auth.uid() and last_seen>now()-interval '100 seconds') then raise exception 'Organizer only'; end if;
  update public.app_settings set value=case when p_ready then 'true' else 'false' end where key='scoring_ready';
 end $$;
+create policy "read scores" on public.scores for select to authenticated using(true);
+create policy "write scores" on public.scores for insert to authenticated with check(public.is_active_player(auth.uid(),round_id,player));
+create policy "update scores" on public.scores for update to authenticated using(public.is_active_player(auth.uid(),round_id,player)) with check(public.is_active_player(auth.uid(),round_id,player));
+create policy "read skills" on public.skills for select to authenticated using(true);
+create policy "write skills" on public.skills for insert to authenticated with check(exists(select 1 from public.player_sessions where owner=auth.uid() and last_seen>now()-interval '100 seconds'));
+create policy "update skills" on public.skills for update to authenticated using(true) with check(exists(select 1 from public.player_sessions where owner=auth.uid() and last_seen>now()-interval '100 seconds'));
+create policy "read holes" on public.course_holes for select to authenticated using(true);
+create policy "write holes" on public.course_holes for insert to authenticated with check(exists(select 1 from public.player_sessions where player='Jimmy' and owner=auth.uid() and last_seen>now()-interval '100 seconds'));
+create policy "update holes" on public.course_holes for update to authenticated using(true) with check(exists(select 1 from public.player_sessions where player='Jimmy' and owner=auth.uid() and last_seen>now()-interval '100 seconds'));
+create policy "read settings" on public.app_settings for select to authenticated using(true);
 revoke all on function public.claim_player(text),public.heartbeat(text),public.release_player(text),public.set_scoring_ready(boolean) from public;
 grant execute on function public.claim_player(text),public.heartbeat(text),public.release_player(text),public.set_scoring_ready(boolean),public.is_active_player(uuid,text,text) to authenticated;
 do $$begin alter publication supabase_realtime add table public.scores; exception when duplicate_object then null;end$$;
