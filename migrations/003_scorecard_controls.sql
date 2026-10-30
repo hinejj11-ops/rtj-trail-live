@@ -57,9 +57,10 @@ begin
     or (select value from public.app_settings where key='scoring_ready') is distinct from 'true' then
    raise exception 'Official scoring must be enabled and test mode disabled';
  end if;
- if p_holes <> case when p_round='backyard' then 9 when p_round in
- ('silver-am','silver-pm','valley','ridge','ross','links','lake','short') then 18 else 0 end
- then raise exception 'Invalid round or hole count'; end if;
+ if not ((p_round = 'backyard' and p_holes = 9)
+    or (p_round in ('silver-am','silver-pm','valley','ridge','ross','links','lake','short') and p_holes = 18)) then
+   raise exception 'Invalid round or hole count';
+ end if;
  select count(*) into n from public.scores where round_id=p_round and player=p_player and hole between 1 and p_holes;
  if n<>p_holes then raise exception 'Scorecard incomplete: % of % holes entered',n,p_holes; end if;
  insert into public.scorecard_submissions(round_id,player,submitted_by)
