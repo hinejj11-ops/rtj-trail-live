@@ -1,4 +1,4 @@
-import {names,rounds,teams,courseHandicap,heartbreakerStrokes} from './data.js';
+import {names,rounds,teams,courseHandicap,heartbreakerStrokes,skillsHoles,wildCardSkillsRounds} from './data.js';
 const six=names.slice(0,6),seven=names;
 const byId=id=>rounds.find(r=>r.id===id);
 const alloc=(id,p,h,rank)=>{
@@ -80,19 +80,26 @@ export function championship(scores,skills,holes,submissions=[]){
   const counts=skins(seven.map(p=>[p])),out=points(seven),max=Math.max(...counts);
   const leaders=seven.filter((p,i)=>counts[i]===max);for(const p of leaders)out[p]=2/leaders.length;add(wild,'wild',out);
  }
- const contestRounds=['silver-am','silver-pm','valley','ridge','ross','backyard','links','lake','short'];
- const ctp={},ld={},wcCtp={},wcLd={};for(const s of skills){
-  if(!contestRounds.includes(s.round_id)||!s.winner)continue;
-  const eligible=six.includes(s.winner),wc=['valley','ridge','ross','backyard'].includes(s.round_id);
-  if(eligible){overall[s.winner]++;(s.kind==='ctp'?ctp:ld)[s.winner]=((s.kind==='ctp'?ctp:ld)[s.winner]||0)+1;}
-  if(wc){wildSkills[s.winner]++;(s.kind==='ctp'?wcCtp:wcLd)[s.winner]=((s.kind==='ctp'?wcCtp:wcLd)[s.winner]||0)+1;}
+ const ctp={},ld={},wcCtp={},wcLd={};let overallRecorded=0,wildRecorded=0;
+ for(const entry of skills){
+  const allowed=skillsHoles[entry.round_id];
+  if(!allowed||!Object.hasOwn(allowed,entry.kind)||!entry.winner)continue;
+  const eligible=six.includes(entry.winner),wc=wildCardSkillsRounds.includes(entry.round_id);
+  if(eligible){
+   overall[entry.winner]++;overallRecorded++;
+   const counter=entry.kind==='ctp'?ctp:ld;counter[entry.winner]=(counter[entry.winner]||0)+1;
+  }
+  if(wc&&seven.includes(entry.winner)){
+   wildSkills[entry.winner]++;wildRecorded++;
+   const counter=entry.kind==='ctp'?wcCtp:wcLd;counter[entry.winner]=(counter[entry.winner]||0)+1;
+  }
  }
  const boards=[
   {id:'trail',name:'Individual Trail Championship',prize:250,values:trail,eligible:six,rounds:details.trail.length,expected:5},
   {id:'cup',name:'RTJ Cup',prize:125,values:cup,eligible:six,rounds:details.cup.length,expected:4},
   {id:'wild',name:'Wild Card Challenge',prize:125,values:wild,eligible:seven,rounds:details.wild.length,expected:4},
-  {id:'overall',name:'Overall Skills',prize:75,values:overall,eligible:six,rounds:skills.filter(s=>six.includes(s.winner)).length,expected:16,ctp,ld},
-  {id:'wildSkills',name:'Wild Card Skills',prize:50,values:wildSkills,eligible:seven,rounds:skills.filter(s=>['valley','ridge','ross','backyard'].includes(s.round_id)).length,expected:7,ctp:wcCtp,ld:wcLd}
+  {id:'overall',name:'Overall Skills',prize:75,values:overall,eligible:six,rounds:overallRecorded,expected:16,ctp,ld},
+  {id:'wildSkills',name:'Wild Card Skills',prize:50,values:wildSkills,eligible:seven,rounds:wildRecorded,expected:7,ctp:wcCtp,ld:wcLd}
  ];
  return {boards,done,stable,net,gross,details};
 }
