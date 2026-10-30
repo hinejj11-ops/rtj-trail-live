@@ -48,13 +48,14 @@ function render(){
    if(ready&&h===through+1)through=h;
    holeRow.push('<th scope="col">'+h+'</th>');
    parRow.push('<td>'+par+'</td>');
-   row1.push('<td class="'+(ready&&x<y?'match-hole-win':ready&&x===y?'match-hole-half':'')+'">'+(x??'—')+'</td>');
-   row2.push('<td class="'+(ready&&y<x?'match-hole-win':ready&&x===y?'match-hole-half':'')+'">'+(y??'—')+'</td>');
+   const dots=p=>{const strokesReceived=strokes(p,h);return strokesReceived>0?'<span class="match-stroke-dots" aria-label="'+strokesReceived+' handicap stroke'+(strokesReceived===1?'':'s')+'" title="'+strokesReceived+' handicap stroke'+(strokesReceived===1?'':'s')+'">'+Array.from({length:strokesReceived},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'';};
+   row1.push('<td class="'+(ready&&x<y?'match-hole-win':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(x??'—')+dots(p1)+'</span></td>');
+   row2.push('<td class="'+(ready&&y<x?'match-hole-win':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(y??'—')+dots(p2)+'</span></td>');
   }
   const lead=a-b;
   const status=played===0?'Not started':lead===0?'All square':(lead>0?p1:p2)+' '+Math.abs(lead)+' UP';
   const thru=through===0?'—':through===r().holes?'F':'Thru '+through;
-  body+='<details class="match-card"><summary><span>'+esc(p1)+' vs '+esc(p2)+'</span><strong>'+esc(status)+'</strong><small>'+thru+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th scope="col">Hole</th>'+holeRow.join('')+'</tr></thead><tbody><tr class="match-par-row"><th scope="row">Par</th>'+parRow.join('')+'</tr><tr><th scope="row">'+esc(p1)+'</th>'+row1.join('')+'</tr><tr><th scope="row">'+esc(p2)+'</th>'+row2.join('')+'</tr></tbody></table></div><p class="small">Net scores only. Green marks the hole winner; gray indicates a halved hole. '+a+'–'+b+' holes won · '+halves+' halved.</p></details>';
+  body+='<details class="match-card"><summary><span>'+esc(p1)+' vs '+esc(p2)+'</span><strong>'+esc(status)+'</strong><small>'+thru+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th scope="col">Hole</th>'+holeRow.join('')+'</tr></thead><tbody><tr class="match-par-row"><th scope="row">Par</th>'+parRow.join('')+'</tr><tr><th scope="row">'+esc(p1)+'</th>'+row1.join('')+'</tr><tr><th scope="row">'+esc(p2)+'</th>'+row2.join('')+'</tr></tbody></table></div><p class="small">Net scores only. Small circles show handicap strokes received on each hole. Green marks the hole winner; gray indicates a halved hole. '+a+'–'+b+' holes won · '+halves+' halved.</p></details>';
  }}}
  else body+='<p>Round format: '+r().format+'. See score snapshots and team pairings below.</p>';
  if(teams[roundId])body+='<p><strong>Teams:</strong> '+teams[roundId].map(t=>t.join(' + ')).join(' · ')+'</p>';
