@@ -47,13 +47,15 @@ export function championship(scores,skills,holes,submissions=[]){
  // Silver Lakes Vegas: sum capped pairwise margins within each nine, then weight each nine equally.
  if(complete('silver-pm',six)){
   const ts=teams['silver-pm'],out=points(six),tot=[0,0,0];
-  for(let start of [1,10]){
+  for(const start of [1,10]){
    const margins=[0,0,0];
    for(let h=start;h<start+9;h++){
-    const vals=ts.map(t=>{const n=t.map(p=>Math.min(9,Math.min(par('silver-pm',h)+2,start===1?net('silver-pm',p,h):gross('silver-pm',p,h)))).sort((a,b)=>a-b);return 10*n[0]+n[1];});
+    const vals=ts.map(t=>{const n=t.map(p=>Math.max(0,Math.min(9,Math.min(par('silver-pm',h)+2,start===1?net('silver-pm',p,h):gross('silver-pm',p,h))))).sort((a,b)=>a-b);return 10*n[0]+n[1];});
     for(let i=0;i<3;i++)for(let j=i+1;j<3;j++){const d=Math.max(-15,Math.min(15,vals[j]-vals[i]));margins[i]+=d;margins[j]-=d;}
    }
-   const scale=Math.max(1,...margins.map(Math.abs));for(let i=0;i<3;i++)tot[i]+=margins[i]/scale;
+   // Equal weighting: each nine awards 2/1/0 ranking credits (split for ties).
+   const nine=rankAwards(Object.fromEntries(margins.map((v,i)=>[String(i),v])),[2,1,0]);
+   for(let i=0;i<3;i++)tot[i]+=nine[String(i)];
   }
   const awards=rankAwards(Object.fromEntries(ts.map((_,i)=>[String(i),tot[i]])),[4,2,0]);
   ts.forEach((t,i)=>t.forEach(p=>out[p]=awards[String(i)]));add(cup,'cup',out);
