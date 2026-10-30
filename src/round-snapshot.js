@@ -1,8 +1,9 @@
 import {names,rounds,teams,roundPlayers} from './data.js';
 const six=names.slice(0,6);
-export function roundSnapshot(id,scores,engine){
+export function roundSnapshot(id,scores,engine,holes=[]){
  const r=rounds.find(x=>x.id===id),players=roundPlayers(r);
  const gross=(p,h)=>engine.gross(id,p,h),net=(p,h)=>engine.net(id,p,h);
+ const par=h=>holes.find(x=>x.round_id===id&&x.hole===h)?.par??(h>9?3:4);
  const progress=Object.fromEntries(players.map(p=>[p,Array.from({length:r.holes},(_,i)=>gross(p,i+1)).filter(v=>v!==null).length]));
  const ready=(ps,h)=>ps.every(p=>gross(p,h)!==null);
  const group=(ps,fn)=>{let holes=0;for(let h=1;h<=r.holes;h++)if(ready(ps,h)){holes++;fn(h);}return holes;};
@@ -19,7 +20,7 @@ export function roundSnapshot(id,scores,engine){
   const ts=teams[id],margins=[0,0,0],counts=[0,0];
   for(const [k,start] of [1,10].entries()){
    for(let h=start;h<start+9;h++)if(ready(six,h)){
-    counts[k]++;const vals=ts.map(t=>{const v=t.map(p=>Math.max(0,Math.min(9,Math.min((h>9?3:4)+2,h<=9?net(p,h):gross(p,h))))).sort((a,b)=>a-b);return 10*v[0]+v[1];});
+    counts[k]++;const vals=ts.map(t=>{const v=t.map(p=>Math.max(0,Math.min(9,Math.min(par(h)+2,h<=9?net(p,h):gross(p,h))))).sort((a,b)=>a-b);return 10*v[0]+v[1];});
     for(let i=0;i<3;i++)for(let j=i+1;j<3;j++){const d=Math.max(-15,Math.min(15,vals[j]-vals[i]));margins[i]+=d;margins[j]-=d;}
    }
   }
