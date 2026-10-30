@@ -74,3 +74,14 @@ npm run dev
 ## Backyard skins — confirmed house rule
 
 For both RTJ Cup two-person team gross skins and Wild Card seven-player individual gross skins, tied lowest gross scores carry the outstanding skins forward to the next hole. A unique lowest gross score wins the current hole and all carried skins. **Any skins still carried after hole 9 expire without a winner**; there is no playoff or additional tiebreak hole. This rule was confirmed by the organizer and must be used by the championship leaderboard scoring engine.
+
+
+## 2026 final championship guide alignment (October 30)
+
+The authoritative rules are the finalized six-page RTJ Championship Guide. Code changes include Brittany HI 10.0, revised physical playing groups, the published Silver Lakes Short and GN Short stroke allocations, 90% Triple Threat and 95% Stableford allowances, gross-first double-par/par-5-nine Vegas caps, 3/2/1 nine-hole placement points, and Richie Lifeline controls. Skills contests may be marked **No qualifying shot** and locked without awarding a point.
+
+**Required database step:** run `migrations/007_final_guide_scoring.sql` in Supabase SQL Editor after migration 006. This adds Lifeline support to test scores, corrects physical group access permissions, reserves scorecard finalization for Jimmy, and supports skills no-winner outcomes. Existing score data is retained. Previously submitted cards remain locked and should be checked by Jimmy before treating them as physically verified.
+
+**Operational flow:** group members enter or correct gross scores during play; Richie or his groupmates can flag eligible Lifeline holes. After each round, Jimmy compares each player's physical scorecard against the app, corrects any discrepancies, then selects **Verify & finalize**. Championship points post only after all eligible scorecards for that event have been verified. Jimmy can unlock and clear any player's scorecard. Test-mode standings do not require physical verification.
+
+**Validation:** `npm test` runs final-guide regression tests. These do not replace browser, live Supabase, multi-device, or real-scorecard validation. Confirm every course par and stroke index in Course setup before official scoring; the app still uses placeholders where course data is absent.
