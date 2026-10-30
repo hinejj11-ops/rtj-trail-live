@@ -92,9 +92,9 @@ function render(){
   const pointsLabel={trail:'Trail Points',cup:'RTJ Cup Points',wild:'Wild Card Points',overall:'Overall Skills Points',wildSkills:'Wild Card Skills Points'}[b.id]||'Points';
   body+='<div class="row leaderboard-column-headings"><strong>Rank / Golfer</strong><strong>'+esc(pointsLabel)+'</strong></div>';
   sorted.forEach((p,i)=>{const tied=(i>0&&engine.compare(b,p,sorted[i-1])===0)||(i<sorted.length-1&&engine.compare(b,p,sorted[i+1])===0);const first=sorted.findIndex(q=>engine.compare(b,p,q)===0)+1;const place=tied?'T'+first:(i+1)+'.';body+='<div class="row"><b>'+place+' '+esc(p)+'</b><strong>'+Number(b.values[p].toFixed(3))+' pts</strong></div>';});
-  if(engine.details[b.id]?.length){const eventNames={trail:['Silver Lakes AM · Match','Oxmoor Ridge · Match','Grand National Links · Match','Ross Bridge · Stableford','GN Short · Finale'],cup:['Silver Lakes PM · Vegas','Oxmoor Valley · Triple Threat','Backyard · Team skins','GN Lake · Best ball'],wild:['Valley · Stableford','Ridge · Stableford','Ross Bridge · Stableford','Backyard · Individual skins']};
+  if(engine.details[b.id]?.length){
    body+='<details><summary>Event point breakdown</summary>';
-   engine.details[b.id].forEach((ev,i)=>{body+='<div class="small"><strong>Completed event '+(i+1)+'</strong></div>'+b.eligible.map(p=>'<div class="row"><span>'+esc(p)+'</span><span>'+Number((ev[p]||0).toFixed(3))+' pts</span></div>').join('');});
+   engine.details[b.id].forEach((ev,i)=>{body+='<div class="small"><strong>'+esc(engine.eventLabels[b.id][i])+'</strong></div>'+b.eligible.map(p=>'<div class="row"><span>'+esc(p)+'</span><span>'+Number((ev[p]||0).toFixed(3))+' pts</span></div>').join('');});
    body+='</details>';
   }
   body+='</section>';
