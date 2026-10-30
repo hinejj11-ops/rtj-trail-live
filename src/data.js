@@ -17,3 +17,10 @@ export const courseHandicap=(r,n)=>r.rating==null?0:Math.floor(handicaps[n]*r.sl
 export const heartbreakerStrokes={Jimmy:0,Brittany:1,Kevin:2,Jeff:6,Nate:8,Richie:13};
 
 // Skills contest locations are maintained in the championship scoring module.
+
+export const skillsHoles = {
+ 'silver-am':{ctp:11,ld:9},'silver-pm':{ctp:17,ld:3},
+ valley:{ctp:16,ld:7},ridge:{ctp:8,ld:18},ross:{ctp:11,ld:7},
+ backyard:{ctp:9},links:{ctp:16,ld:14},lake:{ctp:3,ld:12},short:{ctp:14}
+};
+export const wildCardSkillsRounds = ['valley','ridge','ross','backyard'];
