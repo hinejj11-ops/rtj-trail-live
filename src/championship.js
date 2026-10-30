@@ -26,7 +26,7 @@ export function championship(scores,skills,holes,submissions=[]){
  const details={trail:[],cup:[],wild:[],overall:[],wildSkills:[]};
  const add=(board,id,award)=>{for(const [p,v] of Object.entries(award))board[p]=(board[p]||0)+v;details[id].push(award);};
  const rankAwards=(values,prizes)=>{const ordered=Object.entries(values).sort((a,b)=>b[1]-a[1]),out=points(Object.keys(values));let i=0;while(i<ordered.length){let j=i+1;while(j<ordered.length&&Math.abs(ordered[j][1]-ordered[i][1])<1e-8)j++;const pts=ordered.slice(i,j).reduce((a,_,k)=>a+(prizes[i+k]||0),0)/(j-i);for(let k=i;k<j;k++)out[ordered[k][0]]=pts;i=j;}return out;};
- const stable=(id,p)=>Array.from({length:18},(_,i)=>{const h=i+1,d=net(id,p,h)-par(id,h);return d<=-1?3:d===0?2:d===1?1:0;}).reduce((a,b)=>a+b,0);
+ const stable=(id,p)=>Array.from({length:18},(_,i)=>{const h=i+1,n=net(id,p,h);if(n===null)return 0;const d=n-par(id,h);return d<=-1?3:d===0?2:d===1?1:0;}).reduce((a,b)=>a+b,0);
  const match=(id,a,b)=>{let aw=0,bw=0,half=0;for(let h=1;h<=18;h++){const x=net(id,a,h),y=net(id,b,h);if(x<y)aw++;else if(y<x)bw++;else half++;}return {a:aw,b:bw,half};};
  for(const id of ['silver-am','ridge','links']){
   const r=byId(id);if(!complete(id,six))continue;
