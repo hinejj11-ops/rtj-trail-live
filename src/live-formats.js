@@ -50,3 +50,22 @@ export function liveFormat(id,score,net,par,rank,esc){
  }
  return html;
 }
+
+export function wildCardStableford(id,score,par,rank,esc){
+ const players=names,rows=players.map(()=>[]),totals=players.map(()=>0),played=players.map(()=>0),heads=[],pars=[];
+ for(let h=1;h<=18;h++){
+  heads.push('<th>'+h+'</th>');pars.push('<td>'+par(h)+'</td>');
+  players.forEach((p,i)=>{
+   const entry=score(p,h);
+   if(!entry||entry.gross==null){rows[i].push('<td>—</td>');return;}
+   const n=entry.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&entry.lifeline?1:0);
+   const d=n-par(h),pts=d<=-1?3:d===0?2:d===1?1:0;
+   totals[i]+=pts;played[i]++;
+   rows[i].push('<td>'+pts+'</td>');
+  });
+ }
+ const order=players.map((p,i)=>i).sort((a,b)=>totals[b]-totals[a]||played[b]-played[a]);
+ const leader=played.every(x=>x===0)?'Not started':players[order[0]]+' leads · '+totals[order[0]]+' pts';
+ const body=order.map(i=>'<tr><th>'+esc(players[i])+'</th>'+rows[i].join('')+'<td><strong>'+totals[i]+'</strong></td></tr>').join('');
+ return '<details class="match-card"><summary><span>Wild Card · Net Stableford</span><strong>'+esc(leader)+'</strong><small>7 players</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+body+'</tbody></table></div><p class="small">Live points for all seven golfers, including Mason. Highest Stableford total leads. Scores can reflect different holes completed.</p></details>';
+}
