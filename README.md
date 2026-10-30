@@ -24,6 +24,17 @@ If you already ran migration 001, run [`migrations/002_test_mode.sql`](migration
 
 Sign in as Jimmy, open Course setup, and enable Test Mode. The Scorecard buttons will become active even while official scoring remains locked. Test scores are kept separate from official scores. To remove them, use **Clear ALL test scores** under Course setup; this affects all golfers and rounds but does not touch official scores. Disable Test Mode after testing. Other devices may need to reload after a mode change.
 
+## Scorecard reset and submission (run migration 003 first)
+
+Run [`migrations/003_scorecard_controls.sql`](migrations/003_scorecard_controls.sql) in Supabase SQL Editor **after 001 and 002**. This creates `scorecard_submissions`, adds secure reset and submit functions, and repairs the test reset path. It preserves existing official scores until Jimmy explicitly deletes a golfer's scores for a selected round.
+
+At the **bottom of the Scorecard tab**, select the golfer in the current playing group:
+- **Test Mode:** Any golfer in that playing group can reset the selected golfer's test scores for the selected round. Jimmy can also clear **all** test scores in Course setup.
+- **Official Mode:** Jimmy can reset the selected golfer's unsubmitted official scores for that round. Other players cannot reset official scores.
+- **Submit & lock:** Once all holes have scores, a golfer in the playing group can submit the selected official scorecard. The database then blocks further score changes, including direct writes. Only Jimmy can unlock it, after which it may be corrected or reset.
+
+**For accidental official scores:** sign in as Jimmy, turn off Test Mode, select the relevant round and golfer in Scorecard, then click **Reset ... OFFICIAL scores for this round**. If already submitted, unlock first. This does not affect other golfers or rounds.
+
 ## First phone test
 
 1. Open the Vercel URL in your phone browser.
