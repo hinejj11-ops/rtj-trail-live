@@ -1,16 +1,7 @@
-import {names,rounds,teams,courseHandicap,heartbreakerStrokes,skillsHoles,wildCardSkillsRounds} from './data.js';
+import {names,rounds,teams,skillsHoles,wildCardSkillsRounds} from './data.js';
+import {netScore,vegasDigit} from './scoring-rules.js';
 const six=names.slice(0,6),seven=names;
 const byId=id=>rounds.find(r=>r.id===id);
-const alloc=(id,p,h,rank)=>{
- if(id==='backyard'||(id==='silver-pm'&&h>9))return 0;
- if(id==='silver-pm'){const n=heartbreakerStrokes[p]||0;return Math.floor(n/9)+(rank<=n%9?1:0);}
- const r=byId(id);let eligible;
- if(['silver-am','ridge','links'].includes(id))eligible=r.groups.find(g=>g.includes(p))?.filter(x=>x!=='Mason')||[];
- else eligible=six;
- const base=Math.min(...eligible.map(x=>courseHandicap(r,x)));
- const n=Math.max(0,courseHandicap(r,p)-base);
- return Math.floor(n/18)+(rank<=n%18?1:0);
-};
 export function championship(scores,skills,holes,submissions=[]){
  const sm=new Map(scores.map(s=>[s.round_id+'|'+s.player+'|'+s.hole,s]));
  const hm=new Map(holes.map(h=>[h.round_id+'|'+h.hole,h]));
@@ -18,7 +9,7 @@ export function championship(scores,skills,holes,submissions=[]){
  const par=(id,h)=>hm.get(id+'|'+h)?.par??(id==='backyard'||id==='short'||id==='silver-pm'&&h>9?3:4);
  const rank=(id,h)=>hm.get(id+'|'+h)?.stroke_index??h;
  const gross=(id,p,h)=>sm.get(id+'|'+p+'|'+h)?.gross??null;
- const net=(id,p,h)=>{const s=sm.get(id+'|'+p+'|'+h);return s?s.gross-alloc(id,p,h,rank(id,h))+(s.lifeline?1:0):null;};
+ const net=(id,p,h,mode='primary')=>netScore(id,p,h,sm.get(id+'|'+p+'|'+h),rank(id,h),mode);
  const done=(id,p)=>Array.from({length:byId(id).holes},(_,i)=>gross(id,p,i+1)!==null).every(Boolean);
  const complete=(id,ps)=>ps.every(p=>done(id,p));
  const points=(ps)=>Object.fromEntries(ps.map(p=>[p,0]));
@@ -26,7 +17,7 @@ export function championship(scores,skills,holes,submissions=[]){
  const details={trail:[],cup:[],wild:[],overall:[],wildSkills:[]};
  const add=(board,id,award)=>{for(const [p,v] of Object.entries(award))board[p]=(board[p]||0)+v;details[id].push(award);};
  const rankAwards=(values,prizes)=>{const ordered=Object.entries(values).sort((a,b)=>b[1]-a[1]),out=points(Object.keys(values));let i=0;while(i<ordered.length){let j=i+1;while(j<ordered.length&&Math.abs(ordered[j][1]-ordered[i][1])<1e-8)j++;const pts=ordered.slice(i,j).reduce((a,_,k)=>a+(prizes[i+k]||0),0)/(j-i);for(let k=i;k<j;k++)out[ordered[k][0]]=pts;i=j;}return out;};
- const stable=(id,p)=>Array.from({length:18},(_,i)=>{const h=i+1,n=net(id,p,h);if(n===null)return 0;const d=n-par(id,h);return d<=-1?3:d===0?2:d===1?1:0;}).reduce((a,b)=>a+b,0);
+ const stable=(id,p)=>Array.from({length:18},(_,i)=>{const h=i+1,n=net(id,p,h,'stableford');if(n===null)return 0;const d=n-par(id,h);return d<=-1?3:d===0?2:d===1?1:0;}).reduce((a,b)=>a+b,0);
  const match=(id,a,b)=>{let aw=0,bw=0,half=0;for(let h=1;h<=18;h++){const x=net(id,a,h),y=net(id,b,h);if(x<y)aw++;else if(y<x)bw++;else half++;}return {a:aw,b:bw,half};};
  for(const id of ['silver-am','ridge','links']){
   const r=byId(id);if(!complete(id,six))continue;
@@ -44,17 +35,18 @@ export function championship(scores,skills,holes,submissions=[]){
   const a=rankAwards(credits(1,9),[3,2,1.5,1,.5,0]),b=rankAwards(credits(10,18),[5,3.5,2.5,1.5,.5,0]);
   add(trail,'trail',Object.fromEntries(six.map(p=>[p,a[p]+b[p]])));
  }
- // Silver Lakes Vegas: sum capped pairwise margins within each nine, then weight each nine equally.
+ // Each nine is a separate net Vegas contest. Gross caps precede strokes.
  if(complete('silver-pm',six)){
   const ts=teams['silver-pm'],out=points(six),tot=[0,0,0];
   for(const start of [1,10]){
-   const margins=[0,0,0];
+   const sums=[0,0,0];
    for(let h=start;h<start+9;h++){
-    const vals=ts.map(t=>{const n=t.map(p=>Math.max(0,Math.min(9,Math.min(par('silver-pm',h)+2,start===1?net('silver-pm',p,h):gross('silver-pm',p,h))))).sort((a,b)=>a-b);return 10*n[0]+n[1];});
-    for(let i=0;i<3;i++)for(let j=i+1;j<3;j++){const d=Math.max(-15,Math.min(15,vals[j]-vals[i]));margins[i]+=d;margins[j]-=d;}
+    ts.forEach((t,i)=>{
+     const digits=t.map(p=>vegasDigit('silver-pm',p,h,sm.get('silver-pm|'+p+'|'+h),par('silver-pm',h),rank('silver-pm',h))).sort((a,b)=>a-b);
+     sums[i]+=10*digits[0]+digits[1];
+    });
    }
-   // Equal weighting: each nine awards 2/1/0 ranking credits (split for ties).
-   const nine=rankAwards(Object.fromEntries(margins.map((v,i)=>[String(i),v])),[2,1,0]);
+   const nine=rankAwards(Object.fromEntries(sums.map((v,i)=>[String(i),-v])),[3,2,1]);
    for(let i=0;i<3;i++)tot[i]+=nine[String(i)];
   }
   const awards=rankAwards(Object.fromEntries(ts.map((_,i)=>[String(i),tot[i]])),[4,2,0]);
