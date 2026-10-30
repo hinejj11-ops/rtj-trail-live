@@ -74,13 +74,14 @@ async function login(name){
    if(authResult.error)throw authResult.error;
   }
   status('Connecting as '+name+' — claiming player…');
-  const claim=await withTimeout(db.rpc('claim_player',{p_player:name}),'Player claim');
+  const claim=await withTimeout(Promise.resolve(db.rpc('claim_player',{p_player:name})),'Player claim');
   if(claim.error)throw claim.error;
   if(!claim.data)throw Error(name+' is already active on another device. Sign out there or wait about 100 seconds.');
   me=name;
   sessionStorage.setItem('rtj-player',name);
-  status('Connecting as '+name+' — loading scores…');
-  await withTimeout(refresh(),'Scorecard loading',15000);
+  notice='Signed in as '+name+'. Loading scores…';
+  render();
+  try{await withTimeout(refresh(),'Scorecard loading',15000);}catch(loadError){notice='Signed in, but score loading failed: '+loadError.message;render();}
   if(channel)db.removeChannel(channel);
   channel=db.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'scores'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'skills'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'course_pars'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'test_scores'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'scorecard_submissions'},refresh).subscribe();
   clearInterval(timer);
