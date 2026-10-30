@@ -44,3 +44,21 @@ test('confirmed no qualifying skills shot resolves contest without awarding a po
  assert.equal(result.boards.find(b=>b.id==='wildSkills').rounds,1);
  assert.equal(Object.values(result.boards.find(b=>b.id==='overall').values).reduce((a,b)=>a+b,0),0);
 });
+
+test('match points post after Jimmy verifies one three-player group, without waiting for other group',()=>{
+ const r=rounds.find(x=>x.id==='silver-am');
+ const scores=roundPlayers(r).flatMap(player=>Array.from({length:18},(_,i)=>({round_id:r.id,player,hole:i+1,gross:4})));
+ const first=r.groups[0].filter(p=>six.includes(p));
+ const verified=first.map(player=>({round_id:r.id,player}));
+ const partial=championship(scores,[],[],verified,true);
+ assert.ok(first.some(p=>partial.boards.find(b=>b.id==='trail').values[p]>0));
+ assert.ok(r.groups[1].every(p=>partial.boards.find(b=>b.id==='trail').values[p]===0));
+ assert.equal(partial.boards.find(b=>b.id==='trail').rounds,0);
+ const full=championship(scores,[],[],roundPlayers(r).map(player=>({round_id:r.id,player})),true);
+ assert.equal(full.boards.find(b=>b.id==='trail').rounds,1);
+});
+test('Lifeline limits are available to the scorecard UI',()=>{
+ assert.equal(Object.hasOwn(lifelineLimits,'ridge'),true);
+ assert.equal(lifelineLimits.ridge,3);
+ assert.equal(lifelineLimits['silver-pm'],1);
+});
