@@ -1,4 +1,4 @@
-import {names,rounds,teams,roundPlayers} from './data.js';
+import {names,rounds,teams,roundPlayers,courseHandicap} from './data.js';
 const six=names.slice(0,6);
 export function roundSnapshot(id,scores,engine,holes=[]){
  const r=rounds.find(x=>x.id===id),players=roundPlayers(r);
@@ -46,5 +46,20 @@ export function roundSnapshot(id,scores,engine,holes=[]){
   six.forEach(p=>rows.push(result(p,credits[p].toFixed(2)+' finale credits',progress[p])));
   rows.sort((a,b)=>parseFloat(b.detail)-parseFloat(a.detail));
  }
- return {rows,progress,players,holes:r.holes,format:{match:'3-way net match play',vegas:'Net / gross Vegas',triple:'Triple Threat · team best ball',stableford:'Net Stableford',skins:'Gross team + individual skins',bestball:'Team best ball',finale:'Individual finale'}[r.format]};
+ const wildStableford=['valley','ridge','ross'].includes(id)?names.map(p=>{
+  const base=courseHandicap(r,'Jimmy');
+  const allowance=Math.max(0,courseHandicap(r,p)-base);
+  let pts=0,played=0;
+  for(let h=1;h<=18;h++){
+   const g=gross(p,h);if(g===null)continue;
+   played++;
+   const index=holes.find(x=>x.round_id===id&&x.hole===h)?.stroke_index??h;
+   const strokes=Math.floor(allowance/18)+(index<=allowance%18?1:0);
+   const entry=scores.find(x=>x.round_id===id&&x.player===p&&x.hole===h);
+   const d=g-strokes+(entry?.lifeline?1:0)-par(h);
+   pts+=d<=-1?3:d===0?2:d===1?1:0;
+  }
+  return {player:p,points:pts,played};
+ }).sort((a,b)=>b.points-a.points||b.played-a.played):[];
+ return {wildStableford,rows,progress,players,holes:r.holes,format:{match:'3-way net match play',vegas:'Net / gross Vegas',triple:'Triple Threat · team best ball',stableford:'Net Stableford',skins:'Gross team + individual skins',bestball:'Team best ball',finale:'Individual finale'}[r.format]};
 }
