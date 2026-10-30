@@ -1,6 +1,7 @@
 import {createClient} from '@supabase/supabase-js';
 import {SUPABASE_URL,SUPABASE_ANON_KEY} from './config.js';
 import {names,rounds,roundPlayers,courseHandicap,heartbreakerStrokes,teams} from './data.js';
+import {championship} from './championship.js';
 import './style.css';
 const db=SUPABASE_URL&&SUPABASE_ANON_KEY?createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 let me=null,roundId='silver-am',tab='scores',scores=[],skills=[],holes=[],submissions=[],ready=false,testMode=false,notice='',target=null,channel=null,timer=null;
@@ -43,9 +44,16 @@ function render(){
  if(teams[roundId])body+='<p><strong>Teams:</strong> '+teams[roundId].map(t=>t.join(' + ')).join(' · ')+'</p>';
  body+='</section>';
  }else if(tab==='boards'){
+ const engine=championship(scores,skills,holes,submissions);
+ body+='<section class="panel"><h2>Championship standings</h2><p class="small">'+(testMode?'🧪 TEST MODE — standings use test scores.':'Official scores · Points post after every eligible scorecard is complete.')+'</p><p class="small">Five separate titles · $625 total prizes. A tied position splits the points for occupied places.</p></section>';
+ for(const b of engine.boards){
+  const sorted=[...b.eligible].sort((a,c)=>b.values[c]-b.values[a]||((b.ctp?.[c]||0)-(b.ctp?.[a]||0))||((b.ld?.[c]||0)-(b.ld?.[a]||0)));
+  body+='<section class="panel"><h3>'+esc(b.name)+' <span class="prize">$'+b.prize+'</span></h3><p class="small">'+b.rounds+'/'+b.expected+' '+(b.id==='overall'||b.id==='wildSkills'?'skills contests recorded':'events completed')+' · '+(b.rounds===b.expected?'All events scored':'Provisional standings')+'</p>';
+  sorted.forEach((p,i)=>{const tied=i>0&&Math.abs(b.values[p]-b.values[sorted[i-1]])<1e-8;const place=tied?'=':(i+1)+'.';body+='<div class="row"><b>'+place+' '+esc(p)+'</b><strong>'+Number(b.values[p].toFixed(3))+' pts</strong></div>';});
+  body+='</section>';
+ }
  const players=roundPlayers(r());
- body+='<section class="panel"><h2>Live round leaderboard</h2><p class="small">Net Stableford preview; this is not yet the final championship points engine.</p>'+players.map(p=>({p,pts:sf(p),done:scores.filter(s=>s.round_id===roundId&&s.player===p).length})).sort((a,b)=>b.pts-a.pts).map((x,i)=>'<div class="row"><b>'+(i+1)+'. '+x.p+'</b><span>'+x.done+'/'+r().holes+' holes</span><strong>'+x.pts+' SF</strong></div>').join('')+'</section>';
- body+='<section class="panel"><h3>Championship events</h3><p>Individual Trail Championship · $250</p><p>RTJ Cup · $125</p><p>Wild Card Challenge · $125</p><p>Overall Skills · $75</p><p>Wild Card Skills · $50</p><p class="warning">The five cumulative championship leaderboards require final scoring-rule integration. Do not use this preview to settle prizes.</p></section>';
+ body+='<section class="panel"><h3>'+esc(r().name)+' · live round snapshot</h3><p class="small">Modified net Stableford hole points for comparison only; this is not the scoring format for every event.</p>'+players.map(p=>({p,pts:sf(p),done:scores.filter(s=>s.round_id===roundId&&s.player===p).length})).sort((a,b)=>b.pts-a.pts).map((x,i)=>'<div class="row"><b>'+(i+1)+'. '+x.p+'</b><span>'+x.done+'/'+r().holes+' holes</span><strong>'+x.pts+' SF</strong></div>').join('')+'</section>';
  }else if(tab==='skills'){
  body+='<section class="panel"><h2>CTP & Long Drive</h2><p>Record the winner of each designated contest. Winners earn one point; Sunday–Monday contests also count toward Wild Card Skills.</p>';
  for(const kind of ['ctp','ld']){let s=skills.find(x=>x.round_id===roundId&&x.kind===kind);body+='<label>'+(kind==='ctp'?'Closest to pin':'Long drive')+' <select data-skill="'+kind+'"><option value="">No winner yet</option>'+roundPlayers(r()).map(n=>'<option '+(s?.winner===n?'selected':'')+'>'+n+'</option>').join('')+'</select></label>';}
