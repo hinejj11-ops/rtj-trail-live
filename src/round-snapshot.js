@@ -31,14 +31,12 @@ export function roundSnapshot(id,scores,engine){
    rows.push(result(ts[i].join(' + ')+' vs '+ts[j].join(' + '),(a===b?'All square':(a>b?ts[i]:ts[j]).join(' + ')+' '+Math.abs(a-b)+' UP')+' · '+a+'–'+b+' holes won',played));
   }
  }else if(id==='ross'){
-  players.forEach(p=>{let pts=0;for(let h=1;h<=18;h++)if(gross(p,h)!==null){const d=net(p,h)-(scores.find(s=>s.round_id===id&&s.player===p&&s.hole===h)?.par??0);const par=scores.find(s=>s.round_id===id&&s.player===p&&s.hole===h)?.par;void d;void par;}
-   rows.push(result(p,progress[p]?'Net Stableford '+engine.stable(id,p)+' pts':'Not started',progress[p]));
-  });
+  players.forEach(p=>rows.push(result(p,progress[p]?'Net Stableford '+engine.stable(id,p)+' pts':'Not started',progress[p])));
   rows.sort((a,b)=>Number((b.detail.match(/\d+(?= pts)/)||[0])[0])-Number((a.detail.match(/\d+(?= pts)/)||[0])[0]));
  }else if(id==='backyard'){
   const contests=[{label:'Team skins',groups:teams.backyard},{label:'Individual skins',groups:players.map(p=>[p])}];
   for(const contest of contests){const wins=contests[0]===contest?teams.backyard.map(()=>0):players.map(()=>0);let carry=0,played=0;
-   for(let h=1;h<=9;h++){if(!ready(players,h))continue;played++;carry++;const vals=contest.groups.map(t=>Math.min(...t.map(p=>gross(p,h)))),low=Math.min(...vals),w=vals.map((v,i)=>v===low?i:-1).filter(i=>i>=0);if(w.length===1){wins[w[0]]+=carry;carry=0;}}
+   for(let h=1;h<=9;h++){if(!ready(players,h))break;played++;carry++;const vals=contest.groups.map(t=>Math.min(...t.map(p=>gross(p,h)))),low=Math.min(...vals),w=vals.map((v,i)=>v===low?i:-1).filter(i=>i>=0);if(w.length===1){wins[w[0]]+=carry;carry=0;}}
    contest.groups.forEach((t,i)=>rows.push(result(contest.label+' · '+t.join(' + '),wins[i]+' skins'+(carry?' · '+carry+' pending carry':''),played,9)));
   }
  }else if(id==='short'){
