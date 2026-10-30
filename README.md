@@ -47,12 +47,12 @@ At the **bottom of the Scorecard tab**, select the golfer in the current playing
 ## Current limitations — important
 
 - This is a **test build**, not a fully validated tournament scoring engine.
-- The five cumulative prize leaderboards (Trail Championship, RTJ Cup, Wild Card, Overall Skills, Wild Card Skills) are **not yet all implemented**. Overall/Wild Card skills point totals work as a preliminary view. The current leaderboard shows round Stableford previews, **not official championship rankings**.
-- The organizer must verify actual scorecard pars and hole stroke indexes; defaults are placeholders. Heartbreaker house strokes are preconfigured, but Heartbreaker hole ranks must be entered correctly.
+- The five cumulative prize leaderboards are implemented, but must still be verified against complete real-world scorecards and a live Supabase deployment before prizes are awarded. Official championship points require Jimmy's physical-scorecard verification.
+- The organizer must verify actual scorecard pars and hole stroke indexes; defaults are placeholders. Published Heartbreaker and Silver Lakes Short strokes are preconfigured, but each nine's stroke indexes must be entered correctly.
 - Group scoring is restricted in the database to the designated playing group for the round. Name selection has no PIN; a session lock is a convenience feature, not identity verification.
 - Sessions expire if their heartbeat stops for about 100 seconds.
 - The score editor uses plus/minus controls. Test Mode has a separate score table and organizer-only reset; disable it before the event.
-- Skills contest **hole assignments** must be verified against the championship guide before official use.
+- Skills contest holes match the final guide; verify the combined Silver Lakes hole numbering (MB #2 = hole 11, Short #8 = hole 17).
 - The scoring code has not yet been verified on two devices or against every championship format. Do not settle prizes from this build.
 
 ## Local development
