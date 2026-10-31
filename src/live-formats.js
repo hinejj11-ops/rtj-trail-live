@@ -50,9 +50,9 @@ export function liveFormat(id,score,net,par,rank,esc){
     awarded.forEach(row=>row[h-1]=0);
     if(winners.length===1){awarded[winners[0]][h-1]=carry;carry=0;}
    }
-   html+=card(title,groups.map(label),(i,h)=>awarded[i][h-1],9,true,'skins');
+   html+=card(title,groups.map(label),(i,h)=>awarded[i][h-1],9,true,'skins',(i,h)=>{const group=groups[i];if(awarded[i][h-1]===null)return '—';const p=group.reduce((best,p)=>best===null||gross(p,h)<gross(best,h)?p:best,null);return grossCell(p,h);});
   }
-  html+='<p class="small">Gross skins awarded after a unique low score; ties carry forward.</p>';
+  html+='<p class="small">Gross scores shown (no handicap strokes); Total column counts skins. Unique low gross wins; ties carry forward.</p>';
  }else if(id==='short'){
   const credits=six.map(()=>Array(18).fill(null));
   for(let h=1;h<=18;h++){const v=six.map(p=>net(p,h));if(v.some(x=>x===null))continue;const low=Math.min(...v),n=v.filter(x=>x===low).length;v.forEach((x,i)=>credits[i][h-1]=x===low?1/n:0);}
