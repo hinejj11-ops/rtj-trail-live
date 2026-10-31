@@ -59,7 +59,7 @@ function render(){
   const lead=a-b;
   const status=played===0?'Not started':lead===0?'All square':(lead>0?p1:p2)+' '+Math.abs(lead)+' UP';
   const thru=through===0?'—':through===r().holes?'F':'Thru '+through;
-  body+='<details class="match-card match-card-visual"><summary>'+matchSummary([p1],[p2],played===0?'NOT STARTED':lead===0?'ALL SQUARE':Math.abs(lead)+' UP',thru,segments,played===0||lead===0?-1:lead>0?0:1)+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th scope="col">Hole</th>'+holeRow.join('')+'</tr></thead><tbody><tr class="match-par-row"><th scope="row">Par</th>'+parRow.join('')+'</tr><tr><th scope="row">'+esc(p1)+'</th>'+row1.join('')+'</tr><tr><th scope="row">'+esc(p2)+'</th>'+row2.join('')+'</tr></tbody></table></div><p class="small">Net scores only. Small circles show handicap strokes received on each hole. Green marks the hole winner; gray indicates a halved hole. '+a+'–'+b+' holes won · '+halves+' halved.</p></details>';
+  body+='<details class="match-card match-card-visual" style="--match-holes:18"><summary>'+matchSummary([p1],[p2],played===0?'NOT STARTED':lead===0?'ALL SQUARE':Math.abs(lead)+' UP',thru,segments,played===0||lead===0?-1:lead>0?0:1)+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th scope="col">Hole</th>'+holeRow.join('')+'</tr></thead><tbody><tr class="match-par-row"><th scope="row">Par</th>'+parRow.join('')+'</tr><tr><th scope="row">'+esc(p1)+'</th>'+row1.join('')+'</tr><tr><th scope="row">'+esc(p2)+'</th>'+row2.join('')+'</tr></tbody></table></div><p class="small">Net scores only. Small circles show handicap strokes received on each hole. Green marks the hole winner; gray indicates a halved hole. '+a+'–'+b+' holes won · '+halves+' halved.</p></details>';
  }}}
  else if(roundId==='silver-pm'){
   for(const [start,title] of [[1,'Heartbreaker'],[10,'Short Course']]){
@@ -78,7 +78,7 @@ function render(){
     }
     const label=t=>t.join(' + ');
     const status=played===0?'Not started':totals[0]===totals[1]?'Tied':label(totals[0]<totals[1]?first:second)+' leads by '+Math.abs(totals[0]-totals[1]);
-    body+='<details class="match-card match-card-visual"><summary>'+matchSummary(first,second,played===0?'NOT STARTED':totals[0]===totals[1]?'TIED':Math.abs(totals[0]-totals[1])+' AHEAD',through===9?'F':through?'THRU '+through:'—',segments,played===0||totals[0]===totals[1]?-1:totals[0]<totals[1]?0:1,'Vegas · lower total wins')+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+head.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr><tr><th>'+esc(label(first))+'</th>'+rows[0].join('')+'<td>'+totals[0]+'</td></tr><tr><th>'+esc(label(second))+'</th>'+rows[1].join('')+'<td>'+totals[1]+'</td></tr></tbody></table></div><p class="small">Lower Vegas number wins each hole comparison. Totals include only holes completed by both teams ('+played+'/9).</p></details>';
+    body+='<details class="match-card match-card-visual" style="--match-holes:9"><summary>'+matchSummary(first,second,played===0?'NOT STARTED':totals[0]===totals[1]?'TIED':Math.abs(totals[0]-totals[1])+' AHEAD',through===9?'F':through?'THRU '+through:'—',segments,played===0||totals[0]===totals[1]?-1:totals[0]<totals[1]?0:1,'Vegas · lower total wins')+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+head.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr><tr><th>'+esc(label(first))+'</th>'+rows[0].join('')+'<td>'+totals[0]+'</td></tr><tr><th>'+esc(label(second))+'</th>'+rows[1].join('')+'<td>'+totals[1]+'</td></tr></tbody></table></div><p class="small">Lower Vegas number wins each hole comparison. Totals include only holes completed by both teams ('+played+'/9).</p></details>';
    }
   }
  }
@@ -194,4 +194,13 @@ $('#app').addEventListener('change',async e=>{let t=e.target;if(t.id==='test-mod
  await refresh();
  }else if(t.dataset.par||t.dataset.rank){let h=+(t.dataset.par||t.dataset.rank),v=+t.value;let old=hole(h);let a=await db.from('course_pars').upsert({round_id:roundId,hole:h,par:t.dataset.par?v:(old?.par??par(h)),stroke_index:t.dataset.rank?v:(old?.stroke_index??rank(h))});if(a.error)notice=a.error.message;await refresh();}else if(t.id==='ready'){let a=await db.rpc('set_scoring_ready',{p_ready:t.checked});if(a.error)notice=a.error.message;await refresh();}});
 document.querySelector('#app').addEventListener('submit',async e=>{if(e.target.id!=='jimmy-pin-form')return;e.preventDefault();const pin=document.querySelector('#jimmy-pin')?.value||'';if(pin!=='2026'){notice='Incorrect organizer PIN.';render();return;}pendingJimmyPin=false;await login('Jimmy');});
+// Keep the hole-result strip horizontally synchronized with the expanded scorecard.
+document.querySelector('#app').addEventListener('scroll',e=>{
+ const source=e.target;
+ if(!source.matches?.('.match-progress-scroll, .match-card-visual .match-table-wrap'))return;
+ const card=source.closest('.match-card-visual');
+ if(!card)return;
+ const peer=card.querySelector(source.matches('.match-progress-scroll')?'.match-table-wrap':'.match-progress-scroll');
+ if(peer&&Math.abs(peer.scrollLeft-source.scrollLeft)>1)peer.scrollLeft=source.scrollLeft;
+},true);
 (async()=>{render();if(!db)return;let p=sessionStorage.getItem('rtj-player');if(p)await login(p);})();
