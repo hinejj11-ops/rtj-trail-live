@@ -53,13 +53,13 @@ function render(){
    holeRow.push('<th scope="col">'+h+'</th>');
    parRow.push('<td>'+holePar+'</td>');
    const dots=p=>{const strokesReceived=strokes(p,h);return strokesReceived>0?'<span class="match-stroke-dots" aria-label="'+strokesReceived+' handicap stroke'+(strokesReceived===1?'':'s')+'" title="'+strokesReceived+' handicap stroke'+(strokesReceived===1?'':'s')+'">'+Array.from({length:strokesReceived},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'';};
-   row1.push('<td class="'+(ready&&x<y?'match-hole-win match-hole-green':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(x??'—')+dots(p1)+'</span></td>');
-   row2.push('<td class="'+(ready&&y<x?'match-hole-win match-hole-gold':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(y??'—')+dots(p2)+'</span></td>');
+   row1.push('<td class="'+(ready&&x<y?'match-hole-win match-hole-green':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(score(p1,h)?.gross??'—')+dots(p1)+'</span></td>');
+   row2.push('<td class="'+(ready&&y<x?'match-hole-win match-hole-gold':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(score(p2,h)?.gross??'—')+dots(p2)+'</span></td>');
   }
   const lead=a-b;
   const status=played===0?'Not started':lead===0?'All square':(lead>0?p1:p2)+' '+Math.abs(lead)+' UP';
   const thru=through===0?'—':through===r().holes?'F':'Thru '+through;
-  body+='<details class="match-card match-card-visual" style="--match-holes:18"><summary>'+matchSummary([p1],[p2],played===0?'NOT STARTED':lead===0?'ALL SQUARE':Math.abs(lead)+' UP',thru,segments,played===0||lead===0?-1:lead>0?0:1)+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th scope="col">Hole</th>'+holeRow.join('')+'</tr></thead><tbody><tr class="match-par-row"><th scope="row">Par</th>'+parRow.join('')+'</tr><tr><th scope="row">'+esc(p1)+'</th>'+row1.join('')+'</tr><tr><th scope="row">'+esc(p2)+'</th>'+row2.join('')+'</tr></tbody></table></div><p class="small">Net scores only. Small circles show handicap strokes received on each hole. Green marks the hole winner; gray indicates a halved hole. '+a+'–'+b+' holes won · '+halves+' halved.</p></details>';
+  body+='<details class="match-card match-card-visual" style="--match-holes:18"><summary>'+matchSummary([p1],[p2],played===0?'NOT STARTED':lead===0?'ALL SQUARE':Math.abs(lead)+' UP',thru,segments,played===0||lead===0?-1:lead>0?0:1)+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th scope="col">Hole</th>'+holeRow.join('')+'</tr></thead><tbody><tr class="match-par-row"><th scope="row">Par</th>'+parRow.join('')+'</tr><tr><th scope="row">'+esc(p1)+'</th>'+row1.join('')+'</tr><tr><th scope="row">'+esc(p2)+'</th>'+row2.join('')+'</tr></tbody></table></div><p class="small">Gross scores shown; dots indicate handicap strokes. Winners are calculated from net scores. Green marks the hole winner; gray indicates a halved hole. '+a+'–'+b+' holes won · '+halves+' halved.</p></details>';
  }}}
  else if(roundId==='silver-pm'){
   for(const [start,title] of [[1,'Heartbreaker'],[10,'Short Course']]){
