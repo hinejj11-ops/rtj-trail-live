@@ -35,7 +35,7 @@ export function liveFormat(id,score,net,par,rank,esc){
   html+='<p class="small">Provisional team best net ball; each team\'s lowest available net score is shown. A hole is compared only after both teams have recorded a score; official points require complete, verified cards.</p>';
  }else if(id==='ross'){
   const stable=(p,h,wild)=>{const s=score(p,h);if(!s)return null;const n=wild?s.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&s.lifeline?1:0):net(p,h),d=n-par(h);return d<=-1?3:d===0?2:d===1?1:0;};
-  html+=card('Trail Stableford',six,(i,h)=>stable(six[i],h,false),18,true);
+  html+=card('Trail Stableford',six,(i,h)=>stable(six[i],h,false),18,true,'points',(i,h)=>grossCell(six[i],h,net(six[i],h)));
   html+=card('Wild Card Stableford',seven,(i,h)=>stable(seven[i],h,true),18,true);
   html+='<p class="small">Cells show Stableford points earned on each hole. Higher total leads.</p>';
  }else if(id==='backyard'){
