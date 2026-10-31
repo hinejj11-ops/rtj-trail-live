@@ -24,3 +24,26 @@
 
 .leaderboard-column-headings{border-bottom:1px solid #cbd5cd;padding-bottom:7px;margin-bottom:4px;color:#536459;font-size:.82rem;letter-spacing:.01em}
 .leaderboard-column-headings strong:last-child{text-align:right}
+
+/* Compact match overview: tap any card to reveal the existing hole-by-hole table. */
+.match-card-visual{border:1px solid #d7dfd5;border-radius:15px;box-shadow:0 2px 6px #173c2e0d;background:#fff;margin:12px 0}
+.match-card-visual>summary{display:block;padding:0;position:relative}
+.match-card-visual>summary:before{display:none}
+.match-card-visual>summary:after{content:'⌄';position:absolute;right:8px;bottom:14px;font-size:14px;color:#8c947f}
+.match-card-visual[open]>summary:after{content:'⌃'}
+.match-visual{display:block;width:100%;padding:0 9px 11px}
+.match-versus{display:grid;grid-template-columns:minmax(0,1fr) minmax(108px,0.9fr) minmax(0,1fr);min-height:88px;align-items:stretch;overflow:hidden;border-radius:11px;margin:9px 0}
+.match-side{display:flex;flex-direction:column;justify-content:center;gap:3px;padding:12px 10px;font-size:15px;font-weight:750;line-height:1.25;color:#244436;min-width:0;overflow-wrap:anywhere}
+.match-side:last-child{text-align:right}
+.match-side-leading{background:#173c2e;color:#fff}
+.match-center{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:9px 5px;background:#f6f6ef}
+.match-center strong{color:#173c2e;font-size:21px;letter-spacing:.015em;line-height:1.2}
+.match-center small{color:#68776b;font-size:11px;letter-spacing:.07em;font-weight:750;margin-top:5px}
+.match-progress{display:grid;grid-template-columns:repeat(18,minmax(0,1fr));gap:3px;margin:0 14px 2px 0;height:7px}
+.match-progress-hole{display:block;background:#e5e9e3;border-radius:2px;min-width:0}
+.match-progress-1{background:#173c2e}
+.match-progress-2{background:#bd9a48}
+.match-progress-3{background:#98a89b}
+.match-visual-note{display:block;color:#69796d;font-size:11px;text-align:center;margin-top:7px}
+.match-card-visual[open]>.match-table-wrap{border-top:1px solid #e4e9e1}
+@media(max-width:480px){.match-versus{grid-template-columns:minmax(0,1fr) 100px minmax(0,1fr);min-height:78px}.match-side{font-size:13px;padding:10px 7px}.match-center strong{font-size:18px}.match-visual{padding:0 7px 10px}.match-progress{gap:2px}}
