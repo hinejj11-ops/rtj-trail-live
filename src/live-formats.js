@@ -5,7 +5,7 @@ export function liveFormat(id,score,net,par,rank,esc){
  const six=names.slice(0,6),seven=names,ts=teams[id];
  const gross=(p,h)=>score(p,h)?.gross??null;
  const label=t=>t.join(' + ');
- const card=(title,players,value,n=18,highWins=false,mode='points')=>{
+ const card=(title,players,value,n=18,highWins=false,mode='points',display=null)=>{
   const heads=[],pars=[],rows=players.map(()=>[]),totals=players.map(()=>0),wins=players.map(()=>0),segments=[];let thru=0,compared=0;
   for(let h=1;h<=n;h++){
    heads.push('<th>'+h+'</th>');pars.push('<td>'+par(h)+'</td>');
