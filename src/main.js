@@ -53,8 +53,8 @@ function render(){
    holeRow.push('<th scope="col">'+h+'</th>');
    parRow.push('<td>'+holePar+'</td>');
    const dots=p=>{const strokesReceived=strokes(p,h);return strokesReceived>0?'<span class="match-stroke-dots" aria-label="'+strokesReceived+' handicap stroke'+(strokesReceived===1?'':'s')+'" title="'+strokesReceived+' handicap stroke'+(strokesReceived===1?'':'s')+'">'+Array.from({length:strokesReceived},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'';};
-   row1.push('<td class="'+(ready&&x<y?'match-hole-win':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(x??'—')+dots(p1)+'</span></td>');
-   row2.push('<td class="'+(ready&&y<x?'match-hole-win':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(y??'—')+dots(p2)+'</span></td>');
+   row1.push('<td class="'+(ready&&x<y?'match-hole-win match-hole-green':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(x??'—')+dots(p1)+'</span></td>');
+   row2.push('<td class="'+(ready&&y<x?'match-hole-win match-hole-gold':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(y??'—')+dots(p2)+'</span></td>');
   }
   const lead=a-b;
   const status=played===0?'Not started':lead===0?'All square':(lead>0?p1:p2)+' '+Math.abs(lead)+' UP';
@@ -74,7 +74,7 @@ function render(){
      segments.push(!complete?0:values[0]<values[1]?1:values[1]<values[0]?2:3);
      if(complete){played++;totals[0]+=values[0];totals[1]+=values[1];if(h===start+through)through++;}
      head.push('<th>'+(h-start+1)+'</th>');pars.push('<td>'+par(h)+'</td>');
-     for(let k=0;k<2;k++)rows[k].push('<td class="'+(complete&&values[k]<values[1-k]?'match-hole-win':complete&&values[k]===values[1-k]?'match-hole-half':'')+'">'+(values[k]??'—')+'</td>');
+     for(let k=0;k<2;k++)rows[k].push('<td class="'+(complete&&values[k]<values[1-k]?'match-hole-win '+(k===0?'match-hole-green':'match-hole-gold'):complete&&values[k]===values[1-k]?'match-hole-half':'')+'">'+(values[k]??'—')+'</td>');
     }
     const label=t=>t.join(' + ');
     const status=played===0?'Not started':totals[0]===totals[1]?'Tied':label(totals[0]<totals[1]?first:second)+' leads by '+Math.abs(totals[0]-totals[1]);
