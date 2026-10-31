@@ -52,7 +52,7 @@ function render(){
    if(ready&&h===through+1)through=h;
    holeRow.push('<th scope="col">'+h+'</th>');
    parRow.push('<td>'+holePar+'</td>');
-   const dots=p=>{const strokesReceived=strokes(p,h);return strokesReceived>0?'<span class="match-stroke-dots" aria-label="'+strokesReceived+' handicap stroke'+(strokesReceived===1?'':'s')+'" title="'+strokesReceived+' handicap stroke'+(strokesReceived===1?'':'s')+'">'+Array.from({length:strokesReceived},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'';};
+   const dots=p=>{const entry=score(p,h);const strokesReceived=Math.max(0,strokes(p,h)-(p==='Richie'&&entry?.lifeline?1:0));return strokesReceived>0?'<span class="match-stroke-dots" aria-label="'+strokesReceived+' handicap stroke'+(strokesReceived===1?'':'s')+'" title="'+strokesReceived+' handicap stroke'+(strokesReceived===1?'':'s')+'">'+Array.from({length:strokesReceived},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'';};
    row1.push('<td class="'+(ready&&x<y?'match-hole-win match-hole-green':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(score(p1,h)?.gross??'—')+dots(p1)+'</span></td>');
    row2.push('<td class="'+(ready&&y<x?'match-hole-win match-hole-gold':ready&&x===y?'match-hole-half':'')+'"><span class="match-net-value">'+(score(p2,h)?.gross??'—')+dots(p2)+'</span></td>');
   }
