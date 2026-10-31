@@ -37,7 +37,7 @@ export function liveFormat(id,score,net,par,rank,esc){
   const stable=(p,h,wild)=>{const s=score(p,h);if(!s)return null;const n=wild?s.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&s.lifeline?1:0):net(p,h),d=n-par(h);return d<=-1?3:d===0?2:d===1?1:0;};
   html+=card('Trail Stableford',six,(i,h)=>stable(six[i],h,false),18,true,'points',(i,h)=>grossCell(six[i],h,net(six[i],h)));
   html+=card('Wild Card Stableford',seven,(i,h)=>stable(seven[i],h,true),18,true,'points',(i,h)=>{const p=seven[i],entry=score(p,h);return grossCell(p,h,entry?entry.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&entry.lifeline?1:0):null);});
-  html+='<p class="small">Cells show Stableford points earned on each hole. Higher total leads.</p>';
+  html+='<p class="small">Gross scores and applied handicap dots shown; totals remain Stableford points. Higher total leads.</p>';
  }else if(id==='backyard'){
   const contests=[['Team skins',ts],['Individual skins',seven.map(p=>[p])]];
   for(const [title,groups] of contests){
@@ -84,5 +84,5 @@ export function wildCardStableford(id,score,par,rank,esc){
  const order=players.map((p,i)=>i).sort((a,b)=>totals[b]-totals[a]||played[b]-played[a]);
  const leader=played.every(x=>x===0)?'Not started':players[order[0]]+' leads · '+totals[order[0]]+' pts';
  const body=order.map(i=>'<tr><th>'+esc(players[i])+' · '+(through[i]===18?'F':through[i]?'Thru '+through[i]:'—')+'</th>'+rows[i].join('')+'<td><strong>'+totals[i]+'</strong></td></tr>').join('');
- return '<details class="match-card"><summary><span>Wild Card · Net Stableford</span><strong>'+esc(leader)+'</strong><small>7 players</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+body+'</tbody></table></div><p class="small">Live points for all seven golfers, including Mason. Highest Stableford total leads. Each golfer shows consecutive holes completed (Thru); points can reflect different holes completed.</p></details>';
+ return '<details class="match-card"><summary><span>Wild Card · Net Stableford</span><strong>'+esc(leader)+'</strong><small>7 players</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+body+'</tbody></table></div><p class="small">Gross scores with applied handicap dots for all seven golfers, including Mason. Total shows Stableford points; highest total leads. Each golfer shows consecutive holes completed (Thru); points can reflect different holes completed.</p></details>';
 }
