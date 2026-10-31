@@ -2,6 +2,6 @@
 export function matchSummary(left,right,status,thru,segments,winner=-1,subtitle=''){
  const esc=s=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
  const side=(names,i)=>'<span class="match-side '+(winner===i?'match-side-leading':'')+'">'+names.map(n=>'<span>'+esc(n)+'</span>').join('')+'</span>';
- const timeline='<span class="match-progress" aria-label="Hole results: green left side, gold right side, gray halved, pale unplayed">'+segments.map((v,i)=>'<span title="Hole '+(i+1)+': '+(['Not played','Left side','Right side','Halved'][v]||'Not played')+'" class="match-progress-hole match-progress-'+v+'"></span>').join('')+'</span>';
+ const timeline='<span class="match-progress-scroll"><span class="match-progress" aria-label="Hole results: green left side, gold right side, gray halved, pale unplayed">'+segments.map((v,i)=>'<span title="Hole '+(i+1)+': '+(['Not played','Left side','Right side','Halved'][v]||'Not played')+'" class="match-progress-hole match-progress-'+v+'"></span>').join('')+'</span>';
  return '<span class="match-visual"><span class="match-versus">'+side(left,0)+'<span class="match-center"><strong>'+esc(status)+'</strong><small>'+esc(thru)+'</small></span>'+side(right,1)+'</span>'+timeline+(subtitle?'<span class="match-visual-note">'+esc(subtitle)+'</span>':'')+'</span>';
 }
