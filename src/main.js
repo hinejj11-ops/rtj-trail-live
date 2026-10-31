@@ -66,7 +66,7 @@ function render(){
    body+='<h3>'+title+' · Vegas</h3>';
    const pairs=teams[roundId];
    for(let i=0;i<pairs.length;i++)for(let j=i+1;j<pairs.length;j++){
-    const first=pairs[i],second=pairs[j],rows=[[],[]],pars=[],head=[],segments=[];
+    const first=pairs[i],second=pairs[j],rows=[[],[]],pars=[],head=[],segments=[],grossRows=[...first,...second].map(()=>[]);
     let totals=[0,0],played=0,through=0;
     for(let h=start;h<start+9;h++){
      const values=[first,second].map(t=>t.every(p=>score(p,h)?.gross!=null)?t.map(p=>vegasDigit(roundId,p,h,score(p,h),par(h),rank(h))).sort((a,b)=>a-b):null).map(d=>d?10*d[0]+d[1]:null);
