@@ -36,7 +36,7 @@ export function liveFormat(id,score,net,par,rank,esc){
  }else if(id==='ross'){
   const stable=(p,h,wild)=>{const s=score(p,h);if(!s)return null;const n=wild?s.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&s.lifeline?1:0):net(p,h),d=n-par(h);return d<=-1?3:d===0?2:d===1?1:0;};
   html+=card('Trail Stableford',six,(i,h)=>stable(six[i],h,false),18,true,'points',(i,h)=>grossCell(six[i],h,net(six[i],h)));
-  html+=card('Wild Card Stableford',seven,(i,h)=>stable(seven[i],h,true),18,true);
+  html+=card('Wild Card Stableford',seven,(i,h)=>stable(seven[i],h,true),18,true,'points',(i,h)=>{const p=seven[i],entry=score(p,h);return grossCell(p,h,entry?entry.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&entry.lifeline?1:0):null);});
   html+='<p class="small">Cells show Stableford points earned on each hole. Higher total leads.</p>';
  }else if(id==='backyard'){
   const contests=[['Team skins',ts],['Individual skins',seven.map(p=>[p])]];
