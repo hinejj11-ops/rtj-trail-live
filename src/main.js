@@ -73,6 +73,11 @@ function render(){
      const complete=values.every(v=>v!==null);
      segments.push(!complete?0:values[0]<values[1]?1:values[1]<values[0]?2:3);
      if(complete){played++;totals[0]+=values[0];totals[1]+=values[1];if(h===start+through)through++;}
+     [...first,...second].forEach((p,k)=>{
+      const entry=score(p,h),st=entry?Math.max(0,strokes(p,h)-(p==='Richie'&&entry.lifeline?1:0)):0;
+      const dots=st?'<span class="match-stroke-dots" title="'+st+' applied handicap strokes">'+Array.from({length:st},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'';
+      grossRows[k].push('<td><span class="match-net-value">'+(entry?.gross??'—')+dots+'</span></td>');
+     });
      head.push('<th>'+(h-start+1)+'</th>');pars.push('<td>'+par(h)+'</td>');
      for(let k=0;k<2;k++)rows[k].push('<td class="'+(complete&&values[k]<values[1-k]?'match-hole-win '+(k===0?'match-hole-green':'match-hole-gold'):complete&&values[k]===values[1-k]?'match-hole-half':'')+'">'+(values[k]??'—')+'</td>');
     }
