@@ -14,7 +14,7 @@ export function liveFormat(id,score,net,par,rank,esc){
    const best=valid?(highWins?Math.max(...v):Math.min(...v)):null;
    if(mode==='holes'&&players.length===2)segments.push(!valid?0:v[0]===v[1]?3:v[0]<v[1]?1:2);
    if(valid){compared++;if(mode==='holes'){const winners=v.map((x,i)=>x===best?i:-1).filter(i=>i>=0);if(winners.length===1)wins[winners[0]]++;}}
-   v.forEach((x,i)=>{if(x!==null)totals[i]+=x;const cls=valid&&x===best?(v.filter(y=>y===best).length===1?'match-hole-win'+(mode==='holes'&&players.length===2?(i===0?' match-hole-green':' match-hole-gold'):''):'match-hole-half'):'';rows[i].push('<td class="'+cls+'">'+(x??'—')+'</td>');});
+   v.forEach((x,i)=>{if(x!==null)totals[i]+=x;const cls=valid&&x===best?(v.filter(y=>y===best).length===1?'match-hole-win'+(mode==='holes'&&players.length===2?(i===0?' match-hole-green':' match-hole-gold'):''):'match-hole-half'):'';rows[i].push('<td class="'+cls+'">'+(display?display(i,h,x):x??'—')+'</td>');});
   }
   const hasScores=rows.some(row=>row.some(cell=>!cell.includes('>—</td>')));
   const leader=mode==='holes'?(compared===0?'Not started':wins[0]===wins[1]?'All square':esc(players[wins[0]>wins[1]?0:1])+' '+Math.abs(wins[0]-wins[1])+' UP'):(!hasScores?'Not started':totals.every(x=>x===totals[0])?'Tied':esc(players[totals.indexOf(highWins?Math.max(...totals):Math.min(...totals))])+' leads · '+(highWins?Math.max(...totals):Math.min(...totals))+(mode==='credits'?' credits':mode==='skins'?' skins':' pts'));
