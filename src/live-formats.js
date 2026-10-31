@@ -78,7 +78,7 @@ export function wildCardStableford(id,score,par,rank,esc){
    const n=entry.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&entry.lifeline?1:0);
    const d=n-par(h),pts=d<=-1?3:d===0?2:d===1?1:0;
    totals[i]+=pts;played[i]++;if(through[i]===h-1)through[i]=h;
-   rows[i].push('<td>'+pts+'</td>');
+   const applied=Math.max(0,entry.gross-n);rows[i].push('<td title="'+esc(p)+' · '+pts+' Stableford points"><span class="match-net-value">'+entry.gross+(applied?'<span class="match-stroke-dots" title="'+applied+' applied handicap strokes">'+Array.from({length:applied},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'')+'</span></td>');
   });
  }
  const order=players.map((p,i)=>i).sort((a,b)=>totals[b]-totals[a]||played[b]-played[a]);
