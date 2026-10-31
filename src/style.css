@@ -60,3 +60,10 @@
 .match-card-visual .match-horizontal th:first-child{width:var(--match-label-width);min-width:var(--match-label-width);max-width:var(--match-label-width);padding-left:7px}
 .match-card-visual .match-table-wrap{padding:0;overflow-x:auto}
 .match-card-visual .match-net-value{gap:1px}
+
+/* Match colors remain assigned to the same side across hole bars, leader block and UP label. */
+.match-card-visual .match-side-leading-green{background:#173c2e;color:#fff}
+.match-card-visual .match-side-leading-gold{background:#bd9a48;color:#172f24}
+.match-card-visual .match-visual-green .match-center strong{color:#173c2e}
+.match-card-visual .match-visual-gold .match-center strong{color:#a47b22}
+.match-card-visual .match-visual-tied .match-center strong{color:#536459}
