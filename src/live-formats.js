@@ -5,6 +5,13 @@ export function liveFormat(id,score,net,par,rank,esc){
  const six=names.slice(0,6),seven=names,ts=teams[id];
  const gross=(p,h)=>score(p,h)?.gross??null;
  const label=t=>t.join(' + ');
+ const grossCell=(p,h,netValue=null)=>{
+  const entry=score(p,h);
+  if(!entry||entry.gross==null)return '—';
+  const applied=netValue===null?0:Math.max(0,entry.gross-netValue);
+  const dots=applied?'<span class="match-stroke-dots" title="'+applied+' applied handicap stroke(s)" aria-label="'+applied+' applied handicap stroke(s)">'+Array.from({length:applied},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'';
+  return '<span class="match-net-value" title="'+esc(p)+' · Gross '+entry.gross+(netValue===null?'':' · Net '+netValue)+'">'+entry.gross+dots+'</span>';
+ };
  const card=(title,players,value,n=18,highWins=false,mode='points',display=null)=>{
   const heads=[],pars=[],rows=players.map(()=>[]),totals=players.map(()=>0),wins=players.map(()=>0),segments=[];let thru=0,compared=0;
   for(let h=1;h<=n;h++){
