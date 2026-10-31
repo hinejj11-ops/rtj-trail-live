@@ -47,3 +47,16 @@
 .match-visual-note{display:block;color:#69796d;font-size:11px;text-align:center;margin-top:7px}
 .match-card-visual[open]>.match-table-wrap{border-top:1px solid #e4e9e1}
 @media(max-width:480px){.match-versus{grid-template-columns:minmax(0,1fr) 100px minmax(0,1fr);min-height:78px}.match-side{font-size:13px;padding:10px 7px}.match-center strong{font-size:18px}.match-visual{padding:0 7px 10px}.match-progress{gap:2px}}
+
+/* One rectangle per hole, aligned to the expanded scorecard's hole columns.
+   The name column is 100px; each hole occupies exactly 36px in both views. */
+.match-card-visual{--match-holes:18;--match-label-width:100px;--match-hole-width:36px}
+.match-card-visual .match-progress-scroll{display:block;margin-left:var(--match-label-width);width:calc(100% - var(--match-label-width));overflow-x:auto;scrollbar-width:none}
+.match-card-visual .match-progress-scroll::-webkit-scrollbar{display:none}
+.match-card-visual .match-progress{display:grid;grid-template-columns:repeat(var(--match-holes),var(--match-hole-width));gap:0;width:max-content;height:11px;margin:0}
+.match-card-visual .match-progress-hole{display:block;width:calc(var(--match-hole-width) - 4px);height:10px;margin:0 2px;border-radius:2px;box-shadow:inset 0 0 0 1px #ffffff80}
+.match-card-visual .match-horizontal{table-layout:fixed;width:calc(var(--match-label-width) + var(--match-holes)*var(--match-hole-width));min-width:0}
+.match-card-visual .match-horizontal th,.match-card-visual .match-horizontal td{box-sizing:border-box;width:var(--match-hole-width);min-width:var(--match-hole-width);max-width:var(--match-hole-width);padding:8px 2px;overflow:visible}
+.match-card-visual .match-horizontal th:first-child{width:var(--match-label-width);min-width:var(--match-label-width);max-width:var(--match-label-width);padding-left:7px}
+.match-card-visual .match-table-wrap{padding:0;overflow-x:auto}
+.match-card-visual .match-net-value{gap:1px}
