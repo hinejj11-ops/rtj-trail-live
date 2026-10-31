@@ -5,6 +5,7 @@ import {championship} from './championship.js';
 import {roundSnapshot} from './round-snapshot.js';
 import {liveFormat, wildCardStableford} from './live-formats.js';
 import {strokesOnHole,netScore,lifelineEligible,vegasDigit} from './scoring-rules.js';
+import {matchSummary} from './match-visual.js';
 import './style.css';
 const db=SUPABASE_URL&&SUPABASE_ANON_KEY?createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 let pendingJimmyPin=false;
@@ -42,10 +43,11 @@ function render(){
  if(r().format==='match'){for(const g of r().groups){for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){
   if(g[i]==='Mason'||g[j]==='Mason')continue;
   const p1=g[i],p2=g[j];let a=0,b=0,halves=0,played=0,through=0;
-  const row1=[],row2=[],parRow=[],holeRow=[];
+  const row1=[],row2=[],parRow=[],holeRow=[],segments=[];
   for(let h=1;h<=r().holes;h++){
    const x=net(p1,h),y=net(p2,h),ready=x!==null&&y!==null;
    const holePar=par(h);
+   segments.push(!ready?0:x<y?1:y<x?2:3);
    if(ready){played++;if(x<y)a++;else if(y<x)b++;else halves++;}
    if(ready&&h===through+1)through=h;
    holeRow.push('<th scope="col">'+h+'</th>');
@@ -57,25 +59,26 @@ function render(){
   const lead=a-b;
   const status=played===0?'Not started':lead===0?'All square':(lead>0?p1:p2)+' '+Math.abs(lead)+' UP';
   const thru=through===0?'—':through===r().holes?'F':'Thru '+through;
-  body+='<details class="match-card"><summary><span>'+esc(p1)+' vs '+esc(p2)+'</span><strong>'+esc(status)+'</strong><small>'+thru+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th scope="col">Hole</th>'+holeRow.join('')+'</tr></thead><tbody><tr class="match-par-row"><th scope="row">Par</th>'+parRow.join('')+'</tr><tr><th scope="row">'+esc(p1)+'</th>'+row1.join('')+'</tr><tr><th scope="row">'+esc(p2)+'</th>'+row2.join('')+'</tr></tbody></table></div><p class="small">Net scores only. Small circles show handicap strokes received on each hole. Green marks the hole winner; gray indicates a halved hole. '+a+'–'+b+' holes won · '+halves+' halved.</p></details>';
+  body+='<details class="match-card match-card-visual"><summary>'+matchSummary([p1],[p2],played===0?'NOT STARTED':lead===0?'ALL SQUARE':Math.abs(lead)+' UP',thru,segments,played===0||lead===0?-1:lead>0?0:1)+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th scope="col">Hole</th>'+holeRow.join('')+'</tr></thead><tbody><tr class="match-par-row"><th scope="row">Par</th>'+parRow.join('')+'</tr><tr><th scope="row">'+esc(p1)+'</th>'+row1.join('')+'</tr><tr><th scope="row">'+esc(p2)+'</th>'+row2.join('')+'</tr></tbody></table></div><p class="small">Net scores only. Small circles show handicap strokes received on each hole. Green marks the hole winner; gray indicates a halved hole. '+a+'–'+b+' holes won · '+halves+' halved.</p></details>';
  }}}
  else if(roundId==='silver-pm'){
   for(const [start,title] of [[1,'Heartbreaker'],[10,'Short Course']]){
    body+='<h3>'+title+' · Vegas</h3>';
    const pairs=teams[roundId];
    for(let i=0;i<pairs.length;i++)for(let j=i+1;j<pairs.length;j++){
-    const first=pairs[i],second=pairs[j],rows=[[],[]],pars=[],head=[];
+    const first=pairs[i],second=pairs[j],rows=[[],[]],pars=[],head=[],segments=[];
     let totals=[0,0],played=0,through=0;
     for(let h=start;h<start+9;h++){
      const values=[first,second].map(t=>t.every(p=>score(p,h)?.gross!=null)?t.map(p=>vegasDigit(roundId,p,h,score(p,h),par(h),rank(h))).sort((a,b)=>a-b):null).map(d=>d?10*d[0]+d[1]:null);
      const complete=values.every(v=>v!==null);
+     segments.push(!complete?0:values[0]<values[1]?1:values[1]<values[0]?2:3);
      if(complete){played++;totals[0]+=values[0];totals[1]+=values[1];if(h===start+through)through++;}
      head.push('<th>'+(h-start+1)+'</th>');pars.push('<td>'+par(h)+'</td>');
      for(let k=0;k<2;k++)rows[k].push('<td class="'+(complete&&values[k]<values[1-k]?'match-hole-win':complete&&values[k]===values[1-k]?'match-hole-half':'')+'">'+(values[k]??'—')+'</td>');
     }
     const label=t=>t.join(' + ');
     const status=played===0?'Not started':totals[0]===totals[1]?'Tied':label(totals[0]<totals[1]?first:second)+' leads by '+Math.abs(totals[0]-totals[1]);
-    body+='<details class="match-card"><summary><span>'+esc(label(first))+' vs '+esc(label(second))+'</span><strong>'+esc(status)+'</strong><small>'+(through===9?'F':through?'Thru '+through:'—')+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+head.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr><tr><th>'+esc(label(first))+'</th>'+rows[0].join('')+'<td>'+totals[0]+'</td></tr><tr><th>'+esc(label(second))+'</th>'+rows[1].join('')+'<td>'+totals[1]+'</td></tr></tbody></table></div><p class="small">Lower Vegas number wins each hole comparison. Totals include only holes completed by both teams ('+played+'/9).</p></details>';
+    body+='<details class="match-card match-card-visual"><summary>'+matchSummary(first,second,played===0?'NOT STARTED':totals[0]===totals[1]?'TIED':Math.abs(totals[0]-totals[1])+' AHEAD',through===9?'F':through?'THRU '+through:'—',segments,played===0||totals[0]===totals[1]?-1:totals[0]<totals[1]?0:1,'Vegas · lower total wins')+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+head.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr><tr><th>'+esc(label(first))+'</th>'+rows[0].join('')+'<td>'+totals[0]+'</td></tr><tr><th>'+esc(label(second))+'</th>'+rows[1].join('')+'<td>'+totals[1]+'</td></tr></tbody></table></div><p class="small">Lower Vegas number wins each hole comparison. Totals include only holes completed by both teams ('+played+'/9).</p></details>';
    }
   }
  }
