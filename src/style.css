@@ -67,3 +67,9 @@
 .match-card-visual .match-visual-green .match-center strong{color:#173c2e}
 .match-card-visual .match-visual-gold .match-center strong{color:#a47b22}
 .match-card-visual .match-visual-tied .match-center strong{color:#536459}
+
+/* Match table winners use the same side colors as the match summary and hole strip. */
+.match-card-visual .match-horizontal td.match-hole-win.match-hole-green{background:#173c2e;color:#fff}
+.match-card-visual .match-horizontal td.match-hole-win.match-hole-gold{background:#bd9a48;color:#172f24}
+.match-card-visual .match-horizontal td.match-hole-win.match-hole-green .match-stroke-dot{color:#fff}
+.match-card-visual .match-horizontal td.match-hole-win.match-hole-gold .match-stroke-dot{color:#172f24}
