@@ -61,9 +61,9 @@ export function liveFormat(id,score,net,par,rank,esc){
   const place=(values,prizes)=>{const order=values.map((v,i)=>i).sort((a,b)=>values[b]-values[a]),out=values.map(()=>0);for(let i=0;i<order.length;){let j=i+1;while(j<order.length&&Math.abs(values[order[j]]-values[order[i]])<1e-8)j++;const pts=prizes.slice(i,j).reduce((a,b)=>a+b,0)/(j-i);for(let k=i;k<j;k++)out[order[k]]=pts;i=j;}return out;};
   const frontReady=credits.every(row=>row.slice(0,9).every(v=>v!==null)),backReady=credits.every(row=>row.slice(9).every(v=>v!==null));
   const fp=frontReady?place(front,[3,2,1.5,1,.5,0]):null,bp=backReady?place(back,[5,3.5,2.5,1.5,.5,0]):null;
-  html+=card('GN Short finale credits',six,(i,h)=>credits[i][h-1],18,true,'credits');
+  html+=card('GN Short finale credits',six,(i,h)=>credits[i][h-1],18,true,'credits',(i,h)=>grossCell(six[i],h,net(six[i],h)));
   html+='<div class="match-table-wrap"><table class="match-table"><thead><tr><th>Golfer</th><th>Front credits</th><th>Front Trail pts</th><th>Back credits</th><th>Back Trail pts</th><th>Total Trail pts</th></tr></thead><tbody>'+six.map((p,i)=>'<tr><th>'+esc(p)+'</th><td>'+front[i].toFixed(2)+'</td><td>'+(fp?fp[i]:'Pending')+'</td><td>'+back[i].toFixed(2)+'</td><td>'+(bp?bp[i]:'Pending')+'</td><td>'+(fp&&bp?fp[i]+bp[i]:'Pending')+'</td></tr>').join('')+'</tbody></table></div>';
-  html+='<p class="small">Each hole awards one credit to the lowest net score, shared on ties.</p>';
+  html+='<p class="small">Gross scores and applied handicap dots shown; the Total column counts credits. Each hole awards one credit to the lowest net score, shared on ties.</p>';
  }
  return html;
 }
