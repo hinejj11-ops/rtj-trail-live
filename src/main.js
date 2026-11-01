@@ -85,6 +85,7 @@ let me=null,roundId=rounds.some(x=>x.id===sessionStorage.getItem('rtj-round'))?s
 const $=s=>document.querySelector(s),r=()=>rounds.find(x=>x.id===roundId);
 const esc=s=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 const playingGroups=(id=roundId)=>isContingency()&&contingencyGroups[id]?contingencyGroups[id]:playingGroupOverrides[id]||rounds.find(x=>x.id===id)?.groups||[];
+const eligibleRoundPlayers=(id)=>isContingency()&&contingencyGroups[id]?contingencyGroups[id].flat():roundPlayers(rounds.find(x=>x.id===id));
 const group=()=>playingGroups().find(g=>g.includes(me))||[];
 const hole=(h)=>holes.find(x=>x.round_id===roundId&&x.hole===h);
 const par=h=>hole(h)?.par??(r().id==='backyard'||r().id==='short'||(r().id==='silver-pm'&&h>9)?3:4);
@@ -116,9 +117,9 @@ function alignLiveMatchWindows(){
  });
 }
 function pairingsPanel(round){
- const competitionTeams=teams[round.id]||[];
+ const competitionTeams=isContingency()&&contingencyGroups[round.id]?[]:teams[round.id]||[];
  const groupCards=playingGroups(round.id).map((players,i)=>'<div class="pairings-group"><strong>Group '+String.fromCharCode(65+i)+'</strong><div>'+players.map(p=>'<span class="pairings-player">'+esc(p)+'</span>').join('')+'</div></div>').join('');
- const fixedGroups=round.groups.map(g=>g.filter(p=>p!=='Mason'));
+ const fixedGroups=playingGroups(round.id).map(g=>g.filter(p=>p!=='Mason'));
  const matchups=round.format==='match'?fixedGroups.flatMap(g=>g.flatMap((p,i)=>g.slice(i+1).map(opponent=>p+' vs '+opponent))):[];
  const teamName=round.format==='vegas'?'Vegas Teams':round.format==='triple'?'Triple Threat Sides':round.format==='skins'?'Gross Team Skins':round.format==='bestball'?'Best-Ball Teams':'Teams';
  const teamCards=competitionTeams.length?'<div class="pairings-teams"><h4>'+teamName+'</h4>'+competitionTeams.map((players,i)=>'<div class="pairings-team"><span class="pairings-team-label">Team '+(i+1)+'</span> '+players.map(esc).join(' + ')+'</div>').join('')+'<p class="small">These teams compete against the other listed teams, even when partners are in different tee groups.</p></div>':'';
@@ -163,7 +164,7 @@ function render(){
  body=syncStatus()+'<nav class="tabs">'+tabs.map(([id,label])=>'<button data-tab="'+id+'" class="'+(tab===id?'chosen':'')+'">'+label+'</button>').join('')+'</nav>';
  if(!(isSpectator()&&(tab==='skills'||tab==='boards'||tab==='trail')))body+='<label>Round <select id="round">'+rounds.map(x=>'<option value="'+x.id+'" '+(x.id===roundId?'selected':'')+'>'+x.date+' · '+x.name+'</option>').join('')+'</select></label>';
  if(tab==='scores'){
- let players=(me==='Jimmy'||isSpectator())?roundPlayers(r()):group();if(!target||!players.includes(target))target=players.includes(me)?me:players[0];
+ let players=(me==='Jimmy'||isSpectator())?eligibleRoundPlayers(roundId):group();if(!target||!players.includes(target))target=players.includes(me)?me:players[0];
  body+=(isSpectator()?'':championshipSnapshot())+'<section class="panel"><h2>'+esc(r().name)+'</h2><p>'+r().date+' · '+r().time+' CST · '+r().format.toUpperCase()+'</p>'+pairingsPanel(r());
  if(guideCourses[roundId])body+='<details class="hole-guide-demo hole-guide-top"><summary>⛳ Hole-by-Hole Guide</summary><div class="hole-guide-inner"><label>Select hole <select id="guide-hole">'+guideHoles().map((x,i)=>'<option value="'+(i+1)+'" '+(guideHole===i+1?'selected':'')+'>'+x.course+' #'+x.hole+'</option>').join('')+'</select></label><div id="guide-content"></div></div></details>';
  if(testMode&&!isSpectator())body+='<div class="warning"><strong>TEST MODE ACTIVE</strong> — scores are saved separately from official tournament scores.</div>';else if(!ready&&!isSpectator())body+='<div class="warning">Official scoring is locked until the organizer verifies hole pars and stroke indexes in Course setup.</div>';
