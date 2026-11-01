@@ -36,7 +36,7 @@ const ridgeGuide={name:'Ridge',code:'ridge',white:[364,500,506,356,123,389,317,1
 guideCourses.ridge=[ridgeGuide];
 function toGuide(x){return {name:x[0],code:x[1],white:x[2],par:x[3],advice:x[4]};}
 function guideHoles(){return (guideCourses[roundId]||[]).flatMap(c=>c.white.map((white,i)=>({course:c.name,code:c.code,base:c.base||'https://www.rtjgolf.com/silverlakes/tour-2013/',hole:i+1,white,par:c.par[i],advice:c.advice[i]})));}
-const localGuidePaths={'Backbreaker':'silver-lakes/backbreaker','Mindbreaker':'silver-lakes/mindbreaker','Heartbreaker':'silver-lakes/heartbreaker','Short Course':'silver-lakes/short-course','Valley':'valley'};
+const localGuidePaths={'Backbreaker':'silver-lakes/backbreaker','Mindbreaker':'silver-lakes/mindbreaker','Heartbreaker':'silver-lakes/heartbreaker','Short Course':'silver-lakes/short-course','Valley':'valley','Ridge':'ridge'};
 function updateGuide(){
  const el=document.querySelector('#guide-content');if(!el)return;
  const item=guideHoles()[guideHole-1];if(!item)return;
