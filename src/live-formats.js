@@ -1,4 +1,5 @@
 import {matchSummary} from './match-visual.js';
+import {grossScoreHtml} from './score-symbol.js';
 import {names,teams} from './data.js';
 import {strokesOnHole} from './scoring-rules.js';
 export function liveFormat(id,score,net,par,rank,esc){
@@ -10,7 +11,7 @@ export function liveFormat(id,score,net,par,rank,esc){
   if(!entry||entry.gross==null)return '—';
   const applied=netValue===null?0:Math.max(0,entry.gross-netValue);
   const dots=applied?'<span class="match-stroke-dots" title="'+applied+' applied handicap stroke(s)" aria-label="'+applied+' applied handicap stroke(s)">'+Array.from({length:applied},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'';
-  return '<span class="match-net-value" title="'+esc(p)+' · Gross '+entry.gross+(netValue===null?'':' · Net '+netValue)+'">'+entry.gross+dots+'</span>';
+  return '<span class="match-net-value" title="'+esc(p)+' · Gross '+entry.gross+(netValue===null?'':' · Net '+netValue)+'">'+grossScoreHtml(entry.gross,par(h))+dots+'</span>';
  };
  const card=(title,players,value,n=18,highWins=false,mode='points',display=null)=>{
   const heads=[],pars=[],rows=players.map(()=>[]),totals=players.map(()=>0),wins=players.map(()=>0),segments=[];let thru=0,compared=0;
@@ -78,7 +79,7 @@ export function wildCardStableford(id,score,par,rank,esc){
    const n=entry.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&entry.lifeline?1:0);
    const d=n-par(h),pts=d<=-1?3:d===0?2:d===1?1:0;
    totals[i]+=pts;played[i]++;if(through[i]===h-1)through[i]=h;
-   const applied=Math.max(0,entry.gross-n);rows[i].push('<td title="'+esc(p)+' · '+pts+' Stableford points"><span class="match-net-value">'+entry.gross+(applied?'<span class="match-stroke-dots" title="'+applied+' applied handicap strokes">'+Array.from({length:applied},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'')+'</span></td>');
+   const applied=Math.max(0,entry.gross-n);rows[i].push('<td title="'+esc(p)+' · '+pts+' Stableford points"><span class="match-net-value">'+grossScoreHtml(entry.gross,par(h))+(applied?'<span class="match-stroke-dots" title="'+applied+' applied handicap strokes">'+Array.from({length:applied},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'')+'</span></td>');
   });
  }
  const order=players.map((p,i)=>i).sort((a,b)=>totals[b]-totals[a]||played[b]-played[a]);
