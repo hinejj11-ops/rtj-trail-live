@@ -81,3 +81,19 @@
 /* Eagle and double bogey use the same clean single outline as birdie and bogey. */
 .match-net-value .score-symbol{min-width:1.55em;min-height:1.55em}
 .hole-input .score-symbol{min-width:1.7em;min-height:1.7em}
+
+/* Compact round pairings on the Scorecard tab */
+.pairings-panel{margin:12px 0;border:1px solid #d8dfd7;border-radius:11px;padding:0;background:#f8f9f5;overflow:hidden}
+.pairings-panel>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;color:#173c2e;font-weight:800;cursor:pointer}
+.pairings-panel>summary::-webkit-details-marker{display:none}
+.pairings-panel[open] .pairings-chevron{transform:rotate(180deg)}
+.pairings-content{padding:0 12px 12px;border-top:1px solid #e2e7de}
+.pairings-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}
+.pairings-group{padding:10px;background:white;border:1px solid #d8dfd7;border-radius:9px}
+.pairings-group>strong{display:block;color:#173c2e;margin-bottom:8px}
+.pairings-player{display:inline-block;padding:5px 8px;margin:0 4px 5px 0;border-radius:6px;background:#e8eee6;color:#173c2e;font-size:13px;font-weight:650}
+.pairings-teams{margin-top:12px;padding:10px 12px;background:#f3efdf;border-radius:9px}
+.pairings-teams h4{margin:0 0 7px;color:#173c2e}
+.pairings-team{padding:6px 0;font-size:13px}
+.pairings-team-label{display:inline-block;color:#896b28;font-weight:800;min-width:58px}
+.pairings-note{font-size:12px;line-height:1.5;color:#54685c;margin:12px 2px 0}
