@@ -162,3 +162,12 @@
 .trail-pin{width:44px;height:54px;border-radius:0;clip-path:polygon(50% 100%,12% 48%,8% 31%,12% 17%,24% 6%,40% 0,60% 0,76% 6%,88% 17%,92% 31%,88% 48%);background:#b6d46e;box-shadow:none}
 .trail-pin.selected{background:#f1d47c;filter:drop-shadow(0 0 3px #fff)}
 @media(max-width:480px){.trail-pin{width:38px;height:48px;font-size:12px}}
+
+/* Exact approved Alabama artwork: pins are already drawn in the image.
+   Invisible accessible hit targets preserve the original visual design. */
+.trail-map{aspect-ratio:580/1090;max-width:430px;background:#f0f1eb;border:0;border-radius:10px}
+.trail-reference-image{width:100%;height:100%;object-fit:fill;display:block}
+.trail-pin-hotspot,.trail-pin-hotspot.selected{width:15%;height:7%;min-width:42px;min-height:42px;transform:translate(-50%,-75%);background:transparent;clip-path:none;border:0;border-radius:50%;filter:none;outline:none;box-shadow:none;color:transparent}
+.trail-pin-hotspot span{opacity:0}
+.trail-pin-hotspot:hover{background:#f0d36b24}
+.trail-pin-hotspot:focus-visible{outline:3px solid #f0d36b;outline-offset:1px}
