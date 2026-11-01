@@ -315,7 +315,7 @@ function render(){
  }
  }
  if(tab==='settings'&&me==='Jimmy'){
-  const settingsTitles=['Handicap & Strokes Adjustments','Golfer Login Management','Tournament Buy-In & Prizes','CTP & Long Drive Holes','Playing Group Assignments','Course Setup · Hole Information'];
+  const settingsTitles=['Handicap &amp; Strokes Adjustments','Golfer Login Management','Tournament Buy-In & Prizes','CTP & Long Drive Holes','Playing Group Assignments','Course Setup · Hole Information'];
   for(const [index,title] of settingsTitles.entries()){
    const heading='<h2>'+title+'</h2>';
    const start=body.indexOf('<section class="panel">'+heading);
