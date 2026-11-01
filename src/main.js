@@ -261,7 +261,7 @@ function render(){
  }
  }else if(tab==='skills'&&isSpectator()){
  const valid=skills.filter(x=>skillsHoles[x.round_id]&&Object.hasOwn(skillsHoles[x.round_id],x.kind)&&names.includes(x.winner));
- const boards=[
+ const boards=isContingency()?contingencySkillsBoards().map(b=>({title:b.name+' · '+money(b.prize),players:b.eligible,entries:valid.filter(x=>b.id==='wildSkills'?wildCardSkillsRounds.includes(x.round_id):b.id==='finalSkills'?['lake','short'].includes(x.round_id):!['lake','short'].includes(x.round_id)),description:'Contingency championship · '+b.rounds+'/'+b.expected+' contests resolved'})):[
   {title:'Overall Skills',players:names.slice(0,6),entries:valid,description:'All six full-trip golfers. One point per Closest to Pin or Long Drive win.'},
   {title:'Wild Card Skills',players:names,entries:valid.filter(x=>wildCardSkillsRounds.includes(x.round_id)),description:'All seven golfers. One point per skills challenge won during Wild Card rounds.'}
  ];
@@ -284,7 +284,7 @@ function render(){
  const wildValid=valid.filter(x=>wildCardSkillsRounds.includes(x.round_id));
  const overallResolved=skills.filter(x=>skillsHoles[x.round_id]&&Object.hasOwn(skillsHoles[x.round_id],x.kind)&&x.winner).length;
  const wildResolved=skills.filter(x=>wildCardSkillsRounds.includes(x.round_id)&&skillsHoles[x.round_id]&&Object.hasOwn(skillsHoles[x.round_id],x.kind)&&x.winner).length;
- const eligible=wildCardSkillsRounds.includes(roundId)?names:names.slice(0,6);
+ const eligible=eligibleRoundPlayers(roundId);
  const recorded=Object.keys(designated).filter(kind=>skills.some(x=>x.round_id===roundId&&x.kind===kind&&x.winner)).length;
  body+='<section class="panel"><h2>CTP & Long Drive</h2><p class="small">All golfers can view results. Only Jimmy can select or change winners.</p><p><strong>'+esc(r().name)+'</strong> · '+(locked?'🔒 Locked results':'Provisional · '+recorded+'/'+Object.keys(designated).length+' selected')+'</p>';
  for(const kind of ['ctp','ld']){
@@ -301,10 +301,14 @@ function render(){
   body+='<button id="skills-lock" data-locked="'+(locked?'1':'0')+'" '+(!locked&&recorded!==Object.keys(designated).length?'disabled':'')+'>'+(locked?'Unlock Results':'Lock In Results')+'</button>';
   body+='<p class="small">'+(locked?'Unlock to correct a winner. Changes are visible to all golfers.':'Record a winner or No qualifying shot for each contest before locking this round. Selections are visible to everyone immediately.')+'</p>';
  }
- body+='<p class="small">'+(wildCardSkillsRounds.includes(roundId)?'These contests count toward both championships for eligible golfers; Mason earns Wild Card Skills points only.':'These contests count toward Overall Skills only.')+'</p></section>';
+ body+='<p class="small">'+(isContingency()?(['lake','short'].includes(roundId)?'Final Day CTP/LD only. Brittany is not eligible.':wildCardSkillsRounds.includes(roundId)?'These results count toward Season and Wild Card CTP/LD for eligible golfers.':'Season CTP/LD only.'):(wildCardSkillsRounds.includes(roundId)?'These contests count toward both championships for eligible golfers; Mason earns Wild Card Skills points only.':'These contests count toward Overall Skills only.'))+'</p></section>';
  const skillsLeaderboard=(players,entries)=>{const ranked=players.map(player=>({player,points:entries.filter(x=>x.winner===player).length})).sort((a,b)=>b.points-a.points||players.indexOf(a.player)-players.indexOf(b.player));return ranked.map((x,i)=>{const first=ranked.findIndex(y=>y.points===x.points)+1;const tied=ranked.some((y,j)=>j!==i&&y.points===x.points);return '<div class="row"><b>'+(tied?'T'+first:first+'.')+' '+esc(x.player)+'</b><strong>'+x.points+' pts</strong></div>';}).join('');};
- body+='<section class="panel"><h3>Overall Skills · '+overallResolved+'/16 resolved</h3>'+skillsLeaderboard(names.slice(0,6),overallValid)+'</section>';
- body+='<section class="panel"><h3>Wild Card Skills · '+wildResolved+'/7 resolved</h3>'+skillsLeaderboard(names,wildValid)+'</section>';
+ if(isContingency()){
+  for(const board of contingencySkillsBoards())body+='<section class="panel"><h3>'+esc(board.name)+' · '+money(board.prize)+' · '+board.rounds+'/'+board.expected+' resolved</h3>'+skillsLeaderboard(board.eligible,valid.filter(x=>board.id==='wildSkills'?wildCardSkillsRounds.includes(x.round_id):board.id==='finalSkills'?['lake','short'].includes(x.round_id):!['lake','short'].includes(x.round_id)))+'</section>';
+ }else{
+  body+='<section class="panel"><h3>Overall Skills · '+overallResolved+'/16 resolved</h3>'+skillsLeaderboard(names.slice(0,6),overallValid)+'</section>';
+  body+='<section class="panel"><h3>Wild Card Skills · '+wildResolved+'/7 resolved</h3>'+skillsLeaderboard(names,wildValid)+'</section>';
+ }
  }else if(tab==='settings'){
  if(me==='Jimmy')body+='<section class="panel"><h2>Championship Format</h2><p>Current mode: <strong>'+esc(isContingency()?'Four-Day Contingency':'Original Championship')+'</strong>. Scores and submitted scorecards are never changed by switching modes.</p><button id="preview-contingency">'+(previewContingency?'Hide contingency preview':'Preview contingency standings')+'</button> <button id="switch-championship-mode" class="primary">Activate '+(isContingency()?'Original':'Contingency')+' Mode</button></section>';
  if(me==='Jimmy'&&previewContingency){const ce=contingencyEngine();body+='<section class="panel"><h3>Contingency Preview (not active)</h3>'+ce.boards.map(b=>'<p><strong>'+esc(b.name)+'</strong> · '+b.rounds+'/'+b.expected+' rounds · '+money(b.prize)+'<br>'+b.eligible.slice().sort((a,c)=>b.values[c]-b.values[a]).map(p=>esc(p)+': '+Number(b.values[p].toFixed(2))).join(' · ')+'</p>').join('')+'</section>';}
