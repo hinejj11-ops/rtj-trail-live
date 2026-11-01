@@ -308,8 +308,13 @@ function render(){
    body=body.slice(0,start)+replacement+body.slice(end+'</section>'.length);
   }
  }
+ const spectatorOpenDetails=me==='Spectator'?Array.from(document.querySelectorAll('#app main details')).flatMap((el,i)=>el.open?[i]:[]):[];
  $('#app').innerHTML='<header><div class="eyebrow gold">ROBERT TRENT JONES GOLF TRAIL</div><h1>TRAIL CHAMPIONSHIP</h1><div class="session"><span>6–11 NOV 2026</span>'+(me?'<strong>'+me+'</strong><button data-logout>Sign out</button>':'')+'</div></header><main>'+(notice?'<div class="notice">'+esc(notice)+'</div>':'')+body+'</main><div class="footer">THE EXPEDITION EDITION · LIVE SCORING</div>';
  if(tab==='scores'&&guideCourses[roundId]){guideHole=Math.min(guideHole,guideHoles().length);updateGuide();}
+ if(me==='Spectator'&&spectatorOpenDetails.length){
+  const details=document.querySelectorAll('#app main details');
+  for(const index of spectatorOpenDetails)if(details[index])details[index].open=true;
+ }
  // Keep the latest completed holes visible on narrow screens after each live update.
  if(tab==='matches')alignLiveMatchWindows();
 }
