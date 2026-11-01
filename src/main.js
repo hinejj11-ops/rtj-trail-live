@@ -54,12 +54,12 @@ const gnShortGuide={name:'Grand National Short Course',white:[130,148,128,115,12
 guideCourses.short=[gnShortGuide];
 function toGuide(x){return {name:x[0],code:x[1],white:x[2],par:x[3],advice:x[4]};}
 function guideHoles(){return (guideCourses[roundId]||[]).flatMap(c=>c.white.map((white,i)=>({course:c.name,code:c.code,base:c.base||'https://www.rtjgolf.com/silverlakes/tour-2013/',hole:i+1,white,par:c.par[i],title:c.titles?.[i],advice:c.advice[i]})));}
-const localGuidePaths={'Backbreaker':'silver-lakes/backbreaker','Mindbreaker':'silver-lakes/mindbreaker','Heartbreaker':'silver-lakes/heartbreaker','Short Course':'silver-lakes/short-course','Valley':'valley','Ridge':'ridge','The Back Yard':'backyard','Grand National Short Course':'grand-national/short-course'};
+const localGuidePaths={'Backbreaker':'silver-lakes/backbreaker','Mindbreaker':'silver-lakes/mindbreaker','Heartbreaker':'silver-lakes/heartbreaker','Short Course':'silver-lakes/short-course','Valley':'valley','Ridge':'ridge','The Back Yard':'backyard','Ross Bridge':'ross-bridge','Grand National Links':'grand-national/links','Grand National Lake':'grand-national/lake','Grand National Short Course':'grand-national/short-course'};
 function updateGuide(){
  const el=document.querySelector('#guide-content');if(!el)return;
  const item=guideHoles()[guideHole-1];if(!item)return;
  const sel=document.querySelector('#guide-hole');if(sel)sel.value=String(guideHole);
- const local=localGuidePaths[item.course]&&!(item.course==='The Back Yard'&&item.hole>6)?'/images/'+localGuidePaths[item.course]+'/hole-'+item.hole+'.webp':'';
+ const local=localGuidePaths[item.course]?'/images/'+localGuidePaths[item.course]+'/hole-'+item.hole+'.webp':'';
  const image=local?'<img loading="lazy" src="'+local+'" alt="'+item.course+' hole '+item.hole+' map">':'<p class="guide-image-pending">Updated hole map pending</p>';
  el.innerHTML='<h3>'+item.course+' · Hole '+item.hole+'</h3><p class="hole-guide-hdcp">'+(item.title||'HDCP #'+rank(guideHole))+'</p><p class="hole-guide-par">Par '+item.par+' · <strong>'+(item.title?'Back':'White')+': '+item.white+' yards</strong></p><div class="hole-guide-navigation"><button type="button" class="hole-guide-arrow" data-guide-step="-1" aria-label="Previous hole" '+(guideHole===1?'disabled':'')+'>❮</button>'+image+'<button type="button" class="hole-guide-arrow" data-guide-step="1" aria-label="Next hole" '+(guideHole===guideHoles().length?'disabled':'')+'>❯</button></div><p>'+item.advice+'</p>';
  const img=el.querySelector('img');if(img)img.addEventListener('error',()=>{img.replaceWith(Object.assign(document.createElement('p'),{textContent:'Updated hole map pending'}));},{once:true});
