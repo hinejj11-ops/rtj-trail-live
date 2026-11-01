@@ -124,3 +124,8 @@
 /* Tournament operations */
 .sync-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;background:#e9efe7;border-radius:10px;margin:8px 0}
 .sync-state{font-weight:700;font-size:12px}.sync-ok{color:#246b4a}.sync-warn{color:#9b6a20}.sync-bar button{margin-left:auto;padding:6px 10px}
+
+/* Single-hole guide preview */
+.hole-guide-demo{grid-column:1/-1;margin:5px 0 8px;border:1px solid #c8d6c5;border-radius:10px;background:#f4f8f1;overflow:hidden}
+.hole-guide-demo summary{cursor:pointer;padding:11px 12px;font-weight:700;color:#1d563d;list-style-position:inside}
+.hole-guide-inner{padding:0 13px 14px;line-height:1.5}.hole-guide-inner h3{margin:8px 0}.hole-guide-inner h4{margin:10px 0 3px}.hole-guide-inner img{display:block;max-width:100%;height:auto;max-height:470px;object-fit:contain;margin:10px auto;background:#e6efda;border-radius:8px}.hole-guide-inner a{color:#1b654a;text-decoration:underline}
