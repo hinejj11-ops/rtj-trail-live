@@ -139,7 +139,7 @@ function trailMapPanel(){
  const active=trailSites.find(x=>x.id===selectedTrailSite)||trailSites[0];
  return '<section class="panel trail-panel"><h2>⛳ RTJ Trail · Alabama</h2><p>Four stops across Alabama. Select a pin to explore the courses we are playing.</p>'+
  '<div class="trail-map" role="group" aria-label="Alabama golf course locations">'+
- '<img class="trail-reference-image" src="/images/rtj-alabama-reference-map.webp" alt="Alabama map with the four RTJ Trail locations: Silver Lakes, Oxmoor Valley, Ross Bridge, and Grand National">'+
+ '<img class="trail-reference-image" src="/images/rtj-alabama-reference-map.webp?v=approved-map-20261101" alt="Alabama map with the four RTJ Trail locations: Silver Lakes, Oxmoor Valley, Ross Bridge, and Grand National" onerror="this.insertAdjacentHTML(\'afterend\',\'<p class=trail-map-error>Map image could not load. Check public/images/rtj-alabama-reference-map.webp in the deployed site.</p>\')">'+
  trailSites.map(site=>'<button type="button" class="trail-pin trail-pin-hotspot '+(site.id===active.id?'selected':'')+'" data-trail-site="'+site.id+'" style="left:'+site.x+'%;top:'+site.y+'%" aria-pressed="'+(site.id===active.id)+'" aria-label="'+site.name+'"><span>'+site.short+'</span></button>').join('')+
  '</div><div class="trail-site-detail" aria-live="polite"><h3>'+active.name+'</h3><p>'+active.area+' · '+active.days+'</p><strong>Courses at this stop</strong><ul>'+active.courses.map(c=>'<li>'+c+'</li>').join('')+'</ul></div></section>';
 }
