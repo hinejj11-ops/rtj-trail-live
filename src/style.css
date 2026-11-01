@@ -116,3 +116,7 @@
 .score-hole-number{display:flex;align-items:center;justify-content:center;gap:2px;white-space:nowrap}
 .score-skill-emoji{font-size:13px;line-height:1}
 @media(min-width:650px){.championship-snapshot-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Fill the row with two leaders, or fit all three when Wild Card applies. */
+.championship-snapshot-grid.championship-snapshot-two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.championship-snapshot-grid.championship-snapshot-three{grid-template-columns:repeat(3,minmax(0,1fr))}
