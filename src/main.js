@@ -125,7 +125,7 @@ function render(){
  else{
  const tabs=[['scores','Scorecard'],['matches','Live Matches'],['boards','Leaderboards'],['skills','CTP & LD'],['settings','Settings']].filter(([id])=>!isSpectator()||id!=='settings').map(([id,label])=>[id,isSpectator()&&id==='skills'?'Skills Challenges':label]);
  body=syncStatus()+'<nav class="tabs">'+tabs.map(([id,label])=>'<button data-tab="'+id+'" class="'+(tab===id?'chosen':'')+'">'+label+'</button>').join('')+'</nav>';
- if(!(isSpectator()&&tab==='skills'))body+='<label>Round <select id="round">'+rounds.map(x=>'<option value="'+x.id+'" '+(x.id===roundId?'selected':'')+'>'+x.date+' · '+x.name+'</option>').join('')+'</select></label>';
+ if(!(isSpectator()&&(tab==='skills'||tab==='boards')))body+='<label>Round <select id="round">'+rounds.map(x=>'<option value="'+x.id+'" '+(x.id===roundId?'selected':'')+'>'+x.date+' · '+x.name+'</option>').join('')+'</select></label>';
  if(tab==='scores'){
  let players=(me==='Jimmy'||isSpectator())?roundPlayers(r()):group();if(!target||!players.includes(target))target=players.includes(me)?me:players[0];
  body+=(isSpectator()?'':championshipSnapshot())+'<section class="panel"><h2>'+esc(r().name)+'</h2><p>'+r().date+' · '+r().time+' CST · '+r().format.toUpperCase()+'</p>'+pairingsPanel(r());
