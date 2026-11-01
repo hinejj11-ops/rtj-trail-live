@@ -186,10 +186,15 @@ function render(){
    lake:'Best Ball: each two-person team counts its better net score on each hole against the other teams.',
    short:'Individual net hole credits: all six golfers compete on each hole, with handicap strokes applied. The finale can change the overall standings.'
   };
-  body+='<section class="panel"><h3>How This Round Works</h3><p class="small">'+esc(descriptions[roundId]||'Follow the live results below.')+'</p></section>';
+  body+='<section class="panel"><h3>How This Round Works</h3><p class="small">'+esc(isContingency()&&roundId==='lake'?'Five-player individual net Stableford. Net birdie or better = 3, par = 2, bogey = 1.':isContingency()&&roundId==='short'?'Five-player individual net hole credits. The lowest net score on each hole earns one credit, split equally on ties.':descriptions[roundId]||'Follow the live results below.')+'</p></section>';
  }
  body+=matchAlertPanel()+'<section class="panel"><h2>Live Match Center</h2>';
- if(r().format==='match'){for(const g of r().groups){for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){
+ if(isContingency()&&['lake','short'].includes(roundId)){
+  const ps=eligibleRoundPlayers(roundId),complete=ps.every(p=>Array.from({length:r().holes},(_,i)=>score(p,i+1)?.gross!=null).every(Boolean));
+  const ranking=ps.map(p=>{let total=0,played=0;for(let h=1;h<=r().holes;h++){const n=net(p,h);if(n===null)continue;played++;if(roundId==='lake'){const d=n-par(h);total+=d<=-1?3:d===0?2:d===1?1:0;}else{const eligible=ps.filter(q=>net(q,h)!==null);if(eligible.length===ps.length){const low=Math.min(...eligible.map(q=>net(q,h)));if(n===low)total+=1/eligible.filter(q=>net(q,h)===low).length;}}}return {p,total,played};}).sort((a,b)=>b.total-a.total);
+  body+='<h3>'+esc(roundId==='lake'?'Individual Net Stableford':'Individual Net Hole Credits')+'</h3><p class="small">Five-player Final Day Championship. '+(complete?'All holes entered.':'Provisional live scores; official points post after scorecard verification.')+'</p>'+ranking.map(x=>'<div class="row"><strong>'+esc(x.p)+'</strong><span>'+Number(x.total.toFixed(3))+' '+(roundId==='lake'?'Stableford points':'hole credits')+' · '+x.played+'/'+r().holes+' entered</span></div>').join('');
+ }else 
+ if(r().format==='match'){for(const g of playingGroups()){for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){
   if(g[i]==='Mason'||g[j]==='Mason')continue;
   const p1=g[i],p2=g[j];let a=0,b=0,halves=0,played=0,through=0;
   const row1=[],row2=[],parRow=[],holeRow=[],segments=[];
@@ -218,7 +223,7 @@ function render(){
     const first=pairs[i],second=pairs[j],rows=[[],[]],pars=[],head=[],segments=[],grossRows=[...first,...second].map(()=>[]);
     let totals=[0,0],played=0,through=0;
     for(let h=start;h<start+9;h++){
-     const values=[first,second].map(t=>t.every(p=>score(p,h)?.gross!=null)?t.map(p=>vegasDigit(roundId,p,h,score(p,h),par(h),rank(h))).sort((a,b)=>a-b):null).map(d=>d?10*d[0]+d[1]:null);
+     const values=[first,second].map(t=>t.every(p=>score(p,h)?.gross!=null)?t.map(p=>h<=9?vegasDigit(roundId,p,h,score(p,h),par(h),rank(h)):Math.min(score(p,h).gross,par(h)*2,par(h)===5?9:Infinity)).sort((a,b)=>a-b):null).map(d=>d?10*d[0]+d[1]:null);
      const complete=values.every(v=>v!==null);
      segments.push(!complete?0:values[0]<values[1]?1:values[1]<values[0]?2:3);
      if(complete){played++;totals[0]+=values[0];totals[1]+=values[1];if(h===start+through)through++;}
@@ -232,13 +237,13 @@ function render(){
     }
     const label=t=>t.join(' + ');
     const status=played===0?'Not started':totals[0]===totals[1]?'Tied':label(totals[0]<totals[1]?first:second)+' leads by '+Math.abs(totals[0]-totals[1]);
-    body+='<details class="match-card match-card-visual" style="--match-holes:9"><summary>'+matchSummary(first,second,played===0?'NOT STARTED':totals[0]===totals[1]?'TIED':Math.abs(totals[0]-totals[1])+' AHEAD',!testMode&&[...first,...second].every(p=>submissions.some(x=>x.round_id===roundId&&x.player===p))?'Final':'Thru '+through,segments,played===0||totals[0]===totals[1]?-1:totals[0]<totals[1]?0:1,'Vegas · lower total wins')+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+head.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr><tr><th>'+esc(label(first))+'</th>'+rows[0].join('')+'<td>'+totals[0]+'</td></tr><tr><th>'+esc(label(second))+'</th>'+rows[1].join('')+'<td>'+totals[1]+'</td></tr>'+[...first,...second].map((p,k)=>'<tr><th>'+esc(p)+' gross</th>'+grossRows[k].join('')+'<td>—</td></tr>').join('')+'</tbody></table></div><p class="small">Vegas rows show net two-digit team values; individual rows show gross scores with handicap dots. Totals include only holes completed by both teams ('+played+'/9).</p></details>';
+    body+='<details class="match-card match-card-visual" style="--match-holes:9"><summary>'+matchSummary(first,second,played===0?'NOT STARTED':totals[0]===totals[1]?'TIED':Math.abs(totals[0]-totals[1])+' AHEAD',!testMode&&[...first,...second].every(p=>submissions.some(x=>x.round_id===roundId&&x.player===p))?'Final':'Thru '+through,segments,played===0||totals[0]===totals[1]?-1:totals[0]<totals[1]?0:1,'Vegas · lower total wins')+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+head.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr><tr><th>'+esc(label(first))+'</th>'+rows[0].join('')+'<td>'+totals[0]+'</td></tr><tr><th>'+esc(label(second))+'</th>'+rows[1].join('')+'<td>'+totals[1]+'</td></tr>'+[...first,...second].map((p,k)=>'<tr><th>'+esc(p)+' gross</th>'+grossRows[k].join('')+'<td>—</td></tr>').join('')+'</tbody></table></div><p class="small">Heartbreaker shows net Vegas; Short Course shows gross Vegas. Individual rows show gross scores. Totals include only holes completed by both teams ('+played+'/9).</p></details>';
    }
   }
  }
  else if(['valley','lake','ross','short','backyard'].includes(roundId))body+=liveFormat(roundId,score,net,par,rank,esc,submissions,testMode)+(roundId==='valley'?wildCardStableford(roundId,score,par,rank,esc,submissions,testMode):'');
  else body+='<p>Round format: '+r().format+'. See score snapshots and team pairings below.</p>';
- if(teams[roundId])body+='<p><strong>Teams:</strong> '+teams[roundId].map(t=>t.join(' + ')).join(' · ')+'</p>';
+ if(teams[roundId]&&!(isContingency()&&contingencyGroups[roundId]))body+='<p><strong>Teams:</strong> '+teams[roundId].map(t=>t.join(' + ')).join(' · ')+'</p>';
  if(roundId==='ridge')body+=wildCardStableford(roundId,score,par,rank,esc);
  body+='</section>';
  }else if(tab==='boards'){
