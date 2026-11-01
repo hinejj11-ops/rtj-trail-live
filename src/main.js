@@ -49,6 +49,25 @@ function pairingsPanel(round){
  const note=round.format==='match'?'Each golfer plays two net matches against the other full-trip golfers in their group.':round.format==='vegas'?'Team partners may play in different tee groups. Both nine-hole Vegas results count.':round.format==='triple'?'Three-person Triple Threat sides compete across the tee groups; Wild Card Stableford is separate.':round.format==='skins'?'The gross team skins partners are listed separately from the physical tee groups.':round.format==='bestball'?'Best-ball partners may play in different tee groups.':round.format==='stableford'?'Individual net Stableford; Mason is eligible for the Wild Card competition.':'Individual net hole-credit finale; tee groups are shown above.';
  return '<details class="pairings-panel"><summary><span>View pairings &amp; teams</span><span class="pairings-chevron">⌄</span></summary><div class="pairings-content"><p class="small">'+esc(round.date)+' · '+esc(round.time)+' CST · '+esc(round.name)+'</p><div class="pairings-groups">'+groupCards+'</div>'+teamCards+'<p class="pairings-note">'+esc(note)+'</p></div></details>';
 }
+function championshipSnapshot(){
+ const engine=championship(scores,skills,holes,submissions,!testMode);
+ const featured=[['trail','Trail Championship'],['cup','RTJ Cup']];
+ return '<div class="championship-snapshot"><div class="championship-snapshot-heading"><strong>Championship leaders</strong><span class="small">'+(testMode?'Test standings':'Verified results only')+'</span></div><div class="championship-snapshot-grid">'+featured.map(([id,title])=>{
+  const board=engine.boards.find(b=>b.id===id);
+  if(!board||!board.rounds)return '<div class="championship-snapshot-card"><span>'+title+'</span><strong>Awaiting results</strong><small>0 / '+(board?.expected||0)+' events completed</small></div>';
+  const sorted=[...board.eligible].sort((a,b)=>engine.compare(board,a,b));
+  const leader=sorted[0],tied=sorted.filter(p=>engine.compare(board,p,leader)===0);
+  const latest=engine.eventLabels[id]?.[engine.details[id].length-1]||'';
+  return '<div class="championship-snapshot-card"><span>'+title+'</span><strong>'+tied.map(esc).join(' &amp; ')+'</strong><b>'+Number(board.values[leader].toFixed(3))+' pts</b><small>'+board.rounds+' / '+board.expected+' events · Last: '+esc(latest)+'</small></div>';
+ }).join('')+'</div></div>';
+}
+function skillsReminder(round,player){
+ const designated=skillsHoles[round.id]||{};
+ const completed=through(player,round.id);
+ const upcoming=Object.entries(designated).filter(([kind,h])=>h>=completed+1&&h<=completed+3).sort((a,b)=>a[1]-b[1]);
+ if(!upcoming.length)return '';
+ return '<div class="skills-reminder"><strong>Upcoming skills contest'+(upcoming.length>1?'s':'')+'</strong>'+upcoming.map(([kind,h])=>'<span>Hole '+h+' · '+(kind==='ctp'?'Closest to Pin':'Long Drive')+'</span>').join('')+'</div>';
+}
 function render(){
  let body='';
  if(!me){body='<section class="panel"><h2>Who’s on the tee?</h2><p>Choose your name. Only one active device can claim each player.</p>'+(pendingJimmyPin?'<form id="jimmy-pin-form"><label for="jimmy-pin">Jimmy’s organizer PIN</label><input id="jimmy-pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required placeholder="4-digit PIN"><div class="row"><button type="submit" class="primary">Sign in as Jimmy</button><button type="button" id="cancel-jimmy-pin">Cancel</button></div></form>':names.map(n=>'<button class="player" data-login="'+n+'">'+n+' <span>→</span></button>').join(''))+'</section>';}
@@ -58,9 +77,10 @@ function render(){
  body+='<label>Round <select id="round">'+rounds.map(x=>'<option value="'+x.id+'" '+(x.id===roundId?'selected':'')+'>'+x.date+' · '+x.name+'</option>').join('')+'</select></label>';
  if(tab==='scores'){
  let players=me==='Jimmy'?roundPlayers(r()):group();if(!target||!players.includes(target))target=players.includes(me)?me:players[0];
- body+='<section class="panel"><h2>'+esc(r().name)+'</h2><p>'+r().date+' · '+r().time+' CST · '+r().format.toUpperCase()+'</p>'+pairingsPanel(r())+'<p><strong>'+(me==='Jimmy'?'Round golfers:':'Playing group:')+'</strong> '+players.join(' · ')+'</p>';
+ body+=championshipSnapshot()+'<section class="panel"><h2>'+esc(r().name)+'</h2><p>'+r().date+' · '+r().time+' CST · '+r().format.toUpperCase()+'</p>'+pairingsPanel(r());
  if(testMode)body+='<div class="warning"><strong>TEST MODE ACTIVE</strong> — scores are saved separately from official tournament scores.</div>';else if(!ready)body+='<div class="warning">Official scoring is locked until the organizer verifies hole pars and stroke indexes in Course setup.</div>';
  let locked=false,completed=0;if(players.length){body+='<label>'+'Enter scores for '+'<select id="target">'+players.map(p=>'<option '+(target===p?'selected':'')+'>'+p+'</option>').join('')+'</select></label>';
+ body+=skillsReminder(r(),target);
  if(target==='Richie'&&lifelineLimits[roundId]){const used=scores.filter(x=>x.round_id===roundId&&x.player==='Richie'&&x.lifeline).length;body+='<p class="small"><strong>Richie’s Lifelines:</strong> '+used+'/'+lifelineLimits[roundId]+' used this round. Each selection adds one stroke to applicable net results.</p>';}
  body+='<div class="score-head"><span>Hole</span><span>Par</span><span>Strokes</span><span>Gross</span><span>Net</span></div>';
  locked=!testMode&&submissions.some(x=>x.round_id===roundId&&x.player===target);completed=scores.filter(x=>x.round_id===roundId&&x.player===target).length;body+='<p><strong>'+esc(target)+'</strong> · '+throughLabel(through(target),r().holes)+' · '+completed+' entered '+(locked?'· 🔒 VERIFIED':testMode?'· TEST SCORECARD':'· DRAFT')+'</p>';for(let h=1;h<=r().holes;h++){let s=score(target,h),st=strokes(target,h);const lifelinesUsed=scores.filter(x=>x.round_id===roundId&&x.player==='Richie'&&x.lifeline).length;const limitReached=lifelinesUsed>=lifelineLimits[roundId]&&!s?.lifeline;body+='<div class="score-row"><b>'+h+'</b><span>'+par(h)+'</span><span class="stroke">'+(st?'●'.repeat(st):'—')+'</span><span class="hole-input"><button data-step="-1" data-hole="'+h+'" '+(!(ready||testMode)||locked?'disabled':'')+'>−</button><strong>'+(s?.gross??'—')+'</strong><button data-step="1" data-hole="'+h+'" '+(!(ready||testMode)||locked?'disabled':'')+'>+</button></span><b>'+(net(target,h)??'—')+'</b>'+(target==='Richie'&&lifelineEligible(roundId,h,rank(h))?'<label class="small" style="grid-column:1/-1"><input type="checkbox" data-lifeline="'+h+'" '+(s?.lifeline?'checked':'')+' '+(!(ready||testMode)||locked||!s||limitReached?'disabled':'')+'> Richie used Lifeline</label>':'')+'</div>';}}
