@@ -357,7 +357,22 @@ setInterval(syncSpectator,10000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncSpectator();});
 window.addEventListener('focus',syncSpectator);
 async function refresh(spectatorFallback=false){if(!db||!me)return;
- if(me==='Jimmy'&&tab==='settings')await refreshGolferSessions();let results=await Promise.all([db.from('scores').select('*'),db.from('skills').select('*'),db.from('course_pars').select('*'),db.from('app_settings').select('*'),db.from('test_scores').select('*'),db.from('scorecard_submissions').select('*'),db.from('skills_round_locks').select('*')]);if(results.some(x=>x.error)){notice='Database error: '+results.find(x=>x.error).error.message;render();return;}if(spectatorFallback&&me==='Spectator'){
+ if(me==='Jimmy'&&tab==='settings')await refreshGolferSessions();let results=await Promise.all([db.from('scores').select('*'),db.from('skills').select('*'),db.from('course_pars').select('*'),db.from('app_settings').select('*'),db.from('test_scores').select('*'),db.from('scorecard_submissions').select('*'),db.from('skills_round_locks').select('*')]);if(results.some(x=>x.error)){notice='Database error: '+results.find(x=>x.error).error.message;render();return;}
+ if(me==='Spectator'){
+  const snapshot=await db.rpc('get_spectator_skills');
+  if(snapshot.error){
+   notice='Spectator skills unavailable: '+snapshot.error.message+'. Run migration 011 in Supabase.';
+   render();
+   return;
+  }
+  if(!Array.isArray(snapshot.data?.skills)||!Array.isArray(snapshot.data?.locks)){
+   notice='Spectator skills returned an unexpected response.';
+   render();
+   return;
+  }
+  results[1]={data:snapshot.data.skills};
+  results[6]={data:snapshot.data.locks};
+ }if(spectatorFallback&&me==='Spectator'){
  const signature=JSON.stringify([results[0].data,results[1].data,results[2].data,results[3].data,results[5].data,results[6].data]);
  if(signature===spectatorLastSignature)return;
  spectatorLastSignature=signature;
