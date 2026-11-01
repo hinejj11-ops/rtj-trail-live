@@ -131,3 +131,6 @@
 .hole-guide-inner{padding:0 13px 14px;line-height:1.5}.hole-guide-inner h3{margin:8px 0}.hole-guide-inner h4{margin:10px 0 3px}.hole-guide-inner img{display:block;max-width:100%;height:auto;max-height:470px;object-fit:contain;margin:10px auto;background:#e6efda;border-radius:8px}.hole-guide-inner a{color:#1b654a;text-decoration:underline}
 
 .hole-guide-navigation{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 0}.hole-guide-navigation img{min-width:0;flex:1;max-width:calc(100% - 88px);margin:0;object-fit:contain}.hole-guide-arrow{flex:0 0 36px;min-width:36px;min-height:56px;padding:6px;border:1px solid #c8d6c5;border-radius:9px;background:#e5efdf;color:#1d563d;font-size:24px;cursor:pointer}.hole-guide-arrow:disabled{opacity:.3;cursor:default}
+
+/* Center hole guide details on mobile without changing score entry. */
+@media (max-width: 700px){.hole-guide-top #guide-content>h3,.hole-guide-top #guide-content>h4,.hole-guide-top #guide-content>p{text-align:center}}
