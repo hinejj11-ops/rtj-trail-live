@@ -241,7 +241,7 @@ function render(){
   ranked.forEach((x,i)=>{
    const first=ranked.findIndex(y=>y.wins.length===x.wins.length)+1;
    const tied=ranked.some((y,j)=>j!==i&&y.wins.length===x.wins.length);
-   body+='<details data-spectator-skills="'+esc(board.title+'|'+x.player)+'" '+(spectatorSkillsExpanded.has(board.title+'|'+x.player)?'open':'')+'><summary><strong>'+(tied?'T'+first:first+'.')+' '+esc(x.player)+'</strong> · '+x.wins.length+' pts</summary>'+(x.wins.length?x.wins.map(w=>{const course=rounds.find(r=>r.id===w.round_id);const hole=skillsHoles[w.round_id]?.[w.kind];return '<p class="small">'+esc(course?.name||w.round_id)+' · Hole '+hole+' · '+(w.kind==='ctp'?'Closest to Pin 🎯':'Long Drive 💪')++'</p>';}).join(''):'<p class="small">No challenges won yet.</p>')+'</details>';
+   body+='<details data-spectator-skills="'+esc(board.title+'|'+x.player)+'" '+(spectatorSkillsExpanded.has(board.title+'|'+x.player)?'open':'')+'><summary><strong>'+(tied?'T'+first:first+'.')+' '+esc(x.player)+'</strong> · '+x.wins.length+' pts</summary>'+(x.wins.length?x.wins.map(w=>{const course=rounds.find(r=>r.id===w.round_id);const hole=skillsHoles[w.round_id]?.[w.kind];return '<p class="small">'+esc(course?.name||w.round_id)+' · Hole '+hole+' · '+(w.kind==='ctp'?'Closest to Pin 🎯':'Long Drive 💪')+'</p>';}).join(''):'<p class="small">No challenges won yet.</p>')+'</details>';
   });
   body+='</section>';
  }
