@@ -24,6 +24,7 @@ export function contingencyChampionship(scores,holes,submissions=[],requireVerif
  const idx=(id,h)=>hm.get(id+'|'+h)?.stroke_index??h;
  const gross=(id,p,h)=>sm.get(id+'|'+p+'|'+h)?.gross??null;
  const net=(id,p,h,mode='primary')=>netScore(id,p,h,sm.get(id+'|'+p+'|'+h),idx(id,h),mode);
+ const shortNet=(p,h)=>net('short',p,h);
  const complete=(id,ps)=>ps.every(p=>Array.from({length:rounds.find(r=>r.id===id).holes},(_,i)=>gross(id,p,i+1)!==null).every(Boolean)&&(!requireVerification||verified.has(id+'|'+p)));
  const values=ps=>Object.fromEntries(ps.map(p=>[p,0]));
  const fourDay=values(six),wild=values(names),finalDay=values(five),details={fourDay:[],wild:[],finalDay:[]};
@@ -34,7 +35,7 @@ export function contingencyChampionship(scores,holes,submissions=[],requireVerif
   for(const group of rounds.find(r=>r.id===id).groups){const ps=group.filter(p=>six.includes(p));
    for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){
     const a=ps[i],b=ps[j];let aw=0,bw=0;
-    for(let h=1;h<=18;h++){const x=net(id,a,h),y=net(id,b,h);if(x<y)aw++;else if(y<x)bw++;}
+    for(let h=1;h<=18;h++){const x=net(id,a,h),y=net(id,b,h);if(x!==null&&y!==null){if(x<y)aw++;else if(y<x)bw++;}}
     records[a].points+=aw>bw?2:aw===bw?1:0;records[b].points+=bw>aw?2:aw===bw?1:0;
     records[a].wins+=aw;records[b].wins+=bw;records[a].diff+=aw-bw;records[b].diff+=bw-aw;
    }
@@ -60,7 +61,7 @@ export function contingencyChampionship(scores,holes,submissions=[],requireVerif
  if(complete('silver-pm',six)){
   const ts=teams['silver-pm'],out=values(six),nineAwards=[];
   for(const start of [1,10]){
-   const sums=ts.map(t=>{let total=0;for(let h=start;h<start+9;h++){const digits=t.map(p=>vegasDigit('silver-pm',p,h,sm.get('silver-pm|'+p+'|'+h),par('silver-pm',h),idx('silver-pm',h))).sort((a,b)=>a-b);total+=10*digits[0]+digits[1];}return total;});
+   const sums=ts.map(t=>{let total=0;for(let h=start;h<start+9;h++){const digits=t.map(p=>h<=9?vegasDigit('silver-pm',p,h,sm.get('silver-pm|'+p+'|'+h),par('silver-pm',h),idx('silver-pm',h)):Math.min(gross('silver-pm',p,h),par('silver-pm',h)*2,par('silver-pm',h)===5?9:Infinity)).sort((a,b)=>a-b);total+=10*digits[0]+digits[1];}return total;});
    nineAwards.push(awardRanks(Object.fromEntries(sums.map((v,i)=>[i,v])),scales.threeTeams,false));
   }
   ts.forEach((t,i)=>t.forEach(p=>out[p]=(nineAwards[0][i]+nineAwards[1][i])/2));add('fourDay','silver-pm',out);
@@ -72,7 +73,7 @@ export function contingencyChampionship(scores,holes,submissions=[],requireVerif
  if(complete('lake',five))add('finalDay','lake',awardRanks(Object.fromEntries(five.map(p=>[p,stable('lake',p)])),scales.five));
  if(complete('short',five)){
   const credits=Object.fromEntries(five.map(p=>[p,0]));
-  for(let h=1;h<=18;h++){const m=Math.min(...five.map(p=>net('short',p,h)));const winners=five.filter(p=>net('short',p,h)===m);for(const p of winners)credits[p]+=1/winners.length;}
+  for(let h=1;h<=18;h++){const m=Math.min(...five.map(p=>shortNet(p,h)));const winners=five.filter(p=>shortNet(p,h)===m);for(const p of winners)credits[p]+=1/winners.length;}
   add('finalDay','short',awardRanks(credits,scales.five));
  }
  return {boards:[{id:'fourDay',name:'Four-Day Champion',values:fourDay,eligible:six,prize:180,rounds:details.fourDay.length,expected:7},{id:'wild',name:'Wild Card Champion',values:wild,eligible:names,prize:210,rounds:details.wild.length,expected:4},{id:'finalDay',name:'Final Day Champion',values:finalDay,eligible:five,prize:75,rounds:details.finalDay.length,expected:2}],details,groups:contingencyGroups};
