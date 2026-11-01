@@ -34,7 +34,17 @@ const valleyGuide={name:'Valley',code:'c2',base:'https://www.rtjgolf.com/oxmoorv
 guideCourses.valley=[valleyGuide];
 function toGuide(x){return {name:x[0],code:x[1],white:x[2],par:x[3],advice:x[4]};}
 function guideHoles(){return (guideCourses[roundId]||[]).flatMap(c=>c.white.map((white,i)=>({course:c.name,code:c.code,base:c.base||'https://www.rtjgolf.com/silverlakes/tour-2013/',hole:i+1,white,par:c.par[i],advice:c.advice[i]})));}
-function updateGuide(){const el=document.querySelector('#guide-content');if(!el)return;const item=guideHoles()[guideHole-1];if(!item)return;const sel=document.querySelector('#guide-hole');if(sel)sel.value=String(guideHole);el.innerHTML='<h3>'+item.course+' · Hole '+item.hole+'</h3><p class="hole-guide-hdcp">HDCP #'+rank(guideHole)+'</p><p class="hole-guide-par">Par '+item.par+' · <strong>White: '+item.white+' yards</strong></p><div class="hole-guide-navigation"><button type="button" class="hole-guide-arrow" data-guide-step="-1" aria-label="Previous hole" '+(guideHole===1?'disabled':'')+'>❮</button><img loading="lazy" src="https://www.rtjgolf.com/silverlakes/tour-2013/'+item.code+'h'+item.hole+'.png" alt="'+item.course+' hole '+item.hole+' map"><button type="button" class="hole-guide-arrow" data-guide-step="1" aria-label="Next hole" '+(guideHole===guideHoles().length?'disabled':'')+'>❯</button></div><h4>Playing advice</h4><p>'+item.advice+'</p>';}
+const localGuidePaths={'Backbreaker':'silver-lakes/backbreaker','Mindbreaker':'silver-lakes/mindbreaker','Heartbreaker':'silver-lakes/heartbreaker','Short Course':'silver-lakes/short-course','Valley':'valley'};
+function updateGuide(){
+ const el=document.querySelector('#guide-content');if(!el)return;
+ const item=guideHoles()[guideHole-1];if(!item)return;
+ const sel=document.querySelector('#guide-hole');if(sel)sel.value=String(guideHole);
+ const localAvailable=item.course!=='Backbreaker'||item.hole<=6;
+ const local=localAvailable&&localGuidePaths[item.course]?'/images/'+localGuidePaths[item.course]+'/hole-'+item.hole+'.webp':'';
+ const fallback=item.base+item.code+'h'+item.hole+'.png';
+ el.innerHTML='<h3>'+item.course+' · Hole '+item.hole+'</h3><p class="hole-guide-hdcp">HDCP #'+rank(guideHole)+'</p><p class="hole-guide-par">Par '+item.par+' · <strong>White: '+item.white+' yards</strong></p><div class="hole-guide-navigation"><button type="button" class="hole-guide-arrow" data-guide-step="-1" aria-label="Previous hole" '+(guideHole===1?'disabled':'')+'>❮</button><img loading="lazy" src="'+(local||fallback)+'" alt="'+item.course+' hole '+item.hole+' map"><button type="button" class="hole-guide-arrow" data-guide-step="1" aria-label="Next hole" '+(guideHole===guideHoles().length?'disabled':'')+'>❯</button></div><p>'+item.advice+'</p>';
+ const img=el.querySelector('img');if(img&&local)img.addEventListener('error',()=>{img.src=fallback;},{once:true});
+}
 
 let playingGroupOverrides={},groupDraft=null;
 const defaultSkillsHoles=JSON.parse(JSON.stringify(skillsHoles));
