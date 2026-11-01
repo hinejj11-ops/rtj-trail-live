@@ -310,7 +310,14 @@ async function login(name){
    if(!claim.data)throw Error(name+' is already active on another device. Sign out there or wait about 100 seconds.');
   }
   me=name;
-  if(name==='Spectator'){tab='boards';target=null;}else if(tab==='settings'&&name!=='Jimmy')tab='scores';
+  if(name==='Spectator'){
+   // Start new spectator sessions on Leaderboards, but preserve the selected tab on refresh.
+   const savedTab=sessionStorage.getItem('rtj-tab');
+   const returningSpectator=sessionStorage.getItem('rtj-player')==='Spectator';
+   tab=returningSpectator&&['scores','matches','boards','skills'].includes(savedTab)?savedTab:'boards';
+   target=null;
+  }else if(tab==='settings'&&name!=='Jimmy')tab='scores';
+  sessionStorage.setItem('rtj-tab',tab);
   sessionStorage.setItem('rtj-player',name);
   notice='Signed in as '+name+'. Loading scores…';
   render();
