@@ -111,3 +111,8 @@
 .skills-reminder>strong{width:100%;font-size:12px}
 .skills-reminder>span{font-weight:650}
 @media(max-width:360px){.championship-snapshot-grid{grid-template-columns:1fr}}
+
+/* Skills icons live beside the scorecard hole number, not in a reminder banner. */
+.score-hole-number{display:flex;align-items:center;justify-content:center;gap:2px;white-space:nowrap}
+.score-skill-emoji{font-size:13px;line-height:1}
+@media(min-width:650px){.championship-snapshot-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
