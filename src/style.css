@@ -156,3 +156,9 @@
 .trail-site-detail p{margin:0 0 12px}
 .trail-site-detail ul{margin:8px 0 0;padding-left:22px}
 .trail-site-detail li{margin:5px 0}
+
+/* Reference-proportioned Alabama silhouette and clear, accessible location markers */
+.trail-map{aspect-ratio:508/826;background:#f0f1eb;max-width:430px}
+.trail-pin{width:44px;height:54px;border-radius:0;clip-path:polygon(50% 100%,12% 48%,8% 31%,12% 17%,24% 6%,40% 0,60% 0,76% 6%,88% 17%,92% 31%,88% 48%);background:#b6d46e;box-shadow:none}
+.trail-pin.selected{background:#f1d47c;filter:drop-shadow(0 0 3px #fff)}
+@media(max-width:480px){.trail-pin{width:38px;height:48px;font-size:12px}}
