@@ -1,7 +1,9 @@
 import {rounds,roundPlayers,courseHandicap,heartbreakerStrokes,silverShortStrokes,gnShortStrokes,tripleStrokes,stablefordStrokes,lifelineLimits} from './data.js';
 const byId=id=>rounds.find(r=>r.id===id);
 export const holeStrokes=(total,rank,holes=18)=>Math.floor(total/holes)+(rank<=total%holes?1:0);
-export function allowance(id,player,mode='primary',hole=1){
+let customAllowances={};
+export function setCustomAllowances(value){customAllowances=value||{};}
+export function defaultAllowance(id,player,mode='primary',hole=1){
  const r=byId(id);
  if(id==='backyard')return 0;
  if(mode==='stableford'||id==='ross')return stablefordStrokes[id]?.[player]??0;
@@ -11,6 +13,11 @@ export function allowance(id,player,mode='primary',hole=1){
  const ps=r.format==='match'?(r.groups.find(g=>g.includes(player))||[]).filter(p=>p!=='Mason'):roundPlayers(r).filter(p=>p!=='Mason');
  const base=Math.min(...ps.map(p=>courseHandicap(r,p)));
  return Math.max(0,courseHandicap(r,player)-base);
+}
+export function allowance(id,player,mode='primary',hole=1){
+ const key=id==='silver-pm'?(hole<=9?'heartbreaker':'silver-short'):mode;
+ const value=customAllowances[id]?.[key]?.[player];
+ return Number.isInteger(value)&&value>=0&&value<=54?value:defaultAllowance(id,player,mode,hole);
 }
 export function strokesOnHole(id,player,hole,rank,mode='primary'){
  const n=allowance(id,player,mode,hole);
