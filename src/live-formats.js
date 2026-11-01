@@ -2,7 +2,8 @@ import {matchSummary} from './match-visual.js';
 import {grossScoreHtml} from './score-symbol.js';
 import {names,teams} from './data.js';
 import {strokesOnHole} from './scoring-rules.js';
-export function liveFormat(id,score,net,par,rank,esc){
+export function liveFormat(id,score,net,par,rank,esc,submissions=[],testMode=false){
+ const progress=(players,through,total)=>!testMode&&players.every(p=>submissions.some(x=>x.round_id===id&&x.player===p))?'Final':'Thru '+through;
  const six=names.slice(0,6),seven=names,ts=teams[id];
  const gross=(p,h)=>score(p,h)?.gross??null;
  const label=t=>t.join(' + ');
@@ -26,8 +27,8 @@ export function liveFormat(id,score,net,par,rank,esc){
   }
   const hasScores=rows.some(row=>row.some(cell=>!cell.includes('>—</td>')));
   const leader=mode==='holes'?(compared===0?'Not started':wins[0]===wins[1]?'All square':esc(players[wins[0]>wins[1]?0:1])+' '+Math.abs(wins[0]-wins[1])+' UP'):(!hasScores?'Not started':totals.every(x=>x===totals[0])?'Tied':esc(players[totals.indexOf(highWins?Math.max(...totals):Math.min(...totals))])+' leads · '+(highWins?Math.max(...totals):Math.min(...totals))+(mode==='credits'?' credits':mode==='skins'?' skins':' pts'));
-  const playerThrough=rows.map(row=>{let h=0;while(h<n&&row[h]&&!row[h].includes('>—</td>'))h++;return h===n?'F':h?'Thru '+h:'—';});
-  return '<details class="match-card'+(mode==='holes'&&players.length===2?' match-card-visual':'')+'"'+(mode==='holes'&&players.length===2?' style="--match-holes:'+n+';--match-extra:36px"':'')+'><summary>'+(mode==='holes'&&players.length===2?matchSummary(players[0].split(' + '),players[1].split(' + '),compared===0?'NOT STARTED':wins[0]===wins[1]?'ALL SQUARE':Math.abs(wins[0]-wins[1])+' UP',thru===n?'F':thru?'THRU '+thru:'—',segments,compared===0||wins[0]===wins[1]?-1:wins[0]>wins[1]?0:1):'<span>'+esc(title)+'</span><strong>'+leader+'</strong><small>'+(thru===n?'F':thru?'Thru '+thru:'—')+'</small>')+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>'+(mode==='holes'?'Won':'Total')+'</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+players.map((p,i)=>'<tr><th>'+esc(p)+(mode==='points'?' · '+playerThrough[i]:'')+'</th>'+rows[i].join('')+'<td>'+(mode==='holes'?wins[i]+' won':totals[i])+'</td></tr>').join('')+'</tbody></table></div></details>';
+  const playerThrough=rows.map((row,i)=>{let h=0;while(h<n&&row[h]&&!row[h].includes('>—</td>'))h++;return progress(players[i].split(' + '),h,n);});
+  return '<details class="match-card'+(mode==='holes'&&players.length===2?' match-card-visual':'')+'"'+(mode==='holes'&&players.length===2?' style="--match-holes:'+n+';--match-extra:36px"':'')+'><summary>'+(mode==='holes'&&players.length===2?matchSummary(players[0].split(' + '),players[1].split(' + '),compared===0?'NOT STARTED':wins[0]===wins[1]?'ALL SQUARE':Math.abs(wins[0]-wins[1])+' UP',progress(players.flatMap(p=>p.split(' + ')),thru,n),segments,compared===0||wins[0]===wins[1]?-1:wins[0]>wins[1]?0:1):'<span>'+esc(title)+'</span><strong>'+leader+'</strong><small>'+(progress(players.flatMap(p=>p.split(' + ')),thru,n))+'</small>')+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>'+(mode==='holes'?'Won':'Total')+'</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+players.map((p,i)=>'<tr><th>'+esc(p)+(mode==='points'?' · '+playerThrough[i]:'')+'</th>'+rows[i].join('')+'<td>'+(mode==='holes'?wins[i]+' won':totals[i])+'</td></tr>').join('')+'</tbody></table></div></details>';
  };
  let html='';
  if(id==='valley'||id==='lake'){
@@ -69,7 +70,7 @@ export function liveFormat(id,score,net,par,rank,esc){
  return html;
 }
 
-export function wildCardStableford(id,score,par,rank,esc){
+export function wildCardStableford(id,score,par,rank,esc,submissions=[],testMode=false){
  const players=names,rows=players.map(()=>[]),totals=players.map(()=>0),played=players.map(()=>0),through=players.map(()=>0),heads=[],pars=[];
  for(let h=1;h<=18;h++){
   heads.push('<th>'+h+'</th>');pars.push('<td>'+par(h)+'</td>');
@@ -84,6 +85,6 @@ export function wildCardStableford(id,score,par,rank,esc){
  }
  const order=players.map((p,i)=>i).sort((a,b)=>totals[b]-totals[a]||played[b]-played[a]);
  const leader=played.every(x=>x===0)?'Not started':players[order[0]]+' leads · '+totals[order[0]]+' pts';
- const body=order.map(i=>'<tr><th>'+esc(players[i])+' · '+(through[i]===18?'F':through[i]?'Thru '+through[i]:'—')+'</th>'+rows[i].join('')+'<td><strong>'+totals[i]+'</strong></td></tr>').join('');
+ const body=order.map(i=>'<tr><th>'+esc(players[i])+' · '+(!testMode&&submissions.some(x=>x.round_id===id&&x.player===players[i])?'Final':'Thru '+through[i])+'</th>'+rows[i].join('')+'<td><strong>'+totals[i]+'</strong></td></tr>').join('');
  return '<details class="match-card"><summary><span>Wild Card · Net Stableford</span><strong>'+esc(leader)+'</strong><small>7 players</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+body+'</tbody></table></div><p class="small">Gross scores with applied handicap dots for all seven golfers, including Mason. Total shows Stableford points; highest total leads. Each golfer shows consecutive holes completed (Thru); points can reflect different holes completed.</p></details>';
 }
