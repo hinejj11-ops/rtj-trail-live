@@ -52,7 +52,7 @@ function pairingsPanel(round){
 function championshipSnapshot(){
  const engine=championship(scores,skills,holes,submissions,!testMode);
  const featured=[['trail','Trail Championship'],['cup','RTJ Cup'],...(wildCardSkillsRounds.includes(roundId)?[['wild','Wild Card Challenge']]:[])];
- return '<div class="championship-snapshot"><div class="championship-snapshot-heading"><strong>Championship leaders</strong><span class="small">'+(testMode?'Test standings':'Verified results only')+'</span></div><div class="championship-snapshot-grid">'+featured.map(([id,title])=>{
+ return '<div class="championship-snapshot"><div class="championship-snapshot-heading"><strong>Championship leaders</strong><span class="small">'+(testMode?'Test standings':'Verified results only')+'</span></div><div class="championship-snapshot-grid '+(featured.length===3?'championship-snapshot-three':'championship-snapshot-two')+'">'+featured.map(([id,title])=>{
   const board=engine.boards.find(b=>b.id===id);
   if(!board||!board.rounds)return '<div class="championship-snapshot-card"><span>'+title+'</span><strong>Awaiting results</strong><small>0 / '+(board?.expected||0)+' events completed</small></div>';
   const sorted=[...board.eligible].sort((a,b)=>engine.compare(board,a,b));
