@@ -41,6 +41,14 @@ function alignLiveMatchWindows(){
   if(table)table.scrollLeft=offset;
  });
 }
+function pairingsPanel(round){
+ const competitionTeams=teams[round.id]||[];
+ const teamName=round.format==='vegas'?'Vegas teams':round.format==='triple'?'Triple Threat sides':round.format==='skins'?'Gross skins teams':'Best-ball teams';
+ const groupCards=round.groups.map((players,i)=>'<div class="pairings-group"><strong>Group '+String.fromCharCode(65+i)+'</strong><div>'+players.map(p=>'<span class="pairings-player">'+esc(p)+'</span>').join('')+'</div></div>').join('');
+ const teamCards=competitionTeams.length?'<div class="pairings-teams"><h4>'+teamName+'</h4>'+competitionTeams.map((players,i)=>'<div class="pairings-team"><span class="pairings-team-label">Team '+(i+1)+'</span> '+players.map(esc).join(' + ')+'</div>').join('')+'</div>':'';
+ const note=round.format==='match'?'Each golfer plays two net matches against the other full-trip golfers in their group.':round.format==='vegas'?'Team partners may play in different tee groups. Both nine-hole Vegas results count.':round.format==='triple'?'Three-person Triple Threat sides compete across the tee groups; Wild Card Stableford is separate.':round.format==='skins'?'The gross team skins partners are listed separately from the physical tee groups.':round.format==='bestball'?'Best-ball partners may play in different tee groups.':round.format==='stableford'?'Individual net Stableford; Mason is eligible for the Wild Card competition.':'Individual net hole-credit finale; tee groups are shown above.';
+ return '<details class="pairings-panel"><summary><span>View pairings &amp; teams</span><span class="pairings-chevron">⌄</span></summary><div class="pairings-content"><p class="small">'+esc(round.date)+' · '+esc(round.time)+' CST · '+esc(round.name)+'</p><div class="pairings-groups">'+groupCards+'</div>'+teamCards+'<p class="pairings-note">'+esc(note)+'</p></div></details>';
+}
 function render(){
  let body='';
  if(!me){body='<section class="panel"><h2>Who’s on the tee?</h2><p>Choose your name. Only one active device can claim each player.</p>'+(pendingJimmyPin?'<form id="jimmy-pin-form"><label for="jimmy-pin">Jimmy’s organizer PIN</label><input id="jimmy-pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required placeholder="4-digit PIN"><div class="row"><button type="submit" class="primary">Sign in as Jimmy</button><button type="button" id="cancel-jimmy-pin">Cancel</button></div></form>':names.map(n=>'<button class="player" data-login="'+n+'">'+n+' <span>→</span></button>').join(''))+'</section>';}
@@ -50,7 +58,7 @@ function render(){
  body+='<label>Round <select id="round">'+rounds.map(x=>'<option value="'+x.id+'" '+(x.id===roundId?'selected':'')+'>'+x.date+' · '+x.name+'</option>').join('')+'</select></label>';
  if(tab==='scores'){
  let players=me==='Jimmy'?roundPlayers(r()):group();if(!target||!players.includes(target))target=players.includes(me)?me:players[0];
- body+='<section class="panel"><h2>'+esc(r().name)+'</h2><p>'+r().date+' · '+r().time+' CST · '+r().format.toUpperCase()+'</p><p><strong>'+(me==='Jimmy'?'Round golfers:':'Playing group:')+'</strong> '+players.join(' · ')+'</p>';
+ body+='<section class="panel"><h2>'+esc(r().name)+'</h2><p>'+r().date+' · '+r().time+' CST · '+r().format.toUpperCase()+'</p>'+pairingsPanel(r())+'<p><strong>'+(me==='Jimmy'?'Round golfers:':'Playing group:')+'</strong> '+players.join(' · ')+'</p>';
  if(testMode)body+='<div class="warning"><strong>TEST MODE ACTIVE</strong> — scores are saved separately from official tournament scores.</div>';else if(!ready)body+='<div class="warning">Official scoring is locked until the organizer verifies hole pars and stroke indexes in Course setup.</div>';
  let locked=false,completed=0;if(players.length){body+='<label>'+'Enter scores for '+'<select id="target">'+players.map(p=>'<option '+(target===p?'selected':'')+'>'+p+'</option>').join('')+'</select></label>';
  if(target==='Richie'&&lifelineLimits[roundId]){const used=scores.filter(x=>x.round_id===roundId&&x.player==='Richie'&&x.lifeline).length;body+='<p class="small"><strong>Richie’s Lifelines:</strong> '+used+'/'+lifelineLimits[roundId]+' used this round. Each selection adds one stroke to applicable net results.</p>';}
