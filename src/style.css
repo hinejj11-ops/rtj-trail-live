@@ -142,3 +142,17 @@
 /* Four-column, gross-only spectator scorecard. */
 .spectator-score-head,.spectator-score-row{grid-template-columns:40px 48px 65px minmax(70px,1fr)}
 .spectator-score-row .score-symbol{justify-self:center}
+
+/* Spectator Alabama trail overview */
+.trail-panel{max-width:760px;margin-inline:auto}
+.trail-map{position:relative;width:min(100%,430px);aspect-ratio:340/500;margin:14px auto;background:#e8eee5;border:1px solid #c8d5c7;border-radius:16px;overflow:hidden}
+.trail-state{width:100%;height:100%;display:block}
+.trail-pin{position:absolute;transform:translate(-50%,-100%);display:flex;align-items:center;justify-content:center;width:48px;height:55px;padding:0 0 10px;border:0;border-radius:55% 55% 55% 6%;background:#c4da79;color:#183b2a;font-size:14px;font-weight:800;cursor:pointer;clip-path:polygon(50% 100%,8% 42%,8% 24%,19% 8%,37% 0,63% 0,81% 8%,92% 24%,92% 42%);filter:drop-shadow(0 2px 2px #0006)}
+.trail-pin span{margin-top:-3px}
+.trail-pin.selected{background:#f0c858;color:#203c2c;outline:3px solid #fff}
+.trail-pin:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.trail-site-detail{background:#f0f5ec;border:1px solid #cad9c6;border-radius:12px;padding:15px 18px;color:#244633}
+.trail-site-detail h3{margin:0 0 4px;color:#18492f}
+.trail-site-detail p{margin:0 0 12px}
+.trail-site-detail ul{margin:8px 0 0;padding-left:22px}
+.trail-site-detail li{margin:5px 0}
