@@ -101,8 +101,8 @@
 /* Compact championship pulse and skills reminders on the Scorecard tab */
 .championship-snapshot{margin:14px 0 10px;padding:13px;border:1px solid #d8dfd7;border-radius:13px;background:#fff}
 .championship-snapshot-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;color:#173c2e}
-.championship-snapshot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-.championship-snapshot-card{display:flex;flex-direction:column;gap:5px;padding:11px;background:#f5f7f1;border:1px solid #e0e7dc;border-radius:10px;min-width:0}
+.championship-snapshot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.championship-snapshot-card{display:flex;flex-direction:column;gap:5px;padding:8px;background:#f5f7f1;border:1px solid #e0e7dc;border-radius:10px;min-width:0}
 .championship-snapshot-card>span{font-size:12px;font-weight:800;color:#687669}
 .championship-snapshot-card>strong{font-size:15px;overflow-wrap:anywhere;color:#173c2e}
 .championship-snapshot-card>b{font-size:15px;color:#94712a}
@@ -110,7 +110,7 @@
 .skills-reminder{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin:12px 0;padding:11px 12px;border-left:4px solid #b89c57;border-radius:8px;background:#f8f4e8;color:#173c2e;font-size:13px}
 .skills-reminder>strong{width:100%;font-size:12px}
 .skills-reminder>span{font-weight:650}
-@media(max-width:360px){.championship-snapshot-grid{grid-template-columns:1fr}}
+@media(max-width:360px){.championship-snapshot{padding:9px}.championship-snapshot-grid{gap:5px}.championship-snapshot-card{padding:6px}.championship-snapshot-card>strong{font-size:12px}.championship-snapshot-card>b{font-size:13px}.championship-snapshot-card>small{font-size:10px}}
 
 /* Skills icons live beside the scorecard hole number, not in a reminder banner. */
 .score-hole-number{display:flex;align-items:center;justify-content:center;gap:2px;white-space:nowrap}
