@@ -138,3 +138,7 @@
 .hole-guide-inner #guide-content>h3{margin-bottom:2px}
 .hole-guide-inner #guide-content>.hole-guide-hdcp{margin:0;line-height:1.2}
 .hole-guide-inner #guide-content>.hole-guide-par{margin:2px 0 8px}
+
+/* Four-column, gross-only spectator scorecard. */
+.spectator-score-head,.spectator-score-row{grid-template-columns:40px 48px 65px minmax(70px,1fr)}
+.spectator-score-row .score-symbol{justify-self:center}
