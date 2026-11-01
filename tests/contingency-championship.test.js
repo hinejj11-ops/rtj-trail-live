@@ -25,3 +25,28 @@ test('empty results do not award points',()=>{
  assert.equal(result.boards[1].eligible.length,7);
  assert.equal(result.boards[2].eligible.length,5);
 });
+
+test('fully scored final day excludes Brittany and does not modify input scores',()=>{
+ const five=['Jimmy','Kevin','Jeff','Nate','Richie'];
+ const scores=[];
+ for(const id of ['lake','short'])for(const player of [...five,'Brittany'])for(let hole=1;hole<=18;hole++)
+  scores.push({round_id:id,player,hole,gross:3+(hole%2)});
+ const snapshot=JSON.stringify(scores);
+ const result=contingencyChampionship(scores,[],[],false);
+ const board=result.boards.find(b=>b.id==='finalDay');
+ assert.equal(board.rounds,2);
+ assert.equal(board.expected,2);
+ assert.deepEqual(board.eligible.slice().sort(),five.slice().sort());
+ assert.equal(Object.hasOwn(board.values,'Brittany'),false);
+ assert.equal(JSON.stringify(scores),snapshot);
+ assert.equal(Object.values(board.values).reduce((a,b)=>a+b,0),25);
+});
+test('verification gate prevents unsubmitted scores from awarding final-day points',()=>{
+ const five=['Jimmy','Kevin','Jeff','Nate','Richie'];
+ const scores=five.flatMap(player=>Array.from({length:18},(_,i)=>({round_id:'lake',player,hole:i+1,gross:4})));
+ const without=contingencyChampionship(scores,[],[],true).boards.find(b=>b.id==='finalDay');
+ assert.equal(without.rounds,0);
+ const submissions=five.map(player=>({round_id:'lake',player}));
+ const withSubmissions=contingencyChampionship(scores,[],submissions,true).boards.find(b=>b.id==='finalDay');
+ assert.equal(withSubmissions.rounds,1);
+});
