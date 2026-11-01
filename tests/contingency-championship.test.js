@@ -50,3 +50,16 @@ test('verification gate prevents unsubmitted scores from awarding final-day poin
  const withSubmissions=contingencyChampionship(scores,[],submissions,true).boards.find(b=>b.id==='finalDay');
  assert.equal(withSubmissions.rounds,1);
 });
+
+test('Lake final-day net Stableford uses primary Lake allowance, not Wild Card allowance',async()=>{
+ const {setCustomAllowances}=await import('../src/scoring-rules.js');
+ const five=['Jimmy','Kevin','Jeff','Nate','Richie'];
+ const scores=five.flatMap(player=>Array.from({length:18},(_,i)=>({round_id:'lake',player,hole:i+1,gross:4})));
+ const holes=Array.from({length:18},(_,i)=>({round_id:'lake',hole:i+1,par:4,stroke_index:i+1}));
+ setCustomAllowances({lake:{primary:Object.fromEntries(five.map(p=>[p,p==='Jimmy'?18:0]))}});
+ try{
+  const board=contingencyChampionship(scores,holes,[],false).boards.find(b=>b.id==='finalDay');
+  assert.equal(board.rounds,1);
+  assert.equal(board.values.Jimmy,10);
+ }finally{setCustomAllowances({});}
+});
