@@ -152,7 +152,7 @@ function render(){
   }
   const lead=a-b;
   const status=played===0?'Not started':lead===0?'All square':(lead>0?p1:p2)+' '+Math.abs(lead)+' UP';
-  const thru=through===0?'—':through===r().holes?'F':'Thru '+through;
+  const thru=!testMode&&[p1,p2].every(p=>submissions.some(x=>x.round_id===roundId&&x.player===p))?'Final':'Thru '+through;
   body+='<details class="match-card match-card-visual" style="--match-holes:18"><summary>'+matchSummary([p1],[p2],played===0?'NOT STARTED':lead===0?'ALL SQUARE':Math.abs(lead)+' UP',thru,segments,played===0||lead===0?-1:lead>0?0:1)+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th scope="col">Hole</th>'+holeRow.join('')+'</tr></thead><tbody><tr class="match-par-row"><th scope="row">Par</th>'+parRow.join('')+'</tr><tr><th scope="row">'+esc(p1)+'</th>'+row1.join('')+'</tr><tr><th scope="row">'+esc(p2)+'</th>'+row2.join('')+'</tr></tbody></table></div><p class="small">Gross scores shown; dots indicate handicap strokes. Winners are calculated from net scores. Green marks the hole winner; gray indicates a halved hole. '+a+'–'+b+' holes won · '+halves+' halved.</p></details>';
  }}}
  else if(roundId==='silver-pm'){
@@ -177,11 +177,11 @@ function render(){
     }
     const label=t=>t.join(' + ');
     const status=played===0?'Not started':totals[0]===totals[1]?'Tied':label(totals[0]<totals[1]?first:second)+' leads by '+Math.abs(totals[0]-totals[1]);
-    body+='<details class="match-card match-card-visual" style="--match-holes:9"><summary>'+matchSummary(first,second,played===0?'NOT STARTED':totals[0]===totals[1]?'TIED':Math.abs(totals[0]-totals[1])+' AHEAD',through===9?'F':through?'THRU '+through:'—',segments,played===0||totals[0]===totals[1]?-1:totals[0]<totals[1]?0:1,'Vegas · lower total wins')+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+head.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr><tr><th>'+esc(label(first))+'</th>'+rows[0].join('')+'<td>'+totals[0]+'</td></tr><tr><th>'+esc(label(second))+'</th>'+rows[1].join('')+'<td>'+totals[1]+'</td></tr>'+[...first,...second].map((p,k)=>'<tr><th>'+esc(p)+' gross</th>'+grossRows[k].join('')+'<td>—</td></tr>').join('')+'</tbody></table></div><p class="small">Vegas rows show net two-digit team values; individual rows show gross scores with handicap dots. Totals include only holes completed by both teams ('+played+'/9).</p></details>';
+    body+='<details class="match-card match-card-visual" style="--match-holes:9"><summary>'+matchSummary(first,second,played===0?'NOT STARTED':totals[0]===totals[1]?'TIED':Math.abs(totals[0]-totals[1])+' AHEAD',!testMode&&[...first,...second].every(p=>submissions.some(x=>x.round_id===roundId&&x.player===p))?'Final':'Thru '+through,segments,played===0||totals[0]===totals[1]?-1:totals[0]<totals[1]?0:1,'Vegas · lower total wins')+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+head.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr><tr><th>'+esc(label(first))+'</th>'+rows[0].join('')+'<td>'+totals[0]+'</td></tr><tr><th>'+esc(label(second))+'</th>'+rows[1].join('')+'<td>'+totals[1]+'</td></tr>'+[...first,...second].map((p,k)=>'<tr><th>'+esc(p)+' gross</th>'+grossRows[k].join('')+'<td>—</td></tr>').join('')+'</tbody></table></div><p class="small">Vegas rows show net two-digit team values; individual rows show gross scores with handicap dots. Totals include only holes completed by both teams ('+played+'/9).</p></details>';
    }
   }
  }
- else if(['valley','lake','ross','short','backyard'].includes(roundId))body+=liveFormat(roundId,score,net,par,rank,esc)+(roundId==='valley'?wildCardStableford(roundId,score,par,rank,esc):'');
+ else if(['valley','lake','ross','short','backyard'].includes(roundId))body+=liveFormat(roundId,score,net,par,rank,esc,submissions,testMode)+(roundId==='valley'?wildCardStableford(roundId,score,par,rank,esc,submissions,testMode):'');
  else body+='<p>Round format: '+r().format+'. See score snapshots and team pairings below.</p>';
  if(teams[roundId])body+='<p><strong>Teams:</strong> '+teams[roundId].map(t=>t.join(' + ')).join(' · ')+'</p>';
  if(roundId==='ridge')body+=wildCardStableford(roundId,score,par,rank,esc);
