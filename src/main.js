@@ -230,19 +230,19 @@ function render(){
  }
  }else if(tab==='skills'&&isSpectator()){
  const lockedRounds=new Set(skillsLocks.map(x=>x.round_id));
- const valid=skills.filter(x=>lockedRounds.has(x.round_id)&&skillsHoles[x.round_id]&&Object.hasOwn(skillsHoles[x.round_id],x.kind)&&names.includes(x.winner));
+ const valid=skills.filter(x=>skillsHoles[x.round_id]&&Object.hasOwn(skillsHoles[x.round_id],x.kind)&&names.includes(x.winner));
  const boards=[
   {title:'Overall Skills',players:names.slice(0,6),entries:valid,description:'All six full-trip golfers. One point per Closest to Pin or Long Drive win.'},
   {title:'Wild Card Skills',players:names,entries:valid.filter(x=>wildCardSkillsRounds.includes(x.round_id)),description:'All seven golfers. One point per skills challenge won during Wild Card rounds.'}
  ];
- body+='<section class="panel"><h2>Skills Challenges</h2><p>🎯 Closest to Pin · 💪 Long Drive. Select any golfer to see their winning competitions.</p></section>';
+ body+='<section class="panel"><h2>Skills Challenges</h2><p>🎯 Closest to Pin · 💪 Long Drive. Recorded winners appear immediately; results remain provisional until Jimmy locks the round. Select a golfer for competition details.</p></section>';
  for(const board of boards){
   const ranked=board.players.map(player=>({player,wins:board.entries.filter(x=>x.winner===player)})).sort((a,b)=>b.wins.length-a.wins.length||board.players.indexOf(a.player)-board.players.indexOf(b.player));
   body+='<section class="panel"><h3>'+board.title+'</h3><p class="small">'+board.description+'</p>';
   ranked.forEach((x,i)=>{
    const first=ranked.findIndex(y=>y.wins.length===x.wins.length)+1;
    const tied=ranked.some((y,j)=>j!==i&&y.wins.length===x.wins.length);
-   body+='<details data-spectator-skills="'+esc(board.title+'|'+x.player)+'" '+(spectatorSkillsExpanded.has(board.title+'|'+x.player)?'open':'')+'><summary><strong>'+(tied?'T'+first:first+'.')+' '+esc(x.player)+'</strong> · '+x.wins.length+' pts</summary>'+(x.wins.length?x.wins.map(w=>{const course=rounds.find(r=>r.id===w.round_id);const hole=skillsHoles[w.round_id]?.[w.kind];return '<p class="small">'+esc(course?.name||w.round_id)+' · Hole '+hole+' · '+(w.kind==='ctp'?'Closest to Pin 🎯':'Long Drive 💪')+'</p>';}).join(''):'<p class="small">No challenges won yet.</p>')+'</details>';
+   body+='<details data-spectator-skills="'+esc(board.title+'|'+x.player)+'" '+(spectatorSkillsExpanded.has(board.title+'|'+x.player)?'open':'')+'><summary><strong>'+(tied?'T'+first:first+'.')+' '+esc(x.player)+'</strong> · '+x.wins.length+' pts</summary>'+(x.wins.length?x.wins.map(w=>{const course=rounds.find(r=>r.id===w.round_id);const hole=skillsHoles[w.round_id]?.[w.kind];return '<p class="small">'+esc(course?.name||w.round_id)+' · Hole '+hole+' · '+(w.kind==='ctp'?'Closest to Pin 🎯':'Long Drive 💪')+(lockedRounds.has(w.round_id)?' · 🔒 Locked':' · Provisional')+'</p>';}).join(''):'<p class="small">No challenges won yet.</p>')+'</details>';
   });
   body+='</section>';
  }
