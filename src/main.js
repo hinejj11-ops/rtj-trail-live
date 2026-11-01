@@ -137,6 +137,20 @@ function render(){
  if(isSpectator())body+='<div class="score-head"><span>Hole</span><span>Par</span><span>HDCP</span><span>Score</span><span>Net</span></div>';else body+='<div class="score-head"><span>Hole</span><span>Par</span><span>Strokes</span><span>Gross</span><span>Net</span></div>';for(let h=1;h<=r().holes;h++){let s=score(target,h),st=strokes(target,h);const lifelinesUsed=scores.filter(x=>x.round_id===roundId&&x.player==='Richie'&&x.lifeline).length;const limitReached=lifelinesUsed>=lifelineLimits[roundId]&&!s?.lifeline;if(isSpectator()){body+='<div class="score-row"><b class="score-hole-number">'+h+(skillsHoles[roundId]?.ctp===h?' 🎯':'')+(skillsHoles[roundId]?.ld===h?' 💪':'')+'</b><span>'+par(h)+'</span><span>'+rank(h)+'</span><strong>'+(s?.gross??'—')+'</strong><b>'+(net(target,h)??'—')+'</b></div>';continue;}body+='<div class="score-row"><b class="score-hole-number">'+h+(skillsHoles[roundId]?.ctp===h?'<span class="score-skill-emoji" title="Closest to Pin" aria-label="Closest to Pin">🎯</span>':'')+(skillsHoles[roundId]?.ld===h?'<span class="score-skill-emoji" title="Long Drive" aria-label="Long Drive">💪</span>':'')+'</b><span>'+par(h)+'</span><span class="stroke">'+(st?'●'.repeat(st):'—')+'</span><span class="hole-input"><button data-step="-1" data-hole="'+h+'" '+(!(ready||testMode)||locked||isSpectator()?'disabled':'')+'>−</button><strong>'+(s?.gross??'—')+'</strong><button data-step="1" data-hole="'+h+'" '+(!(ready||testMode)||locked||isSpectator()?'disabled':'')+'>+</button></span><b>'+(net(target,h)??'—')+'</b>'+(target==='Richie'&&lifelineEligible(roundId,h,rank(h))?'<label class="small" style="grid-column:1/-1"><input type="checkbox" data-lifeline="'+h+'" '+(s?.lifeline?'checked':'')+' '+(!(ready||testMode)||locked||!s||limitReached||isSpectator()?'disabled':'')+'> Richie used Lifeline</label>':'')+'</div>';}}
  if(!isSpectator())body+='<div class="panel"><h3>End-of-Round Verification</h3><p class="small">Applies only to '+esc(target)+' on '+esc(r().name)+'.</p>'+(locked?'<p>🔒 Verified against physical scorecard and locked by Jimmy.</p>':!testMode&&ready?(me==='Jimmy'?'<button id="submit-card" class="primary" '+(completed!==r().holes?'disabled':'')+'>Verify & finalize '+esc(target)+' scorecard</button><p class="small">Compare all '+r().holes+' holes with the physical scorecard before finalizing.</p>':'<p class="small">Awaiting Jimmy’s physical-scorecard verification. Scores remain editable until finalized.</p>'):'<p>Official submission is available only when official scoring is enabled and Test Mode is off.</p>')+'<div style="margin-top:12px">'+(me==='Jimmy'?'<button id="reset-player">Reset '+esc(target)+' '+(testMode?'TEST':'OFFICIAL')+' scores for this round</button>':'<p class="small">Only Jimmy can clear scorecards.</p>')+'</div>'+(locked&&me==='Jimmy'?'<button id="unlock-card">Unlock '+esc(target)+' scorecard (organizer)</button>':'')+'</div>';if(!isSpectator())body+='<p class="small">Everyone may enter scores for their playing group. Jimmy checks physical scorecards and alone finalizes, unlocks, or clears any golfer’s scorecard. ● indicates a handicap stroke. Net values are provisional until hole stroke indexes are verified.</p></section>';
  }else if(tab==='matches'){
+ if(isSpectator()){
+  const descriptions={
+   'silver-am':'Individual net match play: golfers face their assigned opponents hole by hole. The lower net score wins the hole; ties are halved.',
+   'silver-pm':'Vegas: two-person teams combine their scores into a two-digit number, lower first. Heartbreaker uses net scores; the Short Course uses gross scores. Both nines count equally.',
+   valley:'Triple Threat: two three-person sides compete for team points. Wild Card Stableford is a separate individual contest: net birdie or better = 3 points, net par = 2, net bogey = 1, net double bogey or worse = 0.',
+   ridge:'Individual net match play: lower net score wins each hole. Wild Card Stableford uses 3 points for net birdie or better, 2 for net par, 1 for net bogey, and 0 for net double bogey or worse.',
+   ross:'Individual Stableford: net birdie or better = 3 points, net par = 2, net bogey = 1, and net double bogey or worse = 0. Highest total wins.',
+   backyard:'Gross team skins: the lowest unique team score on a hole wins a skin; ties carry no skin. Wild Card individual skins are a separate contest.',
+   links:'Individual net match play: the lower net score wins each hole, and tied holes are halved.',
+   lake:'Best Ball: each two-person team counts its better net score on each hole against the other teams.',
+   short:'Individual net hole credits: all six golfers compete on each hole, with handicap strokes applied. The finale can change the overall standings.'
+  };
+  body+='<section class="panel"><h3>How This Round Works</h3><p class="small">'+esc(descriptions[roundId]||'Follow the live results below.')+'</p></section>';
+ }
  body+=matchAlertPanel()+'<section class="panel"><h2>Live Match Center</h2>';
  if(r().format==='match'){for(const g of r().groups){for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){
   if(g[i]==='Mason'||g[j]==='Mason')continue;
@@ -205,6 +219,23 @@ function render(){
    engine.details[b.id].forEach((ev,i)=>{body+='<div class="small"><strong>'+esc(engine.eventLabels[b.id][i])+'</strong></div>'+b.eligible.map(p=>'<div class="row"><span>'+esc(p)+'</span><span>'+Number((ev[p]||0).toFixed(3))+' pts</span></div>').join('');});
    body+='</details>';
   }
+  body+='</section>';
+ }
+ }else if(tab==='skills'&&isSpectator()){
+ const valid=skills.filter(x=>skillsHoles[x.round_id]&&Object.hasOwn(skillsHoles[x.round_id],x.kind)&&names.includes(x.winner));
+ const boards=[
+  {title:'Overall Skills',players:names.slice(0,6),entries:valid,description:'All six full-trip golfers. One point per Closest to Pin or Long Drive win.'},
+  {title:'Wild Card Skills',players:names,entries:valid.filter(x=>wildCardSkillsRounds.includes(x.round_id)),description:'All seven golfers. One point per skills challenge won during Wild Card rounds.'}
+ ];
+ body+='<section class="panel"><h2>Skills Challenges</h2><p>🎯 Closest to Pin · 💪 Long Drive. Select any golfer to see their winning competitions.</p></section>';
+ for(const board of boards){
+  const ranked=board.players.map(player=>({player,wins:board.entries.filter(x=>x.winner===player)})).sort((a,b)=>b.wins.length-a.wins.length||board.players.indexOf(a.player)-board.players.indexOf(b.player));
+  body+='<section class="panel"><h3>'+board.title+'</h3><p class="small">'+board.description+'</p>';
+  ranked.forEach((x,i)=>{
+   const first=ranked.findIndex(y=>y.wins.length===x.wins.length)+1;
+   const tied=ranked.some((y,j)=>j!==i&&y.wins.length===x.wins.length);
+   body+='<details><summary><strong>'+(tied?'T'+first:first+'.')+' '+esc(x.player)+'</strong> · '+x.wins.length+' pts</summary>'+(x.wins.length?x.wins.map(w=>{const course=rounds.find(r=>r.id===w.round_id);const hole=skillsHoles[w.round_id]?.[w.kind];return '<p class="small">'+esc(course?.name||w.round_id)+' · Hole '+hole+' · '+(w.kind==='ctp'?'Closest to Pin 🎯':'Long Drive 💪')+'</p>';}).join(''):'<p class="small">No challenges won yet.</p>')+'</details>';
+  });
   body+='</section>';
  }
  }else if(tab==='skills'){
