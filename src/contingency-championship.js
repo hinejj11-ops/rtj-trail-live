@@ -29,7 +29,7 @@ export function contingencyChampionship(scores,holes,submissions=[],requireVerif
  const values=ps=>Object.fromEntries(ps.map(p=>[p,0]));
  const fourDay=values(six),wild=values(names),finalDay=values(five),details={fourDay:[],wild:[],finalDay:[]};
  const add=(key,id,award,multiplier=1)=>{const board={fourDay,wild,finalDay}[key];for(const p of Object.keys(board))board[p]+=(award[p]||0)*multiplier;details[key].push({id,award,multiplier});};
- const stable=(id,p)=>Array.from({length:18},(_,i)=>{const h=i+1,d=net(id,p,h,'stableford')-par(id,h);return d<=-1?3:d===0?2:d===1?1:0;}).reduce((a,b)=>a+b,0);
+ const stable=(id,p)=>Array.from({length:18},(_,i)=>{const h=i+1,d=net(id,p,h,id==='lake'?'primary':'stableford')-par(id,h);return d<=-1?3:d===0?2:d===1?1:0;}).reduce((a,b)=>a+b,0);
  const matchRanks=id=>{
   const records=Object.fromEntries(six.map(p=>[p,{points:0,wins:0,diff:0}]));
   for(const group of rounds.find(r=>r.id===id).groups){const ps=group.filter(p=>six.includes(p));
