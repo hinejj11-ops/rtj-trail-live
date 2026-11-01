@@ -73,3 +73,11 @@
 .match-card-visual .match-horizontal td.match-hole-win.match-hole-gold{background:#bd9a48;color:#172f24}
 .match-card-visual .match-horizontal td.match-hole-win.match-hole-green .match-stroke-dot{color:#fff}
 .match-card-visual .match-horizontal td.match-hole-win.match-hole-gold .match-stroke-dot{color:#172f24}
+
+/* Traditional golf score notation, always based on gross strokes vs par. */
+.score-symbol{display:inline-flex;align-items:center;justify-content:center;min-width:1.55em;min-height:1.55em;line-height:1;vertical-align:middle;box-sizing:border-box;border:2px solid transparent;position:relative;flex-shrink:0}
+.score-birdie,.score-eagle{border-color:currentColor;border-radius:50%}
+.score-bogey,.score-double-bogey{border-color:currentColor;border-radius:2px}
+.score-eagle:after,.score-double-bogey:after{content:'';position:absolute;inset:3px;border:1.5px solid currentColor;border-radius:inherit;pointer-events:none}
+.match-net-value .score-symbol{min-width:1.55em;min-height:1.55em}
+.hole-input .score-symbol{min-width:1.7em;min-height:1.7em}
