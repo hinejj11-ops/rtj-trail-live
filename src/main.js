@@ -11,6 +11,9 @@ import './style.css';
 const db=SUPABASE_URL&&SUPABASE_ANON_KEY?createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 let pendingJimmyPin=false;
 let activeGolferSessions=[];
+let golferSessionsError='';
+let golferSessionsLastChecked=null;
+let golferSessionsPolling=false;
 const isSpectator=()=>me==='Spectator';
 let entryFees={main:75,wild:25};
 const money=n=>String.fromCharCode(36)+Number(n.toFixed(2)).toLocaleString('en-US',{maximumFractionDigits:2});
@@ -269,7 +272,7 @@ function render(){
  body+='<section class="panel"><h3>Overall Skills · '+overallResolved+'/16 resolved</h3>'+skillsLeaderboard(names.slice(0,6),overallValid)+'</section>';
  body+='<section class="panel"><h3>Wild Card Skills · '+wildResolved+'/7 resolved</h3>'+skillsLeaderboard(names,wildValid)+'</section>';
  }else if(tab==='settings'){
- if(me==='Jimmy')body+='<section class="panel"><h2>Golfer Login Management</h2><p class="small">Release a golfer’s occupied login if someone selected their name by mistake. Their device will be signed out on its next session check (normally within 25 seconds). Scores are not deleted.</p><div class="pairings-groups">'+names.filter(n=>n!=='Jimmy').map(n=>'<div class="pairings-group"><strong>'+esc(n)+'</strong><span class="small">'+(activeGolferSessions.includes(n)?'Logged in':'Available')+'</span> '+(activeGolferSessions.includes(n)?'<button data-kick-player="'+esc(n)+'">Kick out</button>':'')+'</div>').join('')+'</div><button id="refresh-sessions">Refresh login status</button></section>';
+ if(me==='Jimmy')body+='<section class="panel"><h2>Golfer Login Management</h2><p class="small">Automatically checks occupied logins every 10 seconds. '+(golferSessionsLastChecked?'Last checked '+new Date(golferSessionsLastChecked).toLocaleTimeString()+'.':'Not checked yet.')+'</p>'+(golferSessionsError?'<p class="warning">Session status unavailable: '+esc(golferSessionsError)+'</p>':'')+'<p class="small">Release a golfer’s occupied login if someone selected their name by mistake. Their device will be signed out on its next session check (normally within 25 seconds). Scores are not deleted.</p><div class="pairings-groups">'+names.filter(n=>n!=='Jimmy').map(n=>'<div class="pairings-group"><strong>'+esc(n)+'</strong><span class="small">'+(activeGolferSessions.includes(n)?'Logged in':'Available')+'</span> '+(activeGolferSessions.includes(n)?'<button data-kick-player="'+esc(n)+'">Kick out</button>':'')+'</div>').join('')+'</div><button id="refresh-sessions">Refresh login status</button></section>';
  body+='<section class="panel"><h2>Tournament Buy-In & Prizes</h2><p class="small">Six full-trip golfers pay both entries. Mason pays only Wild Card. Prizes scale proportionally within each pool.</p><label>Main entry ($ per full-trip golfer)<input id="entry-main" type="number" min="0" max="10000" step="0.01" value="'+entryFees.main+'" '+(me==='Jimmy'?'':'disabled')+'></label><label>Wild Card entry ($ per golfer, including Mason)<input id="entry-wild" type="number" min="0" max="10000" step="0.01" value="'+entryFees.wild+'" '+(me==='Jimmy'?'':'disabled')+'></label><p class="small">Full-trip golfer: '+money(entryFees.main+entryFees.wild)+' · Mason: '+money(entryFees.wild)+' · Prize total: '+money(entryFees.main*6+entryFees.wild*7)+'</p>'+(me==='Jimmy'?'<button id="save-entry-fees" class="primary">Save buy-ins</button>':'<p class="small">Only Jimmy can edit.</p>')+'</section>';
  const designated=skillsHoles[roundId]||{};
  body+='<section class="panel"><h2>CTP & Long Drive Holes</h2><p class="small">Change the designated contest holes for the selected round. Saved changes update the Scorecard icons, CTP & LD page, and all connected devices. Only Jimmy can edit.</p>';
@@ -291,8 +294,35 @@ function render(){
  // Keep the latest completed holes visible on narrow screens after each live update.
  if(tab==='matches')alignLiveMatchWindows();
 }
+async function refreshGolferSessions(){
+ if(!db||me!=='Jimmy'||tab!=='settings'||golferSessionsPolling)return;
+ golferSessionsPolling=true;
+ try{
+  const x=await withTimeout(db.rpc('list_active_golfer_sessions'),'Session status',12000);
+  if(x.error)throw x.error;
+  if(!Array.isArray(x.data))throw Error('Unexpected session list response');
+  activeGolferSessions=x.data;
+  golferSessionsError='';
+  golferSessionsLastChecked=Date.now();
+ }catch(e){
+  golferSessionsError=e?.message||String(e);
+  activeGolferSessions=[];
+  golferSessionsLastChecked=Date.now();
+ }finally{golferSessionsPolling=false;}
+}
+setInterval(async()=>{
+ if(me!=='Jimmy'||tab!=='settings'||document.visibilityState==='hidden')return;
+ await refreshGolferSessions();
+ if(me==='Jimmy'&&tab==='settings')render();
+},10000);
+document.addEventListener('visibilitychange',async()=>{
+ if(document.visibilityState==='visible'&&me==='Jimmy'&&tab==='settings'){
+  await refreshGolferSessions();
+  if(me==='Jimmy'&&tab==='settings')render();
+ }
+});
 async function refresh(){if(!db||!me)return;
- if(me==='Jimmy'&&tab==='settings'){const x=await db.rpc('list_active_golfer_sessions');if(!x.error)activeGolferSessions=x.data||[];}let results=await Promise.all([db.from('scores').select('*'),db.from('skills').select('*'),db.from('course_pars').select('*'),db.from('app_settings').select('*'),db.from('test_scores').select('*'),db.from('scorecard_submissions').select('*'),db.from('skills_round_locks').select('*')]);if(results.some(x=>x.error)){notice='Database error: '+results.find(x=>x.error).error.message;render();return;}[scores,skills,holes]=results.slice(0,3).map(x=>x.data);try{skillsHoleOverrides=JSON.parse(results[3].data.find(x=>x.key==='skills_holes')?.value||'{}');if(!skillsHoleOverrides||typeof skillsHoleOverrides!=='object'||Array.isArray(skillsHoleOverrides))skillsHoleOverrides={};}catch{skillsHoleOverrides={};}for(const [id,defaults] of Object.entries(defaultSkillsHoles)){skillsHoles[id]={...defaults};const override=skillsHoleOverrides[id];if(override&&typeof override==='object'){for(const kind of Object.keys(defaults)){const n=override[kind];const max=rounds.find(x=>x.id===id)?.holes;if(Number.isInteger(n)&&n>=1&&n<=max)skillsHoles[id][kind]=n;}}}try{playingGroupOverrides=JSON.parse(results[3].data.find(x=>x.key==='playing_groups')?.value||'{}');if(!playingGroupOverrides||Array.isArray(playingGroupOverrides)||typeof playingGroupOverrides!=='object')playingGroupOverrides={};}catch{playingGroupOverrides={};}try{const fees=JSON.parse(results[3].data.find(x=>x.key==='entry_fees')?.value||'{}');entryFees={main:Number.isFinite(fees.main)?fees.main:75,wild:Number.isFinite(fees.wild)?fees.wild:25};}catch{entryFees={main:75,wild:25};}ready=results[3].data.find(x=>x.key==='scoring_ready')?.value==='true';testMode=results[3].data.find(x=>x.key==='test_mode')?.value==='true';scores=testMode&&!isSpectator()?results[4].data:results[0].data;submissions=results[5].data;skillsLocks=results[6].data;notice='';lastSync=Date.now();render();}
+ if(me==='Jimmy'&&tab==='settings')await refreshGolferSessions();let results=await Promise.all([db.from('scores').select('*'),db.from('skills').select('*'),db.from('course_pars').select('*'),db.from('app_settings').select('*'),db.from('test_scores').select('*'),db.from('scorecard_submissions').select('*'),db.from('skills_round_locks').select('*')]);if(results.some(x=>x.error)){notice='Database error: '+results.find(x=>x.error).error.message;render();return;}[scores,skills,holes]=results.slice(0,3).map(x=>x.data);try{skillsHoleOverrides=JSON.parse(results[3].data.find(x=>x.key==='skills_holes')?.value||'{}');if(!skillsHoleOverrides||typeof skillsHoleOverrides!=='object'||Array.isArray(skillsHoleOverrides))skillsHoleOverrides={};}catch{skillsHoleOverrides={};}for(const [id,defaults] of Object.entries(defaultSkillsHoles)){skillsHoles[id]={...defaults};const override=skillsHoleOverrides[id];if(override&&typeof override==='object'){for(const kind of Object.keys(defaults)){const n=override[kind];const max=rounds.find(x=>x.id===id)?.holes;if(Number.isInteger(n)&&n>=1&&n<=max)skillsHoles[id][kind]=n;}}}try{playingGroupOverrides=JSON.parse(results[3].data.find(x=>x.key==='playing_groups')?.value||'{}');if(!playingGroupOverrides||Array.isArray(playingGroupOverrides)||typeof playingGroupOverrides!=='object')playingGroupOverrides={};}catch{playingGroupOverrides={};}try{const fees=JSON.parse(results[3].data.find(x=>x.key==='entry_fees')?.value||'{}');entryFees={main:Number.isFinite(fees.main)?fees.main:75,wild:Number.isFinite(fees.wild)?fees.wild:25};}catch{entryFees={main:75,wild:25};}ready=results[3].data.find(x=>x.key==='scoring_ready')?.value==='true';testMode=results[3].data.find(x=>x.key==='test_mode')?.value==='true';scores=testMode&&!isSpectator()?results[4].data:results[0].data;submissions=results[5].data;skillsLocks=results[6].data;notice='';lastSync=Date.now();render();}
 const withTimeout=(promise,label,ms=12000)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+' timed out after '+Math.round(ms/1000)+' seconds')),ms))]);
 async function login(name){
  const status=message=>{notice=message;render();};
