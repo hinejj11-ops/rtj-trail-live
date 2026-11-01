@@ -129,17 +129,25 @@ function championshipSnapshot(){
 
 // Spectator-only interactive overview; coordinates are schematic, not driving directions.
 const trailSites=[
- {id:'silver',short:'SL',name:'Silver Lakes',area:'Anniston / Gadsden',x:75,y:30,courses:['Backbreaker','Mindbreaker','Heartbreaker','Short Course'],days:'Saturday, Nov 7'},
- {id:'oxmoor',short:'OV',name:'Oxmoor Valley',area:'Birmingham',x:27,y:43,courses:['Valley','Ridge','The Back Yard'],days:'Sunday–Monday, Nov 8–9'},
- {id:'ross',short:'RB',name:'Ross Bridge',area:'Hoover / Birmingham',x:44,y:53,courses:['Ross Bridge'],days:'Monday, Nov 9'},
- {id:'grand',short:'GN',name:'Grand National',area:'Opelika / Auburn',x:76,y:76,courses:['Links','Lake','Short Course'],days:'Tuesday–Wednesday, Nov 10–11'}
+ {id:'silver',short:'SL',name:'Silver Lakes',area:'Anniston / Gadsden',x:69,y:24,courses:['Backbreaker','Mindbreaker','Heartbreaker','Short Course'],days:'Saturday, Nov 7'},
+ {id:'oxmoor',short:'OV',name:'Oxmoor Valley',area:'Birmingham',x:46,y:36,courses:['Valley','Ridge','The Back Yard'],days:'Sunday–Monday, Nov 8–9'},
+ {id:'ross',short:'RB',name:'Ross Bridge',area:'Hoover / Birmingham',x:41,y:40,courses:['Ross Bridge'],days:'Monday, Nov 9'},
+ {id:'grand',short:'GN',name:'Grand National',area:'Opelika / Auburn',x:82,y:50,courses:['Links','Lake','Short Course'],days:'Tuesday–Wednesday, Nov 10–11'}
 ];
 let selectedTrailSite='silver';
 function trailMapPanel(){
  const active=trailSites.find(x=>x.id===selectedTrailSite)||trailSites[0];
  return '<section class="panel trail-panel"><h2>⛳ RTJ Trail · Alabama</h2><p>Four stops across Alabama. Select a pin to explore the courses we are playing.</p>'+
  '<div class="trail-map" role="group" aria-label="Alabama golf course locations">'+
- '<svg class="trail-state" viewBox="0 0 340 500" role="img" aria-label="Stylized outline of Alabama"><path d="M79 18 L266 19 L278 79 L288 155 L296 231 L310 314 L307 386 L325 448 L289 452 L273 472 L239 467 L219 482 L171 478 L142 466 L99 463 L89 431 L68 424 L68 343 L72 257 L76 169 Z" fill="#30433a" stroke="#99ad9c" stroke-width="2"/><path d="M100 62 Q200 132 276 182 M85 270 Q184 240 292 303 M111 412 Q204 340 301 397" fill="none" stroke="#6d8072" stroke-width="2" opacity=".45"/><text x="180" y="235" fill="#b4c8b7" opacity=".35" text-anchor="middle" font-size="22" letter-spacing="5">ALABAMA</text></svg>'+
+ '<svg class="trail-state" viewBox="0 0 508 826" role="img" aria-label="Alabama map based on the supplied state reference, with the four RTJ golf stops">'+
+ '<rect width="508" height="826" fill="#f0f1eb"/>'+
+ '<text x="243" y="16" fill="#b3b8b0" font-size="16" letter-spacing="5" text-anchor="middle">TENNESSEE</text>'+
+ '<text x="494" y="327" fill="#b3b8b0" font-size="16" letter-spacing="6" transform="rotate(90 494 327)">GEORGIA</text>'+
+ '<text x="315" y="757" fill="#b3b8b0" font-size="16" letter-spacing="5">FLORIDA</text>'+
+ '<path d="M56 27 L393 32 L403 95 L414 165 L426 240 L439 310 L450 356 L462 395 L456 404 L470 420 L466 433 L478 446 L471 458 L483 474 L471 485 L481 500 L470 510 L483 522 L475 539 L483 556 L477 578 L489 595 L480 611 L487 633 L481 655 L128 658 L123 670 L132 682 L124 699 L138 713 L145 728 L165 743 L161 758 L146 763 L134 749 L121 758 L104 772 L88 765 L71 774 L60 754 L49 768 L34 762 L18 771 L14 661 L18 564 L22 463 L29 360 L34 259 L42 160 L57 68 L69 52 Z" fill="#404341"/>'+
+ '<g fill="none" stroke="#515552" stroke-width="3" opacity=".65"><path d="M69 91 Q110 121 164 119 T275 154 Q335 171 416 211"/><path d="M54 223 Q133 233 178 264 T290 304 Q371 319 442 337"/><path d="M40 438 Q130 369 209 354 T371 384 Q424 408 462 459"/><path d="M22 612 Q114 579 180 602 T309 613 Q400 596 482 621"/><path d="M183 31 Q213 103 237 171 T272 302 Q298 417 354 512 T405 655"/><path d="M319 33 Q300 107 343 160 T345 285 Q331 358 362 420 T401 574"/><path d="M45 689 Q120 640 176 612 T271 516 Q318 460 431 443"/></g>'+
+ '<path d="M14 774 Q70 760 101 775 T170 770 Q244 752 328 772 T505 779" fill="none" stroke="#b9c3ba" stroke-width="1.4"/>'+
+ '</svg>'+
  trailSites.map(site=>'<button type="button" class="trail-pin '+(site.id===active.id?'selected':'')+'" data-trail-site="'+site.id+'" style="left:'+site.x+'%;top:'+site.y+'%" aria-pressed="'+(site.id===active.id)+'" aria-label="'+site.name+'"><span>'+site.short+'</span></button>').join('')+
  '</div><div class="trail-site-detail" aria-live="polite"><h3>'+active.name+'</h3><p>'+active.area+' · '+active.days+'</p><strong>Courses at this stop</strong><ul>'+active.courses.map(c=>'<li>'+c+'</li>').join('')+'</ul></div></section>';
 }
