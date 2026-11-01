@@ -39,7 +39,7 @@ test('fully scored final day excludes Brittany and does not modify input scores'
  assert.deepEqual(board.eligible.slice().sort(),five.slice().sort());
  assert.equal(Object.hasOwn(board.values,'Brittany'),false);
  assert.equal(JSON.stringify(scores),snapshot);
- assert.equal(Object.values(board.values).reduce((a,b)=>a+b,0),25);
+ assert.equal(Object.values(board.values).reduce((a,b)=>a+b,0),50);
 });
 test('verification gate prevents unsubmitted scores from awarding final-day points',()=>{
  const five=['Jimmy','Kevin','Jeff','Nate','Richie'];
