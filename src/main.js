@@ -12,7 +12,19 @@ const db=SUPABASE_URL&&SUPABASE_ANON_KEY?createClient(SUPABASE_URL,SUPABASE_ANON
 let pendingJimmyPin=false;
 let guideHole=1;
 const bbWhite=[360,132,350,355,129,346,471,342,482],bbPar=[4,3,4,4,3,4,5,4,5];
-function updateGuide(){const el=document.querySelector('#guide-content');if(!el)return;const h=guideHole;el.innerHTML='<h3>Backbreaker · Hole '+h+'</h3><p>Par '+bbPar[h-1]+' · <strong>White: '+bbWhite[h-1]+' yards</strong></p><img loading="lazy" src="https://www.rtjgolf.com/silverlakes/tour-2013/c1h'+h+'.png" alt="Backbreaker hole '+h+' map"><p class="small"><a target="_blank" rel="noopener noreferrer" href="https://www.rtjgolf.com/silverlakes/backbreaker.html">Official RTJ course tour ↗</a></p>'+(h===1?'<p>The elevated green is guarded by a deep front bunker; hills behind the green can help a long approach.</p>':'');}
+const bbAdvice=[
+'An elevated green and deep front bunker make the approach demanding. Slopes behind the green may help a shot that runs long.',
+'This short par 3 plays slightly downhill. A large bunker guards the front and a hidden pot bunker protects the back. A good birdie opportunity.',
+'Elevated tees look over a fairway that bends through a valley before rising to the green. The green slopes sharply from back to front, with severe drop-offs on all sides.',
+'A demanding, straight par 4 that plays longer than its yardage because of the sharply elevated green. A deep front bunker punishes shots that come up short.',
+'Missing the green left on this par 3 can find a large bunker or roll downhill away from the putting surface.',
+'Choose a tee club that leaves a comfortable approach distance. The approach must carry a pond to a wide, shallow green with a pot bunker in front. Long misses leave a difficult chip.',
+'Water lines the left side of the fairway. Long hitters may drive beyond the fairway bunker, but reaching in two is unlikely. A miss right of the green offers an easier chip.',
+'This par 4 plays uphill throughout. A drive near the 150-yard marker sets up the approach to an elevated green guarded by a front bunker. Avoid going long.',
+'The downhill finishing par 5 offers long hitters a chance to reach in two. There are no fairway bunkers, but part of the lake guards the entrance to the green.'
+];
+function updateGuide(){const el=document.querySelector('#guide-content');if(!el)return;const h=guideHole;el.innerHTML='<h3>Backbreaker · Hole '+h+'</h3><p>Par '+bbPar[h-1]+' · <strong>White: '+bbWhite[h-1]+' yards</strong></p><img loading="lazy" src="https://www.rtjgolf.com/silverlakes/tour-2013/c1h'+h+'.png" alt="Backbreaker hole '+h+' map"><h4>Playing advice</h4><p>'+bbAdvice[h-1]+'</p>';}
+
 
 let playingGroupOverrides={},groupDraft=null;
 const defaultSkillsHoles=JSON.parse(JSON.stringify(skillsHoles));
