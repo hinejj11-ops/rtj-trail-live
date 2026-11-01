@@ -14,6 +14,8 @@ let activeGolferSessions=[];
 let golferSessionsError='';
 let golferSessionsLastChecked=null;
 let golferSessionsPolling=false;
+const spectatorSkillsExpanded=new Set();
+let spectatorSkillsPolling=false;
 const settingsOpenPanels=new Set();
 const isSpectator=()=>me==='Spectator';
 let entryFees={main:75,wild:25};
@@ -227,7 +229,8 @@ function render(){
   body+='</section>';
  }
  }else if(tab==='skills'&&isSpectator()){
- const valid=skills.filter(x=>skillsHoles[x.round_id]&&Object.hasOwn(skillsHoles[x.round_id],x.kind)&&names.includes(x.winner));
+ const lockedRounds=new Set(skillsLocks.map(x=>x.round_id));
+ const valid=skills.filter(x=>lockedRounds.has(x.round_id)&&skillsHoles[x.round_id]&&Object.hasOwn(skillsHoles[x.round_id],x.kind)&&names.includes(x.winner));
  const boards=[
   {title:'Overall Skills',players:names.slice(0,6),entries:valid,description:'All six full-trip golfers. One point per Closest to Pin or Long Drive win.'},
   {title:'Wild Card Skills',players:names,entries:valid.filter(x=>wildCardSkillsRounds.includes(x.round_id)),description:'All seven golfers. One point per skills challenge won during Wild Card rounds.'}
@@ -239,7 +242,7 @@ function render(){
   ranked.forEach((x,i)=>{
    const first=ranked.findIndex(y=>y.wins.length===x.wins.length)+1;
    const tied=ranked.some((y,j)=>j!==i&&y.wins.length===x.wins.length);
-   body+='<details><summary><strong>'+(tied?'T'+first:first+'.')+' '+esc(x.player)+'</strong> · '+x.wins.length+' pts</summary>'+(x.wins.length?x.wins.map(w=>{const course=rounds.find(r=>r.id===w.round_id);const hole=skillsHoles[w.round_id]?.[w.kind];return '<p class="small">'+esc(course?.name||w.round_id)+' · Hole '+hole+' · '+(w.kind==='ctp'?'Closest to Pin 🎯':'Long Drive 💪')+'</p>';}).join(''):'<p class="small">No challenges won yet.</p>')+'</details>';
+   body+='<details data-spectator-skills="'+esc(board.title+'|'+x.player)+'" '+(spectatorSkillsExpanded.has(board.title+'|'+x.player)?'open':'')+'><summary><strong>'+(tied?'T'+first:first+'.')+' '+esc(x.player)+'</strong> · '+x.wins.length+' pts</summary>'+(x.wins.length?x.wins.map(w=>{const course=rounds.find(r=>r.id===w.round_id);const hole=skillsHoles[w.round_id]?.[w.kind];return '<p class="small">'+esc(course?.name||w.round_id)+' · Hole '+hole+' · '+(w.kind==='ctp'?'Closest to Pin 🎯':'Long Drive 💪')+'</p>';}).join(''):'<p class="small">No challenges won yet.</p>')+'</details>';
   });
   body+='</section>';
  }
@@ -337,6 +340,43 @@ document.addEventListener('visibilitychange',async()=>{
   if(me==='Jimmy'&&tab==='settings')render();
  }
 });
+async function refreshSpectatorSkills(){
+ if(!db||me!=='Spectator'||tab!=='skills'||spectatorSkillsPolling)return;
+ spectatorSkillsPolling=true;
+ try{
+  const [winners,locks,settings]=await Promise.all([
+   db.from('skills').select('*'),
+   db.from('skills_round_locks').select('*'),
+   db.from('app_settings').select('key,value').eq('key','skills_holes')
+  ]);
+  if(winners.error||locks.error||settings.error)throw winners.error||locks.error||settings.error;
+  const previous=JSON.stringify([skills,skillsLocks,skillsHoleOverrides]);
+  const nextOverrides=JSON.parse(settings.data?.[0]?.value||'{}');
+  const updated=JSON.stringify([winners.data,locks.data,nextOverrides]);
+  if(previous===updated)return;
+  skills=winners.data;
+  skillsLocks=locks.data;
+  skillsHoleOverrides=nextOverrides;
+  for(const [id,defaults] of Object.entries(defaultSkillsHoles)){
+   skillsHoles[id]={...defaults};
+   const override=skillsHoleOverrides?.[id];
+   if(override&&typeof override==='object'){
+    for(const kind of Object.keys(defaults)){
+     const n=override[kind],max=rounds.find(x=>x.id===id)?.holes;
+     if(Number.isInteger(n)&&n>=1&&n<=max)skillsHoles[id][kind]=n;
+    }
+   }
+  }
+  if(me==='Spectator'&&tab==='skills')render();
+ }catch(e){console.warn('Spectator skills refresh failed',e);}
+ finally{spectatorSkillsPolling=false;}
+}
+setInterval(()=>{
+ if(document.visibilityState==='visible')refreshSpectatorSkills();
+},10000);
+document.addEventListener('visibilitychange',()=>{
+ if(document.visibilityState==='visible')refreshSpectatorSkills();
+});
 async function refresh(){if(!db||!me)return;
  if(me==='Jimmy'&&tab==='settings')await refreshGolferSessions();let results=await Promise.all([db.from('scores').select('*'),db.from('skills').select('*'),db.from('course_pars').select('*'),db.from('app_settings').select('*'),db.from('test_scores').select('*'),db.from('scorecard_submissions').select('*'),db.from('skills_round_locks').select('*')]);if(results.some(x=>x.error)){notice='Database error: '+results.find(x=>x.error).error.message;render();return;}[scores,skills,holes]=results.slice(0,3).map(x=>x.data);try{skillsHoleOverrides=JSON.parse(results[3].data.find(x=>x.key==='skills_holes')?.value||'{}');if(!skillsHoleOverrides||typeof skillsHoleOverrides!=='object'||Array.isArray(skillsHoleOverrides))skillsHoleOverrides={};}catch{skillsHoleOverrides={};}for(const [id,defaults] of Object.entries(defaultSkillsHoles)){skillsHoles[id]={...defaults};const override=skillsHoleOverrides[id];if(override&&typeof override==='object'){for(const kind of Object.keys(defaults)){const n=override[kind];const max=rounds.find(x=>x.id===id)?.holes;if(Number.isInteger(n)&&n>=1&&n<=max)skillsHoles[id][kind]=n;}}}try{playingGroupOverrides=JSON.parse(results[3].data.find(x=>x.key==='playing_groups')?.value||'{}');if(!playingGroupOverrides||Array.isArray(playingGroupOverrides)||typeof playingGroupOverrides!=='object')playingGroupOverrides={};}catch{playingGroupOverrides={};}try{const fees=JSON.parse(results[3].data.find(x=>x.key==='entry_fees')?.value||'{}');entryFees={main:Number.isFinite(fees.main)?fees.main:75,wild:Number.isFinite(fees.wild)?fees.wild:25};}catch{entryFees={main:75,wild:25};}ready=results[3].data.find(x=>x.key==='scoring_ready')?.value==='true';testMode=results[3].data.find(x=>x.key==='test_mode')?.value==='true';scores=testMode&&!isSpectator()?results[4].data:results[0].data;submissions=results[5].data;skillsLocks=results[6].data;notice='';lastSync=Date.now();render();}
 const withTimeout=(promise,label,ms=12000)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+' timed out after '+Math.round(ms/1000)+' seconds')),ms))]);
@@ -406,6 +446,12 @@ document.addEventListener('visibilitychange',()=>{
 });
 window.addEventListener('focus',()=>checkOwnGolferSession());
 async function save(h,d){if(!(me==='Jimmy'||group().includes(target))||!(ready||testMode)||(!testMode&&submissions.some(x=>x.round_id===roundId&&x.player===target)))return;let old=score(target,h),gross=old?Math.max(1,Math.min(20,old.gross+d)):par(h);let a=await db.from(testMode?'test_scores':'scores').upsert({round_id:roundId,player:target,hole:h,gross,lifeline:old?.lifeline||false,updated_by:(await db.auth.getUser()).data.user.id,updated_at:new Date().toISOString()});if(a.error)notice=a.error.message;await refresh();}
+$('#app').addEventListener('toggle',e=>{
+ const panel=e.target.closest?.('details[data-spectator-skills]');
+ if(!panel||panel!==e.target)return;
+ if(panel.open)spectatorSkillsExpanded.add(panel.dataset.spectatorSkills);
+ else spectatorSkillsExpanded.delete(panel.dataset.spectatorSkills);
+},true);
 $('#app').addEventListener('toggle',e=>{
  const panel=e.target.closest?.('details[data-settings-panel]');
  if(!panel||panel!==e.target)return;
