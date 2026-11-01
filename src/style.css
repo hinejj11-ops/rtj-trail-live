@@ -113,7 +113,7 @@
 @media(max-width:360px){.championship-snapshot{padding:9px}.championship-snapshot-grid{gap:5px}.championship-snapshot-card{padding:6px}.championship-snapshot-card>strong{font-size:12px}.championship-snapshot-card>b{font-size:13px}.championship-snapshot-card>small{font-size:10px}}
 
 /* Skills icons live beside the scorecard hole number, not in a reminder banner. */
-.score-hole-number{display:flex;align-items:center;justify-content:center;gap:2px;white-space:nowrap;flex-wrap:wrap}.score-hole-hdcp{font-size:10px;font-weight:500;color:var(--muted,#68746b);width:100%;text-align:center;line-height:1.1}
+.score-hole-number{display:flex;align-items:center;justify-content:center;gap:2px;white-space:nowrap}
 .score-skill-emoji{font-size:13px;line-height:1}
 @media(min-width:650px){.championship-snapshot-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
@@ -134,3 +134,7 @@
 
 /* Center hole guide details on mobile without changing score entry. */
 @media (max-width: 700px){.hole-guide-top #guide-content>h3,.hole-guide-top #guide-content>h4,.hole-guide-top #guide-content>p{text-align:center}}
+
+.hole-guide-inner #guide-content>h3{margin-bottom:2px}
+.hole-guide-inner #guide-content>.hole-guide-hdcp{margin:0;line-height:1.2}
+.hole-guide-inner #guide-content>.hole-guide-par{margin:2px 0 8px}
