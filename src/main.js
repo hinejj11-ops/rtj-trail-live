@@ -34,7 +34,7 @@ const valleyGuide={name:'Valley',code:'c2',base:'https://www.rtjgolf.com/oxmoorv
 guideCourses.valley=[valleyGuide];
 function toGuide(x){return {name:x[0],code:x[1],white:x[2],par:x[3],advice:x[4]};}
 function guideHoles(){return (guideCourses[roundId]||[]).flatMap(c=>c.white.map((white,i)=>({course:c.name,code:c.code,base:c.base||'https://www.rtjgolf.com/silverlakes/tour-2013/',hole:i+1,white,par:c.par[i],advice:c.advice[i]})));}
-const localGuidePaths={'Backbreaker':'silver-lakes/backbreaker','Mindbreaker':'silver-lakes/mindbreaker'};
+const localGuidePaths={'Backbreaker':'silver-lakes/backbreaker','Mindbreaker':'silver-lakes/mindbreaker','Heartbreaker':'silver-lakes/heartbreaker','Short Course':'silver-lakes/short-course','Valley':'valley'};
 function updateGuide(){
  const el=document.querySelector('#guide-content');if(!el)return;
  const item=guideHoles()[guideHole-1];if(!item)return;
