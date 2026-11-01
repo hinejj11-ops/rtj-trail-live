@@ -9,7 +9,8 @@ begin
  if auth.uid() is null or not exists (
   select 1 from public.player_sessions ps
   where to_jsonb(ps)->>'player'='Jimmy'
-  and auth.uid()::text=coalesce(to_jsonb(ps)->>'user_id',to_jsonb(ps)->>'auth_user_id',to_jsonb(ps)->>'auth_uid')
+  and auth.uid()::text=coalesce(to_jsonb(ps)->>'owner',to_jsonb(ps)->>'user_id',to_jsonb(ps)->>'auth_user_id',to_jsonb(ps)->>'auth_uid')
+  and ps.last_seen > now() - interval '100 seconds'
  ) then raise exception 'Only Jimmy can switch championship mode'; end if;
  insert into public.app_settings(key,value) values ('championship_mode',p_mode)
  on conflict (key) do update set value=excluded.value;
