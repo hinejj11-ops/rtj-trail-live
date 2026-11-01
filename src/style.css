@@ -113,7 +113,7 @@
 @media(max-width:360px){.championship-snapshot{padding:9px}.championship-snapshot-grid{gap:5px}.championship-snapshot-card{padding:6px}.championship-snapshot-card>strong{font-size:12px}.championship-snapshot-card>b{font-size:13px}.championship-snapshot-card>small{font-size:10px}}
 
 /* Skills icons live beside the scorecard hole number, not in a reminder banner. */
-.score-hole-number{display:flex;align-items:center;justify-content:center;gap:2px;white-space:nowrap}
+.score-hole-number{display:flex;align-items:center;justify-content:center;gap:2px;white-space:nowrap;flex-wrap:wrap}.score-hole-hdcp{font-size:10px;font-weight:500;color:var(--muted,#68746b);width:100%;text-align:center;line-height:1.1}
 .score-skill-emoji{font-size:13px;line-height:1}
 @media(min-width:650px){.championship-snapshot-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
