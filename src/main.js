@@ -340,45 +340,24 @@ document.addEventListener('visibilitychange',async()=>{
   if(me==='Jimmy'&&tab==='settings')render();
  }
 });
-async function refreshSpectatorSkills(){
- if(!db||me!=='Spectator'||tab!=='skills'||spectatorSkillsPolling)return;
- spectatorSkillsPolling=true;
- try{
-  const [winners,locks,settings]=await Promise.all([
-   db.from('skills').select('*'),
-   db.from('skills_round_locks').select('*'),
-   db.from('app_settings').select('key,value').eq('key','skills_holes')
-  ]);
-  if(winners.error||locks.error||settings.error)throw winners.error||locks.error||settings.error;
-  const previous=JSON.stringify([skills,skillsLocks,skillsHoleOverrides]);
-  const nextOverrides=JSON.parse(settings.data?.[0]?.value||'{}');
-  const updated=JSON.stringify([winners.data,locks.data,nextOverrides]);
-  if(previous===updated)return;
-  skills=winners.data;
-  skillsLocks=locks.data;
-  skillsHoleOverrides=nextOverrides;
-  for(const [id,defaults] of Object.entries(defaultSkillsHoles)){
-   skillsHoles[id]={...defaults};
-   const override=skillsHoleOverrides?.[id];
-   if(override&&typeof override==='object'){
-    for(const kind of Object.keys(defaults)){
-     const n=override[kind],max=rounds.find(x=>x.id===id)?.holes;
-     if(Number.isInteger(n)&&n>=1&&n<=max)skillsHoles[id][kind]=n;
-    }
-   }
-  }
-  if(me==='Spectator'&&tab==='skills')render();
- }catch(e){console.warn('Spectator skills refresh failed',e);}
- finally{spectatorSkillsPolling=false;}
+let spectatorSyncBusy=false;
+let spectatorLastSignature='';
+async function syncSpectator(){
+ if(!db||me!=='Spectator'||document.visibilityState==='hidden'||spectatorSyncBusy)return;
+ spectatorSyncBusy=true;
+ try{await refresh(true);}catch(e){console.warn('Spectator sync failed',e);}
+ finally{spectatorSyncBusy=false;}
 }
-setInterval(()=>{
- if(document.visibilityState==='visible')refreshSpectatorSkills();
-},10000);
-document.addEventListener('visibilitychange',()=>{
- if(document.visibilityState==='visible')refreshSpectatorSkills();
-});
-async function refresh(){if(!db||!me)return;
- if(me==='Jimmy'&&tab==='settings')await refreshGolferSessions();let results=await Promise.all([db.from('scores').select('*'),db.from('skills').select('*'),db.from('course_pars').select('*'),db.from('app_settings').select('*'),db.from('test_scores').select('*'),db.from('scorecard_submissions').select('*'),db.from('skills_round_locks').select('*')]);if(results.some(x=>x.error)){notice='Database error: '+results.find(x=>x.error).error.message;render();return;}[scores,skills,holes]=results.slice(0,3).map(x=>x.data);try{skillsHoleOverrides=JSON.parse(results[3].data.find(x=>x.key==='skills_holes')?.value||'{}');if(!skillsHoleOverrides||typeof skillsHoleOverrides!=='object'||Array.isArray(skillsHoleOverrides))skillsHoleOverrides={};}catch{skillsHoleOverrides={};}for(const [id,defaults] of Object.entries(defaultSkillsHoles)){skillsHoles[id]={...defaults};const override=skillsHoleOverrides[id];if(override&&typeof override==='object'){for(const kind of Object.keys(defaults)){const n=override[kind];const max=rounds.find(x=>x.id===id)?.holes;if(Number.isInteger(n)&&n>=1&&n<=max)skillsHoles[id][kind]=n;}}}try{playingGroupOverrides=JSON.parse(results[3].data.find(x=>x.key==='playing_groups')?.value||'{}');if(!playingGroupOverrides||Array.isArray(playingGroupOverrides)||typeof playingGroupOverrides!=='object')playingGroupOverrides={};}catch{playingGroupOverrides={};}try{const fees=JSON.parse(results[3].data.find(x=>x.key==='entry_fees')?.value||'{}');entryFees={main:Number.isFinite(fees.main)?fees.main:75,wild:Number.isFinite(fees.wild)?fees.wild:25};}catch{entryFees={main:75,wild:25};}ready=results[3].data.find(x=>x.key==='scoring_ready')?.value==='true';testMode=results[3].data.find(x=>x.key==='test_mode')?.value==='true';scores=testMode&&!isSpectator()?results[4].data:results[0].data;submissions=results[5].data;skillsLocks=results[6].data;notice='';lastSync=Date.now();render();}
+setInterval(syncSpectator,10000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncSpectator();});
+window.addEventListener('focus',syncSpectator);
+async function refresh(spectatorFallback=false){if(!db||!me)return;
+ if(me==='Jimmy'&&tab==='settings')await refreshGolferSessions();let results=await Promise.all([db.from('scores').select('*'),db.from('skills').select('*'),db.from('course_pars').select('*'),db.from('app_settings').select('*'),db.from('test_scores').select('*'),db.from('scorecard_submissions').select('*'),db.from('skills_round_locks').select('*')]);if(results.some(x=>x.error)){notice='Database error: '+results.find(x=>x.error).error.message;render();return;}if(spectatorFallback&&me==='Spectator'){
+ const signature=JSON.stringify([results[0].data,results[1].data,results[2].data,results[3].data,results[5].data,results[6].data]);
+ if(signature===spectatorLastSignature)return;
+ spectatorLastSignature=signature;
+}
+[scores,skills,holes]=results.slice(0,3).map(x=>x.data);try{skillsHoleOverrides=JSON.parse(results[3].data.find(x=>x.key==='skills_holes')?.value||'{}');if(!skillsHoleOverrides||typeof skillsHoleOverrides!=='object'||Array.isArray(skillsHoleOverrides))skillsHoleOverrides={};}catch{skillsHoleOverrides={};}for(const [id,defaults] of Object.entries(defaultSkillsHoles)){skillsHoles[id]={...defaults};const override=skillsHoleOverrides[id];if(override&&typeof override==='object'){for(const kind of Object.keys(defaults)){const n=override[kind];const max=rounds.find(x=>x.id===id)?.holes;if(Number.isInteger(n)&&n>=1&&n<=max)skillsHoles[id][kind]=n;}}}try{playingGroupOverrides=JSON.parse(results[3].data.find(x=>x.key==='playing_groups')?.value||'{}');if(!playingGroupOverrides||Array.isArray(playingGroupOverrides)||typeof playingGroupOverrides!=='object')playingGroupOverrides={};}catch{playingGroupOverrides={};}try{const fees=JSON.parse(results[3].data.find(x=>x.key==='entry_fees')?.value||'{}');entryFees={main:Number.isFinite(fees.main)?fees.main:75,wild:Number.isFinite(fees.wild)?fees.wild:25};}catch{entryFees={main:75,wild:25};}ready=results[3].data.find(x=>x.key==='scoring_ready')?.value==='true';testMode=results[3].data.find(x=>x.key==='test_mode')?.value==='true';scores=testMode&&!isSpectator()?results[4].data:results[0].data;submissions=results[5].data;skillsLocks=results[6].data;notice='';lastSync=Date.now();render();}
 const withTimeout=(promise,label,ms=12000)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+' timed out after '+Math.round(ms/1000)+' seconds')),ms))]);
 async function login(name){
  const status=message=>{notice=message;render();};
