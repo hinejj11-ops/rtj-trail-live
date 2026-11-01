@@ -23,6 +23,24 @@ const net=(p,h)=>netScore(roundId,p,h,score(p,h),rank(h));
 const through=(p,id=roundId)=>{const total=rounds.find(x=>x.id===id)?.holes||18;let h=0;while(h<total&&scores.some(x=>x.round_id===id&&x.player===p&&x.hole===h+1&&x.gross!=null))h++;return h;};
 const throughLabel=(h,total)=>h===0?'—':h>=total?'F':'Thru '+h;
 const sf=(p)=>{let n=0;for(let h=1;h<=r().holes;h++){let x=net(p,h);if(x===null)continue;let d=x-par(h);n+=d<=-1?3:d===0?2:d===1?1:0;}return n;};
+function alignLiveMatchWindows(){
+ document.querySelectorAll('#app .match-card-visual').forEach(card=>{
+  const strip=card.querySelector('.match-progress-scroll');
+  if(!strip)return;
+  const latest=Number(strip.dataset.latestHole)||0;
+  if(!latest)return;
+  const cell=card.querySelector('.match-progress-hole');
+  if(!cell)return;
+  const width=cell.parentElement.getBoundingClientRect().width/Math.max(1,cell.parentElement.children.length);
+  const visible=Math.max(1,Math.floor(strip.clientWidth/width));
+  // Show approximately three previous holes, the latest hole and upcoming holes.
+  const first=Math.max(1,Math.min(latest-3,latest-visible+1));
+  const offset=Math.min(strip.scrollWidth-strip.clientWidth,Math.max(0,(first-1)*width));
+  strip.scrollLeft=offset;
+  const table=card.querySelector('.match-table-wrap');
+  if(table)table.scrollLeft=offset;
+ });
+}
 function render(){
  let body='';
  if(!me){body='<section class="panel"><h2>Who’s on the tee?</h2><p>Choose your name. Only one active device can claim each player.</p>'+(pendingJimmyPin?'<form id="jimmy-pin-form"><label for="jimmy-pin">Jimmy’s organizer PIN</label><input id="jimmy-pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required placeholder="4-digit PIN"><div class="row"><button type="submit" class="primary">Sign in as Jimmy</button><button type="button" id="cancel-jimmy-pin">Cancel</button></div></form>':names.map(n=>'<button class="player" data-login="'+n+'">'+n+' <span>→</span></button>').join(''))+'</section>';}
@@ -146,6 +164,8 @@ function render(){
  }
  }
  $('#app').innerHTML='<header><div class="eyebrow gold">ROBERT TRENT JONES GOLF TRAIL</div><h1>TRAIL CHAMPIONSHIP</h1><div class="session"><span>6–11 NOV 2026</span>'+(me?'<strong>'+me+'</strong><button data-logout>Sign out</button>':'')+'</div></header><main>'+(notice?'<div class="notice">'+esc(notice)+'</div>':'')+body+'</main><div class="footer">THE EXPEDITION EDITION · LIVE SCORING</div>';
+ // Keep the latest completed holes visible on narrow screens after each live update.
+ if(tab==='matches')alignLiveMatchWindows();
 }
 async function refresh(){if(!db||!me)return;let results=await Promise.all([db.from('scores').select('*'),db.from('skills').select('*'),db.from('course_pars').select('*'),db.from('app_settings').select('*'),db.from('test_scores').select('*'),db.from('scorecard_submissions').select('*'),db.from('skills_round_locks').select('*')]);if(results.some(x=>x.error)){notice='Database error: '+results.find(x=>x.error).error.message;render();return;}[scores,skills,holes]=results.slice(0,3).map(x=>x.data);ready=results[3].data.find(x=>x.key==='scoring_ready')?.value==='true';testMode=results[3].data.find(x=>x.key==='test_mode')?.value==='true';scores=testMode?results[4].data:results[0].data;submissions=results[5].data;skillsLocks=results[6].data;notice='';render();}
 const withTimeout=(promise,label,ms=12000)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+' timed out after '+Math.round(ms/1000)+' seconds')),ms))]);
