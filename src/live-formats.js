@@ -43,8 +43,9 @@ export function liveFormat(id,score,net,par,rank,esc,submissions=[],testMode=fal
    const pointRow='<tr class="stableford-points-row"><th>Points</th>'+cells.map(x=>'<td>'+(x.pts??'—')+'</td>').join('')+'</tr>';
    return grossRow+netRow+pointRow;
   }).join('');
-  const leader=through.every(x=>x===0)?'Not started':leaders.length>1?'Tied · '+max+' pts':esc(leaders[0])+' leads · '+max+' pts';
-  return '<details class="match-card"><summary><span>'+esc(title)+'</span><strong>'+leader+'</strong><small>Thru '+Math.max(...through)+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal stableford-scorecard"><thead><tr><th>Golfer</th><th>Score</th>'+heads+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th><th></th>'+pars+'<td>—</td></tr>'+rows+'</tbody></table></div></details>';
+  const allFinal=!testMode&&players.every((p,i)=>through[i]===18&&submissions.some(x=>x.round_id===id&&x.player===p));
+  const leader=through.every(x=>x===0)?'Not started':leaders.length>1?'Tied · '+max+' pts':esc(leaders[0])+(allFinal?' wins · ':' leads · ')+max+' pts';
+  return '<details class="match-card"><summary><span>'+esc(title)+'</span><strong>'+leader+'</strong><small>'+(allFinal?'Final':'Thru '+Math.max(...through))+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal stableford-scorecard"><thead><tr><th>Golfer</th><th>Score</th>'+heads+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th><th></th>'+pars+'<td>—</td></tr>'+rows+'</tbody></table></div></details>';
  };
  let html='';
  if(id==='valley'||id==='lake'){
