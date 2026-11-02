@@ -269,3 +269,8 @@
 .stableford-scorecard tbody .stableford-points-row>th:first-child{background:#e7f0e7}
 .stableford-scorecard .stableford-player-label{overflow-wrap:anywhere}
 .stableford-scorecard td{position:relative;z-index:0}
+
+/* Clip the scroll viewport: scrolling hole values must never paint outside the table's left edge. */
+.match-table-wrap{position:relative;isolation:isolate;clip-path:inset(0)}
+.stableford-scorecard tbody .stableford-player-label,.stableford-scorecard tbody .stableford-par-spacer,.stableford-scorecard thead th:first-child{background:#edf2eb;z-index:10}
+.stableford-scorecard tbody .stableford-par-label,.stableford-scorecard tbody .stableford-player-start>th:nth-child(2),.stableford-scorecard tbody tr:not(.stableford-player-start):not(.match-par-row)>th:first-child,.stableford-scorecard thead th:nth-child(2){background:#edf2eb;z-index:9}
