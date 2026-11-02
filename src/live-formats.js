@@ -87,20 +87,27 @@ export function liveFormat(id,score,net,par,rank,esc,submissions=[],testMode=fal
 }
 
 export function wildCardStableford(id,score,par,rank,esc,submissions=[],testMode=false){
- const players=names,rows=players.map(()=>[]),totals=players.map(()=>0),played=players.map(()=>0),through=players.map(()=>0),heads=[],pars=[];
- for(let h=1;h<=18;h++){
-  heads.push('<th>'+h+'</th>');pars.push('<td>'+par(h)+'</td>');
-  players.forEach((p,i)=>{
-   const entry=score(p,h);
-   if(!entry||entry.gross==null){rows[i].push('<td>—</td>');return;}
-   const n=entry.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&entry.lifeline?1:0);
+ const players=names;
+ const rows=players.map(p=>{
+  const cells=Array.from({length:18},(_,i)=>{
+   const h=i+1,entry=score(p,h),g=entry?.gross??null;
+   if(g===null)return {h,g:null,n:null,pts:null,applied:0};
+   const n=g-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&entry.lifeline?1:0);
    const d=n-par(h),pts=d<=-1?3:d===0?2:d===1?1:0;
-   totals[i]+=pts;played[i]++;if(through[i]===h-1)through[i]=h;
-   const applied=Math.max(0,entry.gross-n);rows[i].push('<td title="'+esc(p)+' · '+pts+' Stableford points"><span class="match-net-value">'+grossScoreHtml(entry.gross,par(h))+(applied?'<span class="match-stroke-dots" title="'+applied+' applied handicap strokes">'+Array.from({length:applied},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'')+'</span></td>');
+   return {h,g,n,pts,applied:Math.max(0,g-n)};
   });
- }
- const order=players.map((p,i)=>i).sort((a,b)=>totals[b]-totals[a]||played[b]-played[a]);
- const leader=played.every(x=>x===0)?'Not started':players[order[0]]+' leads · '+totals[order[0]]+' pts';
- const body=order.map(i=>'<tr><th>'+esc(players[i])+' · '+(!testMode&&submissions.some(x=>x.round_id===id&&x.player===players[i])?'Final':'Thru '+through[i])+'</th>'+rows[i].join('')+'<td><strong>'+totals[i]+'</strong></td></tr>').join('');
- return '<details class="match-card"><summary><span>Wild Card · Net Stableford</span><strong>'+esc(leader)+'</strong><small>7 players</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+body+'</tbody></table></div><p class="small">Gross scores with applied handicap dots for all seven golfers, including Mason. Total shows Stableford points; highest total leads. Each golfer shows consecutive holes completed (Thru); points can reflect different holes completed.</p></details>';
+  let through=0;while(through<18&&cells[through].g!==null)through++;
+  return {p,cells,through,played:cells.filter(c=>c.g!==null).length,total:cells.reduce((sum,c)=>sum+(c.pts??0),0)};
+ }).sort((a,b)=>b.total-a.total||b.played-a.played);
+ const leader=rows.every(r=>r.played===0)?'Not started':rows.filter(r=>r.total===rows[0].total).length>1?'Tied · '+rows[0].total+' pts':esc(rows[0].p)+' leads · '+rows[0].total+' pts';
+ const heads=Array.from({length:18},(_,i)=>'<th>'+(i+1)+'</th>').join('');
+ const pars=Array.from({length:18},(_,i)=>'<td>'+par(i+1)+'</td>').join('');
+ const body=rows.map(r=>{
+  const label=esc(r.p)+' · '+(!testMode&&submissions.some(x=>x.round_id===id&&x.player===r.p)?'Final':'Thru '+r.through);
+  const grossRow='<tr class="stableford-player-start"><th rowspan="3" class="stableford-player-label">'+label+'</th><th>Gross</th>'+r.cells.map(c=>'<td>'+(c.g===null?'—':'<span class="match-net-value">'+grossScoreHtml(c.g,par(c.h))+(c.applied?'<span class="match-stroke-dots" title="'+c.applied+' applied handicap stroke(s)">'+Array.from({length:c.applied},()=>'<i class="match-stroke-dot"></i>').join('')+'</span>':'')+'</span>')+'</td>').join('')+'<td rowspan="3" class="stableford-player-total">'+r.total+' pts</td></tr>';
+  const netRow='<tr><th>Net</th>'+r.cells.map(c=>'<td>'+(c.n??'—')+'</td>').join('')+'</tr>';
+  const pointsRow='<tr class="stableford-points-row"><th>Points</th>'+r.cells.map(c=>'<td>'+(c.pts??'—')+'</td>').join('')+'</tr>';
+  return grossRow+netRow+pointsRow;
+ }).join('');
+ return '<details class="match-card"><summary><span>Wild Card · Net Stableford</span><strong>'+leader+'</strong><small>7 players</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal stableford-scorecard"><thead><tr><th>Golfer</th><th>Score</th>'+heads+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th><th></th>'+pars+'<td>—</td></tr>'+body+'</tbody></table></div></details>';
 }
