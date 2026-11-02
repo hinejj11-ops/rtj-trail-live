@@ -252,3 +252,9 @@
 .event-breakdown-round>summary{padding:11px 12px;font-weight:700;cursor:pointer;background:#f2f5ef}
 .event-breakdown-round[open]>summary{border-bottom:1px solid #dce5d9}
 .event-breakdown-entries{padding:0 12px 4px}
+
+/* Triple Threat: long three-golfer labels must stay inside their sticky name column. */
+.match-card-visual{--match-label-width:205px}
+.match-card-visual .match-horizontal tbody th:first-child,.match-card-visual .match-horizontal thead th:first-child{box-sizing:border-box;width:var(--match-label-width);min-width:var(--match-label-width);max-width:var(--match-label-width);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:sticky;left:0;z-index:3;background:#eef1e9}
+.match-card-visual .match-horizontal tbody th:first-child{font-size:11px;padding-left:8px;padding-right:6px}
+.match-card-visual .match-horizontal td{overflow:hidden}
