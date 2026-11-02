@@ -61,7 +61,7 @@ export function contingencyChampionship(scores,holes,submissions=[],requireVerif
  if(complete('silver-pm',six)){
   const ts=teams['silver-pm'],out=values(six),nineAwards=[];
   for(const start of [1,10]){
-   const sums=ts.map(t=>{let total=0;for(let h=start;h<start+9;h++){const digits=t.map(p=>h<=9?vegasDigit('silver-pm',p,h,sm.get('silver-pm|'+p+'|'+h),par('silver-pm',h),idx('silver-pm',h)):Math.min(gross('silver-pm',p,h),par('silver-pm',h)*2,par('silver-pm',h)===5?9:Infinity)).sort((a,b)=>a-b);total+=10*digits[0]+digits[1];}return total;});
+   const sums=ts.map(t=>{let total=0;for(let h=start;h<start+9;h++){const digits=t.map(p=>vegasDigit('silver-pm',p,h,sm.get('silver-pm|'+p+'|'+h),par('silver-pm',h),idx('silver-pm',h))).sort((a,b)=>a-b);total+=10*digits[0]+digits[1];}return total;});
    nineAwards.push(awardRanks(Object.fromEntries(sums.map((v,i)=>[i,v])),scales.threeTeams,false));
   }
   ts.forEach((t,i)=>t.forEach(p=>out[p]=(nineAwards[0][i]+nineAwards[1][i])/2));add('fourDay','silver-pm',out);
