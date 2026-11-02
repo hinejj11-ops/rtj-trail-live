@@ -77,7 +77,7 @@ function updateGuide(){
 
 let playingGroupOverrides={},groupDraft=null;
 let customAllowances={},allowanceSettingsRound='silver-am';
-const allowanceFormats=id=>id==='backyard'?[]:id==='silver-pm'?[['heartbreaker','Heartbreaker · Net Vegas (holes 1–9)',1],['silver-short','Short Course · Vegas (holes 10–18)',10]]:['valley','ridge','ross'].includes(id)?[['primary','Primary competition',1],['stableford','Stableford / Wild Card',1]]:[['primary','Primary competition',1]];
+const allowanceFormats=id=>id==='backyard'?[]:id==='silver-pm'?[['heartbreaker','Heartbreaker · Net Vegas (holes 1–9)',1],['silver-short','Short Course · Net Vegas (holes 10–18)',10]]:['valley','ridge','ross'].includes(id)?[['primary','Primary competition',1],['stableford','Stableford / Wild Card',1]]:[['primary','Primary competition',1]];
 function renderAllowanceSettings(){const r=rounds.find(x=>x.id===allowanceSettingsRound)||rounds[0];return '<section class="panel"><h2>Handicap &amp; Strokes Adjustments</h2><p class="small">Set strokes received independently for each format. Changes affect net scoring and leaderboards for everyone. Gross-only Backyard remains unchanged.</p><label>Round<select id="allowance-round">'+rounds.map(x=>'<option value="'+x.id+'" '+(x.id===r.id?'selected':'')+'>'+esc(x.date+' · '+x.name)+'</option>').join('')+'</select></label>'+ (r.id==='backyard'?'<p>Backyard is gross-only. No strokes are awarded.</p>':allowanceFormats(r.id).map(([mode,label,hole])=>'<div class="allowance-format"><h3>'+label+'</h3>'+roundPlayers(r).map(p=>{const original=defaultAllowance(r.id,p,mode,hole);const current=customAllowances[r.id]?.[mode]?.[p]??original;return '<label class="allowance-player">'+esc(p)+' <small>Original: '+original+'</small><input type="number" min="0" max="54" step="1" data-allowance-mode="'+mode+'" data-allowance-player="'+p+'" value="'+current+'"></label>';}).join('')+'</div>').join('')+'<div class="row"><button id="save-allowances" class="primary">Save stroke allowances</button><button id="restore-allowances">Restore original strokes</button></div>')+'</section>';}
 
 const defaultSkillsHoles=JSON.parse(JSON.stringify(skillsHoles));
@@ -195,7 +195,7 @@ function render(){
  if(isSpectator()){
   const descriptions={
    'silver-am':'Individual net match play: golfers face their assigned opponents hole by hole. The lower net score wins the hole; ties are halved.',
-   'silver-pm':'Vegas: two-person teams combine their scores into a two-digit number, lower first. Heartbreaker uses net scores; the Short Course uses gross scores. Both nines count equally.',
+   'silver-pm':'Vegas: two-person teams combine their scores into a two-digit number, lower first. Both Heartbreaker and the Short Course use net scores with their own nine-hole handicap allowances. Both nines count equally.',
    valley:'Triple Threat: two three-person sides compete for team points. Wild Card Stableford is a separate individual contest: net birdie or better = 3 points, net par = 2, net bogey = 1, net double bogey or worse = 0.',
    ridge:'Individual net match play: lower net score wins each hole. Wild Card Stableford uses 3 points for net birdie or better, 2 for net par, 1 for net bogey, and 0 for net double bogey or worse.',
    ross:'Individual Stableford: net birdie or better = 3 points, net par = 2, net bogey = 1, and net double bogey or worse = 0. Highest total wins.',
