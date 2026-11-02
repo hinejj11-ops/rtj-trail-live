@@ -36,9 +36,10 @@ export function liveFormat(id,score,net,par,rank,esc,submissions=[],testMode=fal
   const totals=players.map(p=>Array.from({length:18},(_,i)=>{const n=netValue(p,i+1);if(n===null)return null;const d=n-par(i+1);return d<=-1?3:d===0?2:d===1?1:0;}).reduce((a,b)=>a+(b??0),0));
   const through=players.map(p=>{let h=0;while(h<18&&gross(p,h+1)!==null)h++;return h;});
   const max=Math.max(...totals),leaders=players.filter((_,i)=>totals[i]===max);
-  const rows=players.map((p,i)=>{
+  const order=players.map((p,i)=>({p,i,total:totals[i],played:through[i]})).sort((a,b)=>b.total-a.total||b.played-a.played||a.i-b.i);
+  const rows=order.map(({p,i})=>{
    const cells=Array.from({length:18},(_,j)=>{const h=j+1,g=gross(p,h),n=netValue(p,h);const dots=g===null||n===null?'':Array.from({length:Math.max(0,g-n)},()=>'<i class="match-stroke-dot"></i>').join('');const d=n===null?null:n-par(h),pts=d===null?null:d<=-1?3:d===0?2:d===1?1:0;return {g,n,pts,dots,h};});
-   const grossRow='<tr class="stableford-player-start"><th rowspan="3" class="stableford-player-label">'+esc(p)+'</th><th>Gross</th>'+cells.map(x=>'<td>'+(x.g===null?'—':'<span class="match-net-value">'+grossScoreHtml(x.g,par(x.h))+(x.dots?'<span class="match-stroke-dots">'+x.dots+'</span>':'')+'</span>')+'</td>').join('')+'<td rowspan="3" class="stableford-player-total">'+totals[i]+' pts</td></tr>';
+   const grossRow='<tr class="stableford-player-start"><th rowspan="3" class="stableford-player-label">'+esc(p)+' · '+(!testMode&&submissions.some(x=>x.round_id===id&&x.player===p)?'Final':'Thru '+through[i])+'</th><th>Gross</th>'+cells.map(x=>'<td>'+(x.g===null?'—':'<span class="match-net-value">'+grossScoreHtml(x.g,par(x.h))+(x.dots?'<span class="match-stroke-dots">'+x.dots+'</span>':'')+'</span>')+'</td>').join('')+'<td rowspan="3" class="stableford-player-total">'+totals[i]+' pts</td></tr>';
    const netRow='<tr><th>Net</th>'+cells.map(x=>'<td>'+(x.n??'—')+'</td>').join('')+'</tr>';
    const pointRow='<tr class="stableford-points-row"><th>Points</th>'+cells.map(x=>'<td>'+(x.pts??'—')+'</td>').join('')+'</tr>';
    return grossRow+netRow+pointRow;
