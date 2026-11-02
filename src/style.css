@@ -274,3 +274,9 @@
 .match-table-wrap{position:relative;isolation:isolate;clip-path:inset(0)}
 .stableford-scorecard tbody .stableford-player-label,.stableford-scorecard tbody .stableford-par-spacer,.stableford-scorecard thead th:first-child{background:#edf2eb;z-index:10}
 .stableford-scorecard tbody .stableford-par-label,.stableford-scorecard tbody .stableford-player-start>th:nth-child(2),.stableford-scorecard tbody tr:not(.stableford-player-start):not(.match-par-row)>th:first-child,.stableford-scorecard thead th:nth-child(2){background:#edf2eb;z-index:9}
+
+/* Completed championship winner, aligned to the upper-right of each leaderboard. */
+.leaderboard-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.leaderboard-title-row h3{margin:0}
+.leaderboard-champion{display:inline-block;margin-left:auto;padding:6px 12px;border:1px solid #c5a04c;border-radius:8px;background:#f7eed5;color:#173d2f;font-weight:800;text-align:right;white-space:normal}
+@media(max-width:480px){.leaderboard-title-row{align-items:flex-start}.leaderboard-champion{font-size:.9rem}}
