@@ -154,8 +154,7 @@ function championshipSnapshot(){
   if(!board||!board.rounds)return '<div class="championship-snapshot-card"><span>'+title+'</span><strong>Awaiting results</strong><small>0 / '+(board?.expected||0)+' events completed</small></div>';
   const sorted=[...board.eligible].sort((a,b)=>boardCompare(engine,board,a,b));
   const leader=sorted[0],tied=sorted.filter(p=>boardCompare(engine,board,p,leader)===0);
-  const latest=engine.eventLabels[id]?.[engine.details[id].length-1]||'';
-  return '<div class="championship-snapshot-card"><span>'+title+'</span><strong>'+tied.map(esc).join(' &amp; ')+'</strong><b>'+Number(board.values[leader].toFixed(3))+' pts</b><small>'+board.rounds+' / '+board.expected+' events · Last: '+esc(latest)+'</small></div>';
+  return '<div class="championship-snapshot-card"><span>'+title+'</span><strong>'+tied.map(esc).join(' &amp; ')+'</strong><b>'+Number(board.values[leader].toFixed(3))+' pts</b><small>'+board.rounds+'/'+board.expected+' events</small></div>';
  }).join('')+'</div></div>';
 }
 
