@@ -197,3 +197,15 @@
 .final-day-score-box{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:35px;padding:4px 7px 9px}
 .final-day-score-box .match-net-value{position:relative;min-width:18px}
 .final-day-point-corner{position:absolute;bottom:0;left:0;font-size:10px;line-height:1;font-weight:700;color:#426f51;opacity:.9}
+
+/* Stableford scorecard: three rows per golfer, clear group dividers, no nine-hole subtotals. */
+.stableford-scorecard{border-collapse:separate;border-spacing:0}
+.stableford-scorecard th,.stableford-scorecard td{text-align:center;white-space:nowrap;min-width:43px;padding:8px 6px}
+.stableford-scorecard th:first-child{min-width:82px}
+.stableford-scorecard .stableford-player-start>th,.stableford-scorecard .stableford-player-start>td{border-top:2px solid #71927a}
+.stableford-scorecard .stableford-player-label{font-weight:800;vertical-align:middle;background:#edf2eb}
+.stableford-scorecard .stableford-player-total{font-weight:800;vertical-align:middle;background:#edf2eb}
+.stableford-scorecard .stableford-points-row>td,.stableford-scorecard .stableford-points-row>th{background:#e7f0e7;font-weight:700}
+.stableford-scorecard .match-net-value{white-space:nowrap}
+.stableford-scorecard thead th:first-child,.stableford-scorecard tbody .stableford-player-label{position:sticky;left:0;z-index:2}
+.stableford-scorecard thead th:first-child{z-index:4}
