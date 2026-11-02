@@ -85,3 +85,32 @@ The authoritative rules are the finalized six-page RTJ Championship Guide. Code 
 **Operational flow:** group members enter or correct gross scores during play; Richie or his groupmates can flag eligible Lifeline holes. After each round, Jimmy compares each player's physical scorecard against the app, corrects any discrepancies, then selects **Verify & finalize**. Championship points post only after all eligible scorecards for that event have been verified. Jimmy can unlock and clear any player's scorecard. Test-mode standings do not require physical verification.
 
 **Validation:** `npm test` runs final-guide regression tests. These do not replace browser, live Supabase, multi-device, or real-scorecard validation. Confirm every course par and stroke index in Course setup before official scoring; the app still uses placeholders where course data is absent.
+
+## Optional Contingency Championship Mode (draft PR #3)
+
+**Do not activate until the feature branch is reviewed, tests/build pass, and migration 013 is applied.** This is an optional format, not a change to the original tournament. All existing scores and verification records remain in the same tables; mode switching never resets them.
+
+### Organizer activation
+
+1. Confirm the feature branch CI checks pass (JavaScript syntax, contingency unit tests, Vite build).
+2. Review the approved contingency rules, groups, and payouts below.
+3. Merge the feature PR only after review; verify the deployment.
+4. Run [migrations/013_championship_mode.sql](migrations/013_championship_mode.sql) **once** in the Supabase SQL Editor. It inserts `championship_mode=original` without overwriting any existing mode.
+5. Sign in as Jimmy with a currently active session, open **Settings → Championship Format**, and select **Preview contingency standings**.
+6. If Brittany's departure requires the alternate format, select **Activate Contingency Mode** and confirm. All devices should refresh to see the active mode. To reverse it, use the same Settings control.
+7. Verify the final-day Lake and Short playing groups, scorecard eligibility, Live Matches, Leaderboards, and CTP/LD. Never delete official scores as part of switching.
+
+### Contingency rules
+
+- Four-Day Champion (Nov 7–10): Jimmy, Brittany, Kevin, Jeff, Nate, Richie; seven events; **$180**.
+- Wild Card Champion (Nov 8–9): the six plus Mason; four events; **$210**.
+- Final Day Champion (Nov 11): Jimmy, Kevin, Jeff, Nate, Richie; Lake individual net Stableford and Short individual net hole credits; **$75**.
+- Skills: Season CTP/LD **$75**, Wild Card CTP/LD **$50**, Final Day CTP/LD **$30**.
+- Total entry fees/prizes: **$620**. No RTJ Cup or runner-up in contingency mode. Payouts are winner-take-all; if the championship ends tied, Jimmy must resolve the tie before awarding a prize.
+- Lake groups: **Jimmy / Jeff / Kevin** and **Nate / Richie**.
+- Short groups: **Kevin / Jeff / Nate** and **Jimmy / Richie**.
+- The Original mode keeps its original formats, teams, groups, and prize schedule.
+
+### Validation and deployment caution
+
+CI checks are defined in [contingency-checks.yml](.github/workflows/contingency-checks.yml). A completed green CI run and interactive staging/preview checks are required before production activation. Do not test score submission against the official tournament tables; use test mode, which keeps scores separate. The migration changes only the `app_settings` table and creates a Jimmy-only function. It does not alter any score or scorecard submission records.
