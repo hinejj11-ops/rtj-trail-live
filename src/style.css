@@ -246,3 +246,9 @@
 .score-row.scorecard-subtotal.spectator-score-row>b:first-child{grid-column:1 / 4;grid-row:1;justify-self:start;text-align:left;white-space:nowrap;padding-left:4px}
 .score-row.scorecard-subtotal.spectator-score-row>span:nth-child(2){grid-column:3 / 5;grid-row:1;justify-self:start;margin-left:55px;white-space:nowrap;font-size:.8rem}
 .score-row.scorecard-subtotal.spectator-score-row>.scorecard-subtotal-score{grid-column:4;grid-row:1;justify-self:center;white-space:nowrap}
+
+/* Independently expandable event point breakdowns. */
+.event-breakdown-round{margin:8px 0;border:1px solid #dce5d9;border-radius:8px;overflow:hidden}
+.event-breakdown-round>summary{padding:11px 12px;font-weight:700;cursor:pointer;background:#f2f5ef}
+.event-breakdown-round[open]>summary{border-bottom:1px solid #dce5d9}
+.event-breakdown-entries{padding:0 12px 4px}
