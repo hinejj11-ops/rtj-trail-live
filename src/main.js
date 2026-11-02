@@ -102,6 +102,23 @@ const throughLabel=(h,total)=>h===0?'—':h>=total?'F':'Thru '+h;
 const sf=(p)=>{let n=0;for(let h=1;h<=r().holes;h++){let x=net(p,h);if(x===null)continue;let d=x-par(h);n+=d<=-1?3:d===0?2:d===1?1:0;}return n;};
 function alignLiveMatchWindows(){
  document.querySelectorAll('#app .match-card-visual').forEach(card=>{
+  // Size each sticky label column to its own longest row, rather than using
+  // the Triple Threat width for every one-on-one and Vegas matchup.
+  const labels=[...card.querySelectorAll('.match-horizontal tr > th:first-child')];
+  if(labels.length){
+   const measure=document.createElement('span');
+   measure.style.cssText='position:absolute;visibility:hidden;white-space:nowrap;pointer-events:none';
+   document.body.appendChild(measure);
+   let widest=0;
+   labels.forEach(label=>{
+    const style=getComputedStyle(label);
+    measure.style.font=style.font;
+    measure.textContent=label.textContent.trim();
+    widest=Math.max(widest,measure.getBoundingClientRect().width);
+   });
+   measure.remove();
+   card.style.setProperty('--match-label-width',Math.ceil(Math.max(62,widest+22))+'px');
+  }
   const strip=card.querySelector('.match-progress-scroll');
   if(!strip)return;
   const latest=Number(strip.dataset.latestHole)||0;
