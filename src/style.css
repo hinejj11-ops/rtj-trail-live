@@ -172,16 +172,23 @@
 .trail-pin-hotspot:hover{background:#f0d36b24}
 .trail-pin-hotspot:focus-visible{outline:3px solid #f0d36b;outline-offset:1px}
 
-/* Expandable contingency final-day hole-by-hole cards */
-.final-day-live-table{width:100%}
-.final-day-live-table th,.final-day-live-table td{vertical-align:top}
+/* Final-day standings: fixed columns, with a full-width expandable scorecard row. */
+.final-day-live-table{width:100%;table-layout:fixed;border-collapse:collapse}
+.final-day-live-table th,.final-day-live-table td{vertical-align:middle;text-align:left;padding:10px 8px}
+.final-day-live-table th:nth-child(1),.final-day-live-table td:nth-child(1){width:12%}
+.final-day-live-table th:nth-child(2),.final-day-live-table td:nth-child(2){width:46%}
+.final-day-live-table th:nth-child(3),.final-day-live-table td:nth-child(3){width:16%;text-align:center}
+.final-day-live-table th:nth-child(4),.final-day-live-table td:nth-child(4){width:26%;text-align:center}
+.final-day-player-row{border-bottom:1px solid #dce3da}
 .final-day-golfer-details>summary{cursor:pointer;font-weight:750;color:#174a33;white-space:nowrap}
-.final-day-golfer-details[open]>summary{margin-bottom:8px}
-.final-day-golfer-strip{width:min(72vw,700px);max-width:100%;min-width:0}
+.final-day-detail-row{display:none}
+.final-day-player-row:has(.final-day-golfer-details[open])+.final-day-detail-row{display:table-row}
+.final-day-detail-row>td{width:auto!important;text-align:left!important;padding:8px 12px 16px!important}
+.final-day-golfer-strip{width:100%;min-width:0;max-width:100%}
 .final-day-hole-strip{display:flex;gap:5px;overflow-x:auto;padding:5px 2px 10px;scrollbar-width:thin}
 .final-day-hole{flex:0 0 43px;min-height:77px;border:1px solid #d5ddd2;border-radius:8px;background:#f7f9f5;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;padding:6px 3px}
 .final-day-hole-number{font-size:11px;color:#647569;font-weight:750}
 .final-day-hole .score-symbol{font-weight:800;min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center}
 .final-day-hole-won{background:#fff1c8;border:2px solid #bc912c;padding:5px 2px}
 .final-day-hole-credit{font-size:10px;font-weight:800;color:#745317}
-@media(max-width:600px){.final-day-golfer-strip{width:50vw}.final-day-hole{flex-basis:40px}}
+@media(max-width:600px){.final-day-live-table th,.final-day-live-table td{padding:9px 4px}.final-day-hole{flex-basis:40px}}
