@@ -230,3 +230,7 @@
 .score-row.scorecard-subtotal:not(.spectator-score-row)>span:nth-child(2){grid-column:3;grid-row:1;white-space:nowrap;justify-self:start;margin-left:0;font-size:.8rem}
 .score-row.scorecard-subtotal:not(.spectator-score-row)>.scorecard-subtotal-score{grid-column:4;grid-row:1;justify-self:center}
 .score-row.scorecard-subtotal:not(.spectator-score-row)>.scorecard-subtotal-relative{grid-column:5;grid-row:1;justify-self:center;transform:translateX(-22px)}
+
+/* Prevent the subtotal label and par from sharing narrow grid tracks. */
+.score-row.scorecard-subtotal:not(.spectator-score-row)>b:first-child{grid-column:1 / 4;grid-row:1;justify-self:start;white-space:nowrap;padding-left:4px}
+.score-row.scorecard-subtotal:not(.spectator-score-row)>span:nth-child(2){grid-column:3 / 5;grid-row:1;justify-self:start;margin-left:48px;white-space:nowrap;font-size:.8rem}
