@@ -99,7 +99,9 @@ export function wildCardStableford(id,score,par,rank,esc,submissions=[],testMode
   let through=0;while(through<18&&cells[through].g!==null)through++;
   return {p,cells,through,played:cells.filter(c=>c.g!==null).length,total:cells.reduce((sum,c)=>sum+(c.pts??0),0)};
  }).sort((a,b)=>b.total-a.total||b.played-a.played);
- const leader=rows.every(r=>r.played===0)?'Not started':rows.filter(r=>r.total===rows[0].total).length>1?'Tied · '+rows[0].total+' pts':esc(rows[0].p)+' leads · '+rows[0].total+' pts';
+ const allFinal=!testMode&&rows.every(r=>r.through===18&&submissions.some(x=>x.round_id===id&&x.player===r.p));
+ const status=allFinal?'Final':'Thru '+Math.max(...rows.map(r=>r.through));
+ const leader=rows.every(r=>r.played===0)?'Not started':rows.filter(r=>r.total===rows[0].total).length>1?'Tied · '+rows[0].total+' pts':esc(rows[0].p)+(allFinal?' wins · ':' leads · ')+rows[0].total+' pts';
  const heads=Array.from({length:18},(_,i)=>'<th>'+(i+1)+'</th>').join('');
  const pars=Array.from({length:18},(_,i)=>'<td>'+par(i+1)+'</td>').join('');
  const body=rows.map(r=>{
@@ -109,5 +111,5 @@ export function wildCardStableford(id,score,par,rank,esc,submissions=[],testMode
   const pointsRow='<tr class="stableford-points-row"><th>Points</th>'+r.cells.map(c=>'<td>'+(c.pts??'—')+'</td>').join('')+'</tr>';
   return grossRow+netRow+pointsRow;
  }).join('');
- return '<details class="match-card"><summary><span>Wild Card · Net Stableford</span><strong>'+leader+'</strong><small>7 players</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal stableford-scorecard"><thead><tr><th>Golfer</th><th>Score</th>'+heads+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th><th></th>'+pars+'<td>—</td></tr>'+body+'</tbody></table></div></details>';
+ return '<details class="match-card"><summary><span>Wild Card · Net Stableford</span><strong>'+leader+'</strong><small>'+status+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal stableford-scorecard"><thead><tr><th>Golfer</th><th>Score</th>'+heads+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th><th></th>'+pars+'<td>—</td></tr>'+body+'</tbody></table></div></details>';
 }
