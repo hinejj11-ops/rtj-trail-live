@@ -213,3 +213,7 @@
 /* Align net and Stableford point figures directly beneath centered gross scores. */
 .stableford-scorecard tbody tr:not(.stableford-player-start)>td{text-align:center!important}
 .stableford-scorecard tbody tr:not(.stableford-player-start)>th:not(.stableford-player-label){text-align:center!important}
+
+.scorecard-subtotal{background:#e8efe6;border-top:2px solid #799680;color:#193e2f;font-weight:750}
+.scorecard-subtotal strong,.scorecard-subtotal b{font-weight:850}
+.scorecard-progress{font-variant-numeric:tabular-nums}
