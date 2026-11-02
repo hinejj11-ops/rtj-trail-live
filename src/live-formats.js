@@ -30,16 +30,32 @@ export function liveFormat(id,score,net,par,rank,esc,submissions=[],testMode=fal
   const playerThrough=rows.map((row,i)=>{let h=0;while(h<n&&row[h]&&!row[h].includes('>—</td>'))h++;return progress(players[i].split(' + '),h,n);});
   return '<details class="match-card'+(mode==='holes'&&players.length===2?' match-card-visual':'')+'"'+(mode==='holes'&&players.length===2?' style="--match-holes:'+n+';--match-extra:36px"':'')+'><summary>'+(mode==='holes'&&players.length===2?matchSummary(players[0].split(' + '),players[1].split(' + '),compared===0?'NOT STARTED':wins[0]===wins[1]?'ALL SQUARE':Math.abs(wins[0]-wins[1])+' UP',progress(players.flatMap(p=>p.split(' + ')),thru,n),segments,compared===0||wins[0]===wins[1]?-1:wins[0]>wins[1]?0:1):'<span>'+esc(title)+'</span><strong>'+leader+'</strong><small>'+(progress(players.flatMap(p=>p.split(' + ')),thru,n))+'</small>')+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+heads.join('')+'<th>'+(mode==='holes'?'Won':'Total')+'</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr>'+players.map((p,i)=>'<tr><th>'+esc(p)+(mode==='points'?' · '+playerThrough[i]:'')+'</th>'+rows[i].join('')+'<td>'+(mode==='holes'?wins[i]+' won':totals[i])+'</td></tr>').join('')+'</tbody></table></div></details>';
  };
+ const stablefordCard=(title,players,netValue)=>{
+  const heads=Array.from({length:18},(_,i)=>'<th>'+(i+1)+'</th>').join('');
+  const pars=Array.from({length:18},(_,i)=>'<td>'+par(i+1)+'</td>').join('');
+  const totals=players.map(p=>Array.from({length:18},(_,i)=>{const n=netValue(p,i+1);if(n===null)return null;const d=n-par(i+1);return d<=-1?3:d===0?2:d===1?1:0;}).reduce((a,b)=>a+(b??0),0));
+  const through=players.map(p=>{let h=0;while(h<18&&gross(p,h+1)!==null)h++;return h;});
+  const max=Math.max(...totals),leaders=players.filter((_,i)=>totals[i]===max);
+  const rows=players.map((p,i)=>{
+   const cells=Array.from({length:18},(_,j)=>{const h=j+1,g=gross(p,h),n=netValue(p,h);const dots=g===null||n===null?'':Array.from({length:Math.max(0,g-n)},()=>'<i class="match-stroke-dot"></i>').join('');const d=n===null?null:n-par(h),pts=d===null?null:d<=-1?3:d===0?2:d===1?1:0;return {g,n,pts,dots,h};});
+   const grossRow='<tr class="stableford-player-start"><th rowspan="3" class="stableford-player-label">'+esc(p)+'</th><th>Gross</th>'+cells.map(x=>'<td>'+(x.g===null?'—':'<span class="match-net-value">'+grossScoreHtml(x.g,par(x.h))+(x.dots?'<span class="match-stroke-dots">'+x.dots+'</span>':'')+'</span>')+'</td>').join('')+'<td rowspan="3" class="stableford-player-total">'+totals[i]+' pts</td></tr>';
+   const netRow='<tr><th>Net</th>'+cells.map(x=>'<td>'+(x.n??'—')+'</td>').join('')+'</tr>';
+   const pointRow='<tr class="stableford-points-row"><th>Points</th>'+cells.map(x=>'<td>'+(x.pts??'—')+'</td>').join('')+'</tr>';
+   return grossRow+netRow+pointRow;
+  }).join('');
+  const leader=through.every(x=>x===0)?'Not started':leaders.length>1?'Tied · '+max+' pts':esc(leaders[0])+' leads · '+max+' pts';
+  return '<details class="match-card"><summary><span>'+esc(title)+'</span><strong>'+leader+'</strong><small>Thru '+Math.max(...through)+'</small></summary><div class="match-table-wrap"><table class="match-table match-horizontal stableford-scorecard"><thead><tr><th>Golfer</th><th>Score</th>'+heads+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th><th></th>'+pars+'<td>—</td></tr>'+rows+'</tbody></table></div></details>';
+ };
  let html='';
  if(id==='valley'||id==='lake'){
   const best=(t,h)=>t.every(p=>net(p,h)!==null)?Math.min(...t.map(p=>net(p,h))):null;
   for(let i=0;i<ts.length;i++)for(let j=i+1;j<ts.length;j++)html+=card(label(ts[i])+' vs '+label(ts[j]),[label(ts[i]),label(ts[j])],(k,h)=>best(ts[k===0?i:j],h),18,false,'holes',(k,h,v)=>{if(v===null)return '—';const team=ts[k===0?i:j];const player=team.find(p=>net(p,h)===v);return grossCell(player,h,v);});
   html+='<p class="small">Provisional team best net ball; each team\'s lowest available net score is shown. A hole is compared only after both teams have recorded a score; official points require complete, verified cards.</p>';
  }else if(id==='ross'){
-  const stable=(p,h,wild)=>{const s=score(p,h);if(!s)return null;const n=wild?s.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&s.lifeline?1:0):net(p,h),d=n-par(h);return d<=-1?3:d===0?2:d===1?1:0;};
-  html+=card('Trail Stableford',six,(i,h)=>stable(six[i],h,false),18,true,'points',(i,h)=>grossCell(six[i],h,net(six[i],h)));
-  html+=card('Wild Card Stableford',seven,(i,h)=>stable(seven[i],h,true),18,true,'points',(i,h)=>{const p=seven[i],entry=score(p,h);return grossCell(p,h,entry?entry.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&entry.lifeline?1:0):null);});
-  html+='<p class="small">Gross scores and applied handicap dots shown; totals remain Stableford points. Higher total leads.</p>';
+  const trailNet=(p,h)=>net(p,h);
+  const wildNet=(p,h)=>{const entry=score(p,h);return entry?.gross==null?null:entry.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&entry.lifeline?1:0);};
+  html+=stablefordCard('Trail Stableford',six,trailNet);
+  html+=stablefordCard('Wild Card Stableford',seven,wildNet);
  }else if(id==='backyard'){
   const contests=[['Team skins',ts],['Individual skins',seven.map(p=>[p])]];
   for(const [title,groups] of contests){
