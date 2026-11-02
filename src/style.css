@@ -265,3 +265,10 @@
 .stableford-scorecard thead th:nth-child(2),.stableford-scorecard tbody tr>th:nth-child(2){box-sizing:border-box;min-width:62px;width:62px;white-space:nowrap;text-align:center}
 .stableford-scorecard tbody .stableford-player-label{z-index:5}
 .stableford-scorecard tbody tr.stableford-player-start>th:nth-child(2){min-width:62px}
+
+/* Pin both golfer names and Gross / Net / Points row labels while scrolling Stableford holes. */
+.stableford-scorecard{--stableford-name-width:150px;--stableford-type-width:64px}
+.stableford-scorecard thead th:first-child,.stableford-scorecard tbody .stableford-player-label{position:sticky;left:0;width:var(--stableford-name-width);min-width:var(--stableford-name-width);max-width:var(--stableford-name-width);z-index:5;background:#edf2eb;box-sizing:border-box}
+.stableford-scorecard thead th:nth-child(2),.stableford-scorecard tbody tr>th:nth-child(2),.stableford-scorecard tbody tr:not(.stableford-player-start)>th:first-child{position:sticky;left:var(--stableford-name-width);width:var(--stableford-type-width);min-width:var(--stableford-type-width);max-width:var(--stableford-type-width);z-index:4;background:#edf2eb;box-sizing:border-box;text-align:center}
+.stableford-scorecard thead th:first-child,.stableford-scorecard thead th:nth-child(2){z-index:7}
+.stableford-scorecard tbody .stableford-points-row>th:first-child{background:#e7f0e7}
