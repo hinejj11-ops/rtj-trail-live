@@ -234,3 +234,9 @@
 /* Prevent the subtotal label and par from sharing narrow grid tracks. */
 .score-row.scorecard-subtotal:not(.spectator-score-row)>b:first-child{grid-column:1 / 4;grid-row:1;justify-self:start;white-space:nowrap;padding-left:4px}
 .score-row.scorecard-subtotal:not(.spectator-score-row)>span:nth-child(2){grid-column:3 / 5;grid-row:1;justify-self:start;margin-left:48px;white-space:nowrap;font-size:.8rem}
+
+/* Gross and gross-to-par share the Gross column as a single centered value. */
+.score-row.scorecard-subtotal:not(.spectator-score-row)>.scorecard-subtotal-score{grid-column:4;grid-row:1;justify-self:center;display:inline-flex;align-items:baseline;justify-content:center;gap:5px;white-space:nowrap;transform:none}
+.score-row.scorecard-subtotal .scorecard-subtotal-relative{position:static;transform:none;font-size:.85em;font-weight:700;white-space:nowrap}
+.score-row.scorecard-subtotal.spectator-score-row{grid-template-columns:40px 48px 65px minmax(70px,1fr)}
+.score-row.scorecard-subtotal.spectator-score-row>.scorecard-subtotal-score{grid-column:4;justify-self:center;white-space:nowrap}
