@@ -209,3 +209,7 @@
 .stableford-scorecard .match-net-value{white-space:nowrap}
 .stableford-scorecard thead th:first-child,.stableford-scorecard tbody .stableford-player-label{position:sticky;left:0;z-index:2}
 .stableford-scorecard thead th:first-child{z-index:4}
+
+/* Align net and Stableford point figures directly beneath centered gross scores. */
+.stableford-scorecard tbody tr:not(.stableford-player-start)>td{text-align:center!important}
+.stableford-scorecard tbody tr:not(.stableford-player-start)>th:not(.stableford-player-label){text-align:center!important}
