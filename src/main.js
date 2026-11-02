@@ -269,7 +269,7 @@ function render(){
   sorted.forEach((p,i)=>{const tied=(i>0&&boardCompare(engine,b,p,sorted[i-1])===0)||(i<sorted.length-1&&boardCompare(engine,b,p,sorted[i+1])===0);const first=sorted.findIndex(q=>boardCompare(engine,b,p,q)===0)+1;const place=tied?'T'+first:(i+1)+'.';body+='<div class="row"><b>'+place+' '+esc(p)+'</b><strong>'+Number(b.values[p].toFixed(3))+' pts</strong></div>';});
   if(engine.details[b.id]?.length){
    body+='<details><summary>Event Point Breakdown</summary>';
-   engine.details[b.id].forEach((ev,i)=>{body+='<details class="event-breakdown-round"><summary>'+esc(engine.eventLabels[b.id][i]||'Event '+(i+1))+'</summary><div class="event-breakdown-entries">'+b.eligible.map(p=>'<div class="row"><span>'+esc(p)+'</span><span>'+Number((ev[p]||0).toFixed(3))+' pts</span></div>').join('')+'</div></details>';});
+   engine.details[b.id].map((ev,i)=>({ev,i,label:engine.eventLabels[b.id][i]||'Event '+(i+1)})).sort((a,b)=>{const order=rounds.findIndex(r=>a.label.includes(r.name))-rounds.findIndex(r=>b.label.includes(r.name));return order||a.i-b.i;}).forEach(({ev,label})=>{body+='<details class="event-breakdown-round"><summary>'+esc(label)+'</summary><div class="event-breakdown-entries">'+b.eligible.map(p=>'<div class="row"><span>'+esc(p)+'</span><span>'+Number((ev[p]||0).toFixed(3))+' pts</span></div>').join('')+'</div></details>';});
    body+='</details>';
   }
   body+='</section>';
