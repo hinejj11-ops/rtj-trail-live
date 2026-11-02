@@ -258,3 +258,10 @@
 .match-card-visual .match-horizontal tbody th:first-child,.match-card-visual .match-horizontal thead th:first-child{box-sizing:border-box;width:var(--match-label-width);min-width:var(--match-label-width);max-width:var(--match-label-width);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:sticky;left:0;z-index:3;background:#eef1e9}
 .match-card-visual .match-horizontal tbody th:first-child{font-size:11px;padding-left:8px;padding-right:6px}
 .match-card-visual .match-horizontal td{overflow:hidden}
+
+/* Wild Card Stableford: reserve room for golfer and score-type labels, no overlapping sticky columns. */
+.stableford-scorecard{--match-label-width:150px}
+.stableford-scorecard thead th:first-child,.stableford-scorecard tbody .stableford-player-label{box-sizing:border-box;width:150px;min-width:150px;max-width:150px;white-space:normal;overflow-wrap:break-word;text-align:left;padding:8px;left:0;background:#edf2eb}
+.stableford-scorecard thead th:nth-child(2),.stableford-scorecard tbody tr>th:nth-child(2){box-sizing:border-box;min-width:62px;width:62px;white-space:nowrap;text-align:center}
+.stableford-scorecard tbody .stableford-player-label{z-index:5}
+.stableford-scorecard tbody tr.stableford-player-start>th:nth-child(2){min-width:62px}
