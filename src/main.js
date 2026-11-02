@@ -233,7 +233,7 @@ function render(){
     const first=pairs[i],second=pairs[j],rows=[[],[]],pars=[],head=[],segments=[],grossRows=[...first,...second].map(()=>[]);
     let totals=[0,0],played=0,through=0;
     for(let h=start;h<start+9;h++){
-     const values=[first,second].map(t=>t.every(p=>score(p,h)?.gross!=null)?t.map(p=>h<=9?vegasDigit(roundId,p,h,score(p,h),par(h),rank(h)):Math.min(score(p,h).gross,par(h)*2,par(h)===5?9:Infinity)).sort((a,b)=>a-b):null).map(d=>d?10*d[0]+d[1]:null);
+     const values=[first,second].map(t=>t.every(p=>score(p,h)?.gross!=null)?t.map(p=>vegasDigit(roundId,p,h,score(p,h),par(h),rank(h))).sort((a,b)=>a-b):null).map(d=>d?10*d[0]+d[1]:null);
      const complete=values.every(v=>v!==null);
      segments.push(!complete?0:values[0]<values[1]?1:values[1]<values[0]?2:3);
      if(complete){played++;totals[0]+=values[0];totals[1]+=values[1];if(h===start+through)through++;}
@@ -247,7 +247,7 @@ function render(){
     }
     const label=t=>t.join(' + ');
     const status=played===0?'Not started':totals[0]===totals[1]?'Tied':label(totals[0]<totals[1]?first:second)+' leads by '+Math.abs(totals[0]-totals[1]);
-    body+='<details class="match-card match-card-visual" style="--match-holes:9"><summary>'+matchSummary(first,second,played===0?'NOT STARTED':totals[0]===totals[1]?'TIED':Math.abs(totals[0]-totals[1])+' AHEAD',!testMode&&[...first,...second].every(p=>submissions.some(x=>x.round_id===roundId&&x.player===p))?'Final':'Thru '+through,segments,played===0||totals[0]===totals[1]?-1:totals[0]<totals[1]?0:1,'Vegas · lower total wins')+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+head.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr><tr><th>'+esc(label(first))+'</th>'+rows[0].join('')+'<td>'+totals[0]+'</td></tr><tr><th>'+esc(label(second))+'</th>'+rows[1].join('')+'<td>'+totals[1]+'</td></tr>'+[...first,...second].map((p,k)=>'<tr><th>'+esc(p)+' gross</th>'+grossRows[k].join('')+'<td>—</td></tr>').join('')+'</tbody></table></div><p class="small">Heartbreaker shows net Vegas; Short Course shows gross Vegas. Individual rows show gross scores. Totals include only holes completed by both teams ('+played+'/9).</p></details>';
+    body+='<details class="match-card match-card-visual" style="--match-holes:9"><summary>'+matchSummary(first,second,played===0?'NOT STARTED':totals[0]===totals[1]?'TIED':Math.abs(totals[0]-totals[1])+' AHEAD',!testMode&&[...first,...second].every(p=>submissions.some(x=>x.round_id===roundId&&x.player===p))?'Final':'Thru '+through,segments,played===0||totals[0]===totals[1]?-1:totals[0]<totals[1]?0:1,'Vegas · lower total wins')+'</summary><div class="match-table-wrap"><table class="match-table match-horizontal"><thead><tr><th>Hole</th>'+head.join('')+'<th>Total</th></tr></thead><tbody><tr class="match-par-row"><th>Par</th>'+pars.join('')+'<td>—</td></tr><tr><th>'+esc(label(first))+'</th>'+rows[0].join('')+'<td>'+totals[0]+'</td></tr><tr><th>'+esc(label(second))+'</th>'+rows[1].join('')+'<td>'+totals[1]+'</td></tr>'+[...first,...second].map((p,k)=>'<tr><th>'+esc(p)+' gross</th>'+grossRows[k].join('')+'<td>—</td></tr>').join('')+'</tbody></table></div><p class="small">Both Heartbreaker and Short Course use net Vegas with separate nine-hole handicap allowances. Individual rows show gross scores. Totals include only holes completed by both teams ('+played+'/9).</p></details>';
    }
   }
  }
