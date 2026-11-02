@@ -192,3 +192,8 @@
 .final-day-hole-won{background:#fff1c8;border:2px solid #bc912c;padding:5px 2px}
 .final-day-hole-credit{font-size:10px;font-weight:800;color:#745317}
 @media(max-width:600px){.final-day-live-table th,.final-day-live-table td{padding:9px 4px}.final-day-hole{flex-basis:40px}}
+
+/* Compact Stableford points: lower-left of score, opposite upper-right handicap dots. */
+.final-day-score-box{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:35px;padding:4px 7px 9px}
+.final-day-score-box .match-net-value{position:relative;min-width:18px}
+.final-day-point-corner{position:absolute;bottom:0;left:0;font-size:10px;line-height:1;font-weight:700;color:#426f51;opacity:.9}
