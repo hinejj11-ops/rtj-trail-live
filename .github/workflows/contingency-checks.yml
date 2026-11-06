@@ -18,5 +18,6 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: node --check src/main.js
       - run: node --check src/contingency-championship.js
-      - run: node --test tests/contingency-championship.test.js
+      - run: node --check src/backup-championship.js
+      - run: node --test tests/contingency-championship.test.js tests/backup-championship.test.js
       - run: npm run build
