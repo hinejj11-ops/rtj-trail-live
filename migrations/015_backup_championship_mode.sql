@@ -16,3 +16,14 @@ begin
 end;$$;
 revoke all on function public.set_championship_mode(text) from public,anon;
 grant execute on function public.set_championship_mode(text) to authenticated;
+
+-- Spectator-safe read of the active mode; return all three values unchanged.
+create or replace function public.get_championship_mode()
+returns text language sql stable security definer set search_path=public as $$
+ select case when value in ('original','contingency','backup') then value else 'original' end
+ from public.app_settings where key='championship_mode'
+ union all select 'original' where not exists (select 1 from public.app_settings where key='championship_mode')
+ limit 1;
+$$;
+revoke all on function public.get_championship_mode() from public,anon;
+grant execute on function public.get_championship_mode() to authenticated;
