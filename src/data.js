@@ -18,7 +18,8 @@ export const heartbreakerStrokes={Jimmy:0,Brittany:1,Kevin:2,Jeff:7,Nate:8,Richi
 export const silverShortStrokes={Jimmy:0,Brittany:1,Kevin:2,Jeff:5,Nate:5,Richie:12};
 export const gnShortStrokes={Jimmy:0,Brittany:2,Kevin:2,Jeff:6,Nate:8,Richie:18};
 export const tripleStrokes={Jimmy:0,Brittany:3,Kevin:5,Jeff:13,Nate:15,Richie:24};
-export const stablefordStrokes={valley:{Jimmy:5,Brittany:8,Kevin:10,Mason:13,Jeff:18,Nate:21,Richie:30},ridge:{Jimmy:6,Brittany:10,Kevin:11,Mason:14,Jeff:20,Nate:23,Richie:32},ross:{Jimmy:5,Brittany:9,Kevin:10,Mason:13,Jeff:18,Nate:21,Richie:30}};
+const gnStableford95=id=>Object.fromEntries(names.slice(0,6).map(p=>{const r=rounds.find(x=>x.id===id);return [p,Math.round(.95*(handicaps[p]*r.slope/113+r.rating-r.par))];}));
+export const stablefordStrokes={links:gnStableford95('links'),lake:gnStableford95('lake'),valley:{Jimmy:5,Brittany:8,Kevin:10,Mason:13,Jeff:18,Nate:21,Richie:30},ridge:{Jimmy:6,Brittany:10,Kevin:11,Mason:14,Jeff:20,Nate:23,Richie:32},ross:{Jimmy:5,Brittany:9,Kevin:10,Mason:13,Jeff:18,Nate:21,Richie:30}};
 export const lifelineLimits={'silver-am':2,'silver-pm':1,valley:2,ridge:3,ross:3,links:2,lake:2};
 
 // Skills contest locations are maintained in the championship scoring module.
