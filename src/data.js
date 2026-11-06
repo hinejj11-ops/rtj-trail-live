@@ -1,5 +1,5 @@
 export const names=['Jimmy','Brittany','Kevin','Jeff','Nate','Richie','Mason'];
-export const handicaps={Jimmy:6.8,Brittany:10,Kevin:11.2,Jeff:18,Nate:21.7,Richie:30,Mason:14};
+export const handicaps={Jimmy:6.8,Brittany:10,Kevin:11.2,Jeff:19,Nate:21.7,Richie:30,Mason:14};
 export const rounds=[
 {id:'silver-am',name:'Silver Lakes · Backbreaker / Mindbreaker',date:'Sat Nov 7',time:'7:00 AM',holes:18,rating:69.4,slope:131,par:72,format:'match',groups:[['Jeff','Nate','Richie'],['Jimmy','Brittany','Kevin']]},
 {id:'silver-pm',name:'Silver Lakes · Heartbreaker / Short',date:'Sat Nov 7',time:'12:30 PM',holes:18,format:'vegas',groups:[['Jimmy','Nate','Brittany'],['Jeff','Kevin','Richie']]},
@@ -14,11 +14,11 @@ export const rounds=[
 export const teams={ 'silver-pm':[['Jimmy','Brittany'],['Kevin','Jeff'],['Nate','Richie']],valley:[['Jimmy','Kevin','Richie'],['Brittany','Jeff','Nate']],backyard:[['Jimmy','Jeff'],['Brittany','Richie'],['Kevin','Nate']],lake:[['Jimmy','Nate'],['Brittany','Kevin'],['Jeff','Richie']]};
 export const roundPlayers=r=>['valley','ridge','ross','backyard'].includes(r.id)?names:names.slice(0,6);
 export const courseHandicap=(r,n)=>r.rating==null?0:Math.floor(handicaps[n]*r.slope/113+r.rating-r.par+0.5);
-export const heartbreakerStrokes={Jimmy:0,Brittany:1,Kevin:2,Jeff:6,Nate:8,Richie:13};
+export const heartbreakerStrokes={Jimmy:0,Brittany:1,Kevin:2,Jeff:7,Nate:8,Richie:13};
 export const silverShortStrokes={Jimmy:0,Brittany:1,Kevin:2,Jeff:5,Nate:5,Richie:12};
 export const gnShortStrokes={Jimmy:0,Brittany:2,Kevin:2,Jeff:6,Nate:8,Richie:18};
-export const tripleStrokes={Jimmy:0,Brittany:3,Kevin:5,Jeff:12,Nate:15,Richie:24};
-export const stablefordStrokes={valley:{Jimmy:5,Brittany:8,Kevin:10,Mason:13,Jeff:17,Nate:21,Richie:30},ridge:{Jimmy:6,Brittany:10,Kevin:11,Mason:14,Jeff:19,Nate:23,Richie:32},ross:{Jimmy:5,Brittany:9,Kevin:10,Mason:13,Jeff:17,Nate:21,Richie:30}};
+export const tripleStrokes={Jimmy:0,Brittany:3,Kevin:5,Jeff:13,Nate:15,Richie:24};
+export const stablefordStrokes={valley:{Jimmy:5,Brittany:8,Kevin:10,Mason:13,Jeff:18,Nate:21,Richie:30},ridge:{Jimmy:6,Brittany:10,Kevin:11,Mason:14,Jeff:20,Nate:23,Richie:32},ross:{Jimmy:5,Brittany:9,Kevin:10,Mason:13,Jeff:18,Nate:21,Richie:30}};
 export const lifelineLimits={'silver-am':2,'silver-pm':1,valley:2,ridge:3,ross:3,links:2,lake:2};
 
 // Skills contest locations are maintained in the championship scoring module.
