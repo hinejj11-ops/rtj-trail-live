@@ -99,7 +99,7 @@ const group=()=>playingGroups().find(g=>g.includes(me))||[];
 const hole=(h)=>holes.find(x=>x.round_id===roundId&&x.hole===h);
 const par=h=>hole(h)?.par??(r().id==='backyard'||r().id==='short'||(r().id==='silver-pm'&&h>9)?3:4);
 const rank=h=>hole(h)?.stroke_index??h;
-const scoringAllowanceMode=()=>isBackup()&&['links','lake'].includes(roundId)?'stableford':'primary';
+const scoringAllowanceMode=()=>isBackup()&&roundId==='backyard'?'backup-stableford':isBackup()&&['links','lake'].includes(roundId)?'stableford':'primary';
 const strokes=(player,h)=>strokesOnHole(roundId,player,h,rank(h),scoringAllowanceMode());
 const score=(p,h)=>scores.find(s=>s.round_id===roundId&&s.player===p&&s.hole===h);
 const net=(p,h)=>netScore(roundId,p,h,score(p,h),rank(h),scoringAllowanceMode());
