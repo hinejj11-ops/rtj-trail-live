@@ -2,7 +2,7 @@ import {matchSummary} from './match-visual.js';
 import {grossScoreHtml} from './score-symbol.js';
 import {names,teams} from './data.js';
 import {strokesOnHole} from './scoring-rules.js';
-export function liveFormat(id,score,net,par,rank,esc,submissions=[],testMode=false){
+export function liveFormat(id,score,net,par,rank,esc,submissions=[],testMode=false,backupMode=false){
  const progress=(players,through,total)=>!testMode&&players.every(p=>submissions.some(x=>x.round_id===id&&x.player===p))?'Final':'Thru '+through;
  const six=names.slice(0,6),seven=names,ts=teams[id];
  const gross=(p,h)=>score(p,h)?.gross??null;
@@ -57,9 +57,9 @@ export function liveFormat(id,score,net,par,rank,esc,submissions=[],testMode=fal
   const trailNet=(p,h)=>net(p,h);
   const wildNet=(p,h)=>{const entry=score(p,h);return entry?.gross==null?null:entry.gross-strokesOnHole(id,p,h,rank(h),'stableford')+(p==='Richie'&&entry.lifeline?1:0);};
   html+=stablefordCard('Trail Stableford',six,trailNet);
-  html+=stablefordCard('Wild Card Stableford',seven,wildNet);
+  if(!backupMode)html+=stablefordCard('Wild Card Stableford',seven,wildNet);
  }else if(id==='backyard'){
-  const contests=[['Team skins',ts],['Individual skins',seven.map(p=>[p])]];
+  const contests=backupMode?[['Team skins',ts]]:[['Team skins',ts],['Individual skins',seven.map(p=>[p])]];
   for(const [title,groups] of contests){
    const awarded=groups.map(()=>Array(9).fill(null));let carry=0;
    for(let h=1;h<=9;h++){

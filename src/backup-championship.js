@@ -6,7 +6,7 @@ export const backupGroups={
  lake:[['Jimmy','Jeff','Kevin'],['Nate','Richie']],
  short:[['Kevin','Jeff','Nate'],['Jimmy','Richie']]
 };
-export const backupPrizes={threeDay:165,wild:210,grandNational:75,threeDaySkills:75,wildSkills:50,grandNationalSkills:25};
+export const backupPrizes={threeDay:270,grandNational:150,threeDaySkills:100,grandNationalSkills:40};
 const six=names.slice(0,6),five=six.filter(n=>n!=='Brittany');
 const scales={six:[10,8,6,4,2,0],seven:[12,10,8,6,4,2,0],five:[10,7.5,5,2.5,0],threeTeams:[10,5,0],twoTeams:[5,0]};
 export function awardRanks(values,scale,descending=true){
@@ -28,8 +28,8 @@ export function backupChampionship(scores,holes,submissions=[],requireVerificati
  const shortNet=(p,h)=>net('short',p,h);
  const complete=(id,ps)=>ps.every(p=>Array.from({length:rounds.find(r=>r.id===id).holes},(_,i)=>gross(id,p,i+1)!==null).every(Boolean)&&(!requireVerification||verified.has(id+'|'+p)));
  const values=ps=>Object.fromEntries(ps.map(p=>[p,0]));
- const threeDay=values(six),wild=values(names),grandNational=values(five),details={threeDay:[],wild:[],grandNational:[]};
- const add=(key,id,award,multiplier=1)=>{const board={threeDay,wild,grandNational}[key];for(const p of Object.keys(board))board[p]+=(award[p]||0)*multiplier;details[key].push({id,award,multiplier});};
+ const threeDay=values(six),grandNational=values(five),details={threeDay:[],grandNational:[]};
+ const add=(key,id,award,multiplier=1)=>{const board={threeDay,grandNational}[key];for(const p of Object.keys(board))board[p]+=(award[p]||0)*multiplier;details[key].push({id,award,multiplier});};
  const stable=(id,p)=>Array.from({length:18},(_,i)=>{const h=i+1,d=net(id,p,h,['links','lake'].includes(id)?'stableford':'stableford')-par(id,h);return d<=-1?3:d===0?2:d===1?1:0;}).reduce((a,b)=>a+b,0);
  const matchRanks=id=>{
   const records=Object.fromEntries(six.map(p=>[p,{points:0,wins:0,diff:0}]));
@@ -48,7 +48,7 @@ export function backupChampionship(scores,holes,submissions=[],requireVerificati
   }return out;
  };
  for(const id of ['silver-am','ridge'])if(complete(id,six))add('threeDay',id,matchRanks(id));
- if(complete('ross',six))add('threeDay','ross',awardRanks(Object.fromEntries(six.map(p=>[p,stable('ross',p)])),scales.six));
+ if(complete('ross',six))add('threeDay','ross',awardRanks(Object.fromEntries(six.map(p=>[p,stable('ross',p)])),scales.six),1.5);
  if(complete('valley',six)){
   const ts=teams.valley;let a=0,b=0;for(let h=1;h<=18;h++){const x=Math.min(...ts[0].map(p=>net('valley',p,h))),y=Math.min(...ts[1].map(p=>net('valley',p,h)));if(x<y)a++;else if(y<x)b++;}
   const awards=a===b?[2.5,2.5]:a>b?[5,0]:[0,5],out=values(six);
@@ -67,15 +67,11 @@ export function backupChampionship(scores,holes,submissions=[],requireVerificati
   }
   ts.forEach((t,i)=>t.forEach(p=>out[p]=(nineAwards[0][i]+nineAwards[1][i])/2));add('threeDay','silver-pm',out);
  }
- for(const id of ['valley','ridge','ross'])if(complete(id,names))add('wild',id,awardRanks(Object.fromEntries(names.map(p=>[p,stable(id,p)])),scales.seven));
- if(complete('backyard',names)){
-  const counts=skins('backyard',names.map(p=>[p]),9);add('wild','backyard',awardRanks(Object.fromEntries(names.map((p,i)=>[p,counts[i]])),scales.seven));
- }
  for(const id of ['links','lake'])if(complete(id,five))add('grandNational',id,awardRanks(Object.fromEntries(five.map(p=>[p,stable(id,p)])),scales.five));
  if(complete('short',five)){
   const credits=Object.fromEntries(five.map(p=>[p,0]));
   for(let h=1;h<=18;h++){const m=Math.min(...five.map(p=>shortNet(p,h)));const winners=five.filter(p=>shortNet(p,h)===m);for(const p of winners)credits[p]+=1/winners.length;}
   add('grandNational','short',awardRanks(credits,scales.five));
  }
- return {boards:[{id:'threeDay',name:'Three-Day Champion',values:threeDay,eligible:six,prize:165,rounds:details.threeDay.length,expected:6},{id:'wild',name:'Wild Card Champion',values:wild,eligible:names,prize:210,rounds:details.wild.length,expected:4},{id:'grandNational',name:'Grand National Champion',values:grandNational,eligible:five,prize:75,rounds:details.grandNational.length,expected:3}],details,groups:backupGroups};
+ return {boards:[{id:'threeDay',name:'Three-Day Champion',values:threeDay,eligible:six,prize:270,rounds:details.threeDay.length,expected:6},{id:'grandNational',name:'Grand National Champion',values:grandNational,eligible:five,prize:150,rounds:details.grandNational.length,expected:3}],details,groups:backupGroups};
 }

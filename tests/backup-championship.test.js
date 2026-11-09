@@ -4,18 +4,18 @@ import {backupChampionship,backupGroups,backupPrizes} from '../src/backup-champi
 import {stablefordStrokes} from '../src/data.js';
 
 const five=['Jimmy','Kevin','Jeff','Nate','Richie'];
-test('backup prize pools reconcile to $600 at $20 per golfer-day',()=>{
- assert.equal(Object.values(backupPrizes).reduce((a,b)=>a+b,0),600);
- assert.equal(backupPrizes.threeDay,165);
- assert.equal(backupPrizes.grandNational,75);
+test('backup prize pools reconcile to $560 from six golfers',()=>{
+ assert.equal(Object.values(backupPrizes).reduce((a,b)=>a+b,0),560);
+ assert.equal(backupPrizes.threeDay,270);
+ assert.equal(backupPrizes.grandNational,150);
 });
 test('all Grand National groups contain five golfers and exclude Brittany',()=>{
  for(const id of ['links','lake','short'])assert.deepEqual(backupGroups[id].flat().sort(),five.slice().sort());
 });
 test('empty backup scores do not award championship points',()=>{
  const result=backupChampionship([],[],[],true);
- assert.deepEqual(result.boards.map(b=>b.rounds),[0,0,0]);
- assert.deepEqual(result.boards.map(b=>b.expected),[6,4,3]);
+ assert.deepEqual(result.boards.map(b=>b.rounds),[0,0]);
+ assert.deepEqual(result.boards.map(b=>b.expected),[6,3]);
 });
 test('GN 95 percent individual allowances use unrounded course handicap',()=>{
  assert.deepEqual(five.map(p=>stablefordStrokes.links[p]),[6,11,19,22,31]);
@@ -38,4 +38,22 @@ test('verified scorecards are required to award GN championship points',()=>{
  const submissions=five.map(player=>({round_id:'links',player}));
  const verified=backupChampionship(scores,[],submissions,true).boards.find(b=>b.id==='grandNational');
  assert.equal(verified.rounds,1);
+});
+
+test('Backup mode has no Wild Card leaderboard or prize pools',()=>{
+ const result=backupChampionship([],[],[],true);
+ assert.deepEqual(result.boards.map(b=>b.id),['threeDay','grandNational']);
+ assert.equal(Object.hasOwn(backupPrizes,'wild'),false);
+ assert.equal(Object.hasOwn(backupPrizes,'wildSkills'),false);
+ assert.deepEqual(backupPrizes,{threeDay:270,grandNational:150,threeDaySkills:100,grandNationalSkills:40});
+});
+
+test('Ross Bridge earns 1.5x Backup championship points and Backyard stays half weight',()=>{
+ const six=['Jimmy','Brittany','Kevin','Jeff','Nate','Richie'];
+ const scores=six.flatMap(player=>Array.from({length:18},(_,i)=>({round_id:'ross',player,hole:i+1,gross:4})));
+ const result=backupChampionship(scores,[],[],false);
+ const event=result.details.threeDay.find(x=>x.id==='ross');
+ assert.equal(event.multiplier,1.5);
+ assert.equal(result.boards.find(b=>b.id==='threeDay').rounds,1);
+ assert.equal(Object.values(event.award).reduce((a,b)=>a+b,0),30);
 });
