@@ -212,7 +212,7 @@ function render(){
    lake:'Best Ball: each two-person team counts its better net score on each hole against the other teams.',
    short:'Individual net hole credits: all six golfers compete on each hole, with handicap strokes applied. The finale can change the overall standings.'
   };
-  body+='<section class="panel"><h3>How This Round Works</h3><p class="small">'+esc(isAlternative()&&['lake','links'].includes(roundId)&&(!isContingency()||roundId==='lake')?'Five-player individual net Stableford. Net birdie or better = 3, par = 2, bogey = 1.':isAlternative()&&roundId==='short'?'Five-player individual net hole credits. The lowest net score on each hole earns one credit, split equally on ties.':descriptions[roundId]||'Follow the live results below.')+'</p></section>';
+  body+='<section class="panel"><h3>How This Round Works</h3><p class="small">'+esc(isAlternative()&&['lake','links'].includes(roundId)&&(!isContingency()||roundId==='lake')?'Five-player individual net Stableford. Net birdie or better = 3, par = 2, bogey = 1.':isAlternative()&&roundId==='short'?'Five-player individual net hole credits. The lowest net score on each hole earns one credit, split equally on ties.':isBackup()&&roundId==='valley'?'Triple Threat: two three-person sides compete for team points.':isBackup()&&roundId==='ridge'?'Individual net match play: lower net score wins each hole.':isBackup()&&roundId==='backyard'?'Gross team skins: the lowest unique team score on a hole wins a skin; ties carry no skin.':descriptions[roundId]||'Follow the live results below.')+'</p></section>';
  }
  body+=matchAlertPanel()+'<section class="panel"><h2>Live Match Center</h2>';
  if(isAlternative()&&['lake','short',...(isBackup()?['links']:[])].includes(roundId)){
