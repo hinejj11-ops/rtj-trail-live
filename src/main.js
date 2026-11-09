@@ -22,7 +22,7 @@ const settingsOpenPanels=new Set();
 const isSpectator=()=>me==='Spectator';
 let entryFees={main:75,wild:25};
 let contingencyDailyBuyIn=20;
-const backupPrizesScaled=()=>{const cents=Math.round(contingencyDailyBuyIn*100);const weights=backupPrizes;const result={};let allocated=0;for(const [id,base] of Object.entries(weights)){const n=Math.round(cents*28*base/340);result[id]=n/100;allocated+=n;}result.grandNationalSkills+=(cents*28-allocated)/100;return result;};
+const backupPrizesScaled=()=>{const cents=Math.round(contingencyDailyBuyIn*100);const weights=backupPrizes;const result={};let allocated=0;for(const [id,base] of Object.entries(weights)){const n=Math.round(cents*28*base/560);result[id]=n/100;allocated+=n;}result.grandNationalSkills+=(cents*28-allocated)/100;return result;};
 const contingencyPrizesScaled=()=>{const cents=Math.round(contingencyDailyBuyIn*100);const weights={fourDay:180,wild:210,finalDay:75,seasonSkills:75,wildSkills:50,finalSkills:30};const result={};let allocated=0;for(const [id,base] of Object.entries(weights)){const n=Math.round(cents*31*base/620);result[id]=n/100;allocated+=n;}result.finalSkills+=(cents*31-allocated)/100;return result;};
 let championshipMode='original',previewContingency=false;
 const isContingency=()=>championshipMode==='contingency';
@@ -145,7 +145,7 @@ function alignLiveMatchWindows(){
 }
 function pairingsPanel(round){
  const competitionTeams=isAlternative()&&activeGroups()[round.id]?[]:teams[round.id]||[];
- const groupCards=playingGroups(round.id).map((players,i)=>'<div class="pairings-group"><strong>Group '+String.fromCharCode(65+i)+'</strong><div>'+players.map(p=>'<span class="pairings-player">'+esc(p)+'</span>').join('')+'</div></div>').join('');
+ const groupCards=playingGroups(round.id).map((players,i)=>'<div class="pairings-group"><strong>Group '+String.fromCharCode(65+i)+'</strong><div>'+players.filter(p=>!isBackup()||p!=='Mason').map(p=>'<span class="pairings-player">'+esc(p)+'</span>').join('')+'</div></div>').join('');
  const fixedGroups=playingGroups(round.id).map(g=>g.filter(p=>p!=='Mason'));
  const matchups=round.format==='match'&&!(isBackup()&&['links','lake','short'].includes(round.id))?fixedGroups.flatMap(g=>g.flatMap((p,i)=>g.slice(i+1).map(opponent=>p+' vs '+opponent))):[];
  const teamName=round.format==='vegas'?'Vegas Teams':round.format==='triple'?'Triple Threat Sides':round.format==='skins'?'Gross Team Skins':round.format==='bestball'?'Best-Ball Teams':'Teams';
@@ -277,10 +277,10 @@ function render(){
    }
   }
  }
- else if(['valley','lake','ross','short','backyard'].includes(roundId))body+=liveFormat(roundId,score,net,par,rank,esc,submissions,testMode)+(roundId==='valley'?wildCardStableford(roundId,score,par,rank,esc,submissions,testMode):'');
+ else if(['valley','lake','ross','short','backyard'].includes(roundId))body+=liveFormat(roundId,score,net,par,rank,esc,submissions,testMode,isBackup())+(roundId==='valley'&&!isBackup()?wildCardStableford(roundId,score,par,rank,esc,submissions,testMode):'');
  else body+='<p>Round format: '+r().format+'. See score snapshots and team pairings below.</p>';
  if(teams[roundId]&&!(isAlternative()&&activeGroups()[roundId]))body+='<p><strong>Teams:</strong> '+teams[roundId].map(t=>t.join(' + ')).join(' · ')+'</p>';
- if(roundId==='ridge')body+=wildCardStableford(roundId,score,par,rank,esc);
+ if(roundId==='ridge'&&!isBackup())body+=wildCardStableford(roundId,score,par,rank,esc);
  body+='</section>';
  }else if(tab==='boards'){
  const engine=displayEngine();
