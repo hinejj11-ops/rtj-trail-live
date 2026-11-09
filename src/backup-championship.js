@@ -48,7 +48,7 @@ export function backupChampionship(scores,holes,submissions=[],requireVerificati
   }return out;
  };
  for(const id of ['silver-am','ridge'])if(complete(id,six))add('threeDay',id,matchRanks(id));
- if(complete('ross',six))add('threeDay','ross',awardRanks(Object.fromEntries(six.map(p=>[p,stable('ross',p)])),scales.six));
+ if(complete('ross',six))add('threeDay','ross',awardRanks(Object.fromEntries(six.map(p=>[p,stable('ross',p)])),scales.six),1.5);
  if(complete('valley',six)){
   const ts=teams.valley;let a=0,b=0;for(let h=1;h<=18;h++){const x=Math.min(...ts[0].map(p=>net('valley',p,h))),y=Math.min(...ts[1].map(p=>net('valley',p,h)));if(x<y)a++;else if(y<x)b++;}
   const awards=a===b?[2.5,2.5]:a>b?[5,0]:[0,5],out=values(six);
