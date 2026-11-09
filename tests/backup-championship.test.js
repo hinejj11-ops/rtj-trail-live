@@ -47,3 +47,13 @@ test('Backup mode has no Wild Card leaderboard or prize pools',()=>{
  assert.equal(Object.hasOwn(backupPrizes,'wildSkills'),false);
  assert.deepEqual(backupPrizes,{threeDay:270,grandNational:150,threeDaySkills:100,grandNationalSkills:40});
 });
+
+test('Ross Bridge earns 1.5x Backup championship points and Backyard stays half weight',()=>{
+ const six=['Jimmy','Brittany','Kevin','Jeff','Nate','Richie'];
+ const scores=six.flatMap(player=>Array.from({length:18},(_,i)=>({round_id:'ross',player,hole:i+1,gross:4})));
+ const result=backupChampionship(scores,[],[],false);
+ const event=result.details.threeDay.find(x=>x.id==='ross');
+ assert.equal(event.multiplier,1.5);
+ assert.equal(result.boards.find(b=>b.id==='threeDay').rounds,1);
+ assert.equal(Object.values(event.award).reduce((a,b)=>a+b,0),30);
+});
