@@ -94,7 +94,7 @@ let me=null,roundId=rounds.some(x=>x.id===sessionStorage.getItem('rtj-round'))?s
 const $=s=>document.querySelector(s),r=()=>rounds.find(x=>x.id===roundId);
 const esc=s=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 const playingGroups=(id=roundId)=>isAlternative()&&activeGroups()[id]?activeGroups()[id]:playingGroupOverrides[id]||rounds.find(x=>x.id===id)?.groups||[];
-const eligibleRoundPlayers=(id)=>isAlternative()&&activeGroups()[id]?activeGroups()[id].flat():roundPlayers(rounds.find(x=>x.id===id));
+const eligibleRoundPlayers=(id)=>{const players=isAlternative()&&activeGroups()[id]?activeGroups()[id].flat():roundPlayers(rounds.find(x=>x.id===id));return isBackup()?players.filter(p=>p!=='Mason'):players;};
 const group=()=>playingGroups().find(g=>g.includes(me))||[];
 const hole=(h)=>holes.find(x=>x.round_id===roundId&&x.hole===h);
 const par=h=>hole(h)?.par??(r().id==='backyard'||r().id==='short'||(r().id==='silver-pm'&&h>9)?3:4);
@@ -190,7 +190,7 @@ function render(){
  body=syncStatus()+'<nav class="tabs">'+tabs.map(([id,label])=>'<button data-tab="'+id+'" class="'+(tab===id?'chosen':'')+'">'+label+'</button>').join('')+'</nav>';
  if(!(isSpectator()&&(tab==='skills'||tab==='boards'||tab==='trail')))body+='<label>Round <select id="round">'+rounds.map(x=>'<option value="'+x.id+'" '+(x.id===roundId?'selected':'')+'>'+x.date+' · '+x.name+'</option>').join('')+'</select></label>';
  if(tab==='scores'){
- let players=(me==='Jimmy'||isSpectator())?eligibleRoundPlayers(roundId):group();if(!target||!players.includes(target))target=players.includes(me)?me:players[0];
+ let players=(me==='Jimmy'||isSpectator())?eligibleRoundPlayers(roundId):group().filter(p=>!isBackup()||p!=='Mason');if(!target||!players.includes(target))target=players.includes(me)?me:players[0];
  body+=(isSpectator()?'':championshipSnapshot())+'<section class="panel"><h2>'+esc(r().name)+'</h2><p>'+r().date+' · '+r().time+' CST · '+(isAlternative()&&['lake','links'].includes(roundId)&&(!isContingency()||roundId==='lake')?'INDIVIDUAL NET STABLEFORD':isAlternative()&&roundId==='short'?'INDIVIDUAL NET HOLE CREDITS':r().format.toUpperCase())+'</p>'+pairingsPanel(r());
  if(guideCourses[roundId])body+='<details class="hole-guide-demo hole-guide-top"><summary>⛳ Hole-by-Hole Guide</summary><div class="hole-guide-inner"><label>Select hole <select id="guide-hole">'+guideHoles().map((x,i)=>'<option value="'+(i+1)+'" '+(guideHole===i+1?'selected':'')+'>'+x.course+' #'+x.hole+'</option>').join('')+'</select></label><div id="guide-content"></div></div></details>';
  if(testMode&&!isSpectator())body+='<div class="warning"><strong>TEST MODE ACTIVE</strong> — scores are saved separately from official tournament scores.</div>';else if(!ready&&!isSpectator())body+='<div class="warning">Official scoring is locked until the organizer verifies hole pars and stroke indexes in Course setup.</div>';
