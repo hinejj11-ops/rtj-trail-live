@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {backupChampionship,backupGroups,backupPrizes} from '../src/backup-championship.js';
 import {stablefordStrokes} from '../src/data.js';
+import {defaultAllowance,strokesOnHole,netScore} from '../src/scoring-rules.js';
 
 const five=['Jimmy','Kevin','Jeff','Nate','Richie'];
 test('backup prize pools reconcile to $560 from six golfers',()=>{
@@ -56,4 +57,28 @@ test('Ross Bridge earns 1.5x Backup championship points and Backyard stays half 
  assert.equal(event.multiplier,1.5);
  assert.equal(result.boards.find(b=>b.id==='threeDay').rounds,1);
  assert.equal(Object.values(event.award).reduce((a,b)=>a+b,0),30);
+});
+
+test('Backup Backyard awards one stroke to Richie on all nine holes only',()=>{
+ assert.equal(defaultAllowance('backyard','Richie','backup-stableford'),9);
+ for(let h=1;h<=9;h++){
+  assert.equal(strokesOnHole('backyard','Richie',h,h,'backup-stableford'),1);
+  assert.equal(netScore('backyard','Richie',h,{gross:3},h,'backup-stableford'),2);
+  assert.equal(strokesOnHole('backyard','Brittany',h,h,'backup-stableford'),0);
+  assert.equal(strokesOnHole('backyard','Richie',h,h,'primary'),0);
+ }
+});
+test('Backup Backyard uses combined team Stableford with half-weight standings',()=>{
+ const six=['Jimmy','Brittany','Kevin','Jeff','Nate','Richie'];
+ const scores=six.flatMap(player=>Array.from({length:9},(_,i)=>({round_id:'backyard',player,hole:i+1,gross:3})));
+ const before=JSON.stringify(scores);
+ const result=backupChampionship(scores,[],[],false);
+ const event=result.details.threeDay.find(x=>x.id==='backyard');
+ assert.equal(event.multiplier,0.5);
+ assert.equal(result.boards.find(b=>b.id==='threeDay').rounds,1);
+ assert.equal(result.boards.find(b=>b.id==='threeDay').values.Richie,5);
+ assert.equal(result.boards.find(b=>b.id==='threeDay').values.Brittany,5);
+ assert.equal(result.boards.find(b=>b.id==='threeDay').values.Jimmy,1.25);
+ assert.equal(result.boards.find(b=>b.id==='threeDay').values.Kevin,1.25);
+ assert.equal(JSON.stringify(scores),before);
 });
