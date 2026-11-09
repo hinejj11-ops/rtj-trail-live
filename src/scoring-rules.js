@@ -5,7 +5,7 @@ let customAllowances={};
 export function setCustomAllowances(value){customAllowances=value||{};}
 export function defaultAllowance(id,player,mode='primary',hole=1){
  const r=byId(id);
- if(id==='backyard')return 0;
+ if(id==='backyard')return mode==='backup-stableford'&&player==='Richie'?9:0;
  if(mode==='stableford'||id==='ross')return stablefordStrokes[id]?.[player]??0;
  if(id==='silver-pm')return hole<=9?(heartbreakerStrokes[player]||0):(silverShortStrokes[player]||0);
  if(id==='short')return gnShortStrokes[player]||0;
@@ -21,7 +21,7 @@ export function allowance(id,player,mode='primary',hole=1){
 }
 export function strokesOnHole(id,player,hole,rank,mode='primary'){
  const n=allowance(id,player,mode,hole);
- if(id==='backyard')return 0;
+ if(id==='backyard')return mode==='backup-stableford'&&player==='Richie'?1:0;
  if(id==='silver-pm'){
   const nineRank=hole>9&&rank>9?rank-9:rank;
   return holeStrokes(n,nineRank,9);

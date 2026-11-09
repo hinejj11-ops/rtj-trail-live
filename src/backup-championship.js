@@ -56,7 +56,7 @@ export function backupChampionship(scores,holes,submissions=[],requireVerificati
  }
  const skins=(id,groups,count)=>{const wins=groups.map(()=>0);let carry=0;for(let h=1;h<=count;h++){carry++;const vals=groups.map(t=>Math.min(...t.map(p=>gross(id,p,h)))),m=Math.min(...vals),w=vals.map((v,i)=>v===m?i:-1).filter(i=>i>=0);if(w.length===1){wins[w[0]]+=carry;carry=0;}}return wins;};
  if(complete('backyard',six)){
-  const ts=teams.backyard,counts=skins('backyard',ts,9),awards=awardRanks(Object.fromEntries(counts.map((v,i)=>[i,v])),scales.threeTeams),out=values(six);
+  const ts=teams.backyard,counts=ts.map(t=>Array.from({length:9},(_,i)=>{const h=i+1;return t.reduce((sum,p)=>{const d=net('backyard',p,h,'backup-stableford')-par('backyard',h);return sum+(d<=-1?3:d===0?2:d===1?1:0);},0);}).reduce((a,b)=>a+b,0)),awards=awardRanks(Object.fromEntries(counts.map((v,i)=>[i,v])),scales.threeTeams),out=values(six);
   ts.forEach((t,i)=>t.forEach(p=>out[p]=awards[i]));add('threeDay','backyard',out,.5);
  }
  if(complete('silver-pm',six)){

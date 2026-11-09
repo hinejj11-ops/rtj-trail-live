@@ -59,6 +59,12 @@ export function liveFormat(id,score,net,par,rank,esc,submissions=[],testMode=fal
   html+=stablefordCard('Trail Stableford',six,trailNet);
   if(!backupMode)html+=stablefordCard('Wild Card Stableford',seven,wildNet);
  }else if(id==='backyard'){
+  if(backupMode){
+   const pts=(p,h)=>{const n=net(p,h);if(n===null)return null;const d=n-par(h);return d<=-1?3:d===0?2:d===1?1:0;};
+   const combined=(t,h)=>{const scores=t.map(p=>pts(p,h));return scores.some(v=>v===null)?null:scores.reduce((a,b)=>a+b,0);};
+   html+=card('Combined Team Stableford',ts.map(label),(i,h)=>combined(ts[i],h),9,true,'points',(i,h,v)=>v===null?'—':String(v)+' pts');
+   html+='<p class="small">Each teammate earns 3 points for net birdie or better, 2 for net par, 1 for net bogey, and 0 for net double bogey or worse. Both teammates’ points are combined on every hole. Richie receives one stroke per hole; all other golfers play gross. Highest team total wins; ties share placement points. Championship event weight: 0.5×.</p>';
+  }else{
   const contests=backupMode?[['Team skins',ts]]:[['Team skins',ts],['Individual skins',seven.map(p=>[p])]];
   for(const [title,groups] of contests){
    const awarded=groups.map(()=>Array(9).fill(null));let carry=0;
@@ -73,6 +79,7 @@ export function liveFormat(id,score,net,par,rank,esc,submissions=[],testMode=fal
    html+=card(title,groups.map(label),(i,h)=>awarded[i][h-1],9,true,'skins',(i,h)=>{const group=groups[i];if(awarded[i][h-1]===null)return '—';const p=group.reduce((best,p)=>best===null||gross(p,h)<gross(best,h)?p:best,null);return grossCell(p,h);});
   }
   html+='<p class="small">Gross scores shown (no handicap strokes); Total column counts skins. Unique low gross wins; ties carry forward.</p>';
+  }
  }else if(id==='short'){
   const credits=six.map(()=>Array(18).fill(null));
   for(let h=1;h<=18;h++){const v=six.map(p=>net(p,h));if(v.some(x=>x===null))continue;const low=Math.min(...v),n=v.filter(x=>x===low).length;v.forEach((x,i)=>credits[i][h-1]=x===low?1/n:0);}
