@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {backupChampionship,backupGroups,backupPrizes} from '../src/backup-championship.js';
-import {stablefordStrokes} from '../src/data.js';
+import {stablefordStrokes,skillsHoles} from '../src/data.js';
 import {defaultAllowance,strokesOnHole,netScore} from '../src/scoring-rules.js';
 
 const five=['Jimmy','Kevin','Jeff','Nate','Richie'];
@@ -81,4 +81,9 @@ test('Backup Backyard uses combined team Stableford with half-weight standings',
  assert.equal(result.boards.find(b=>b.id==='threeDay').values.Jimmy,1.25);
  assert.equal(result.boards.find(b=>b.id==='threeDay').values.Kevin,1.25);
  assert.equal(JSON.stringify(scores),before);
+});
+
+test('GN Short designates two independent skills slots on holes 6 and 14',()=>{
+ assert.deepEqual(skillsHoles.short,{ctp:14,ld:6});
+ assert.deepEqual(skillsHoles.backyard,{ctp:9});
 });

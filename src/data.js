@@ -27,6 +27,6 @@ export const lifelineLimits={'silver-am':2,'silver-pm':1,valley:2,ridge:3,ross:3
 export const skillsHoles = {
  'silver-am':{ctp:11,ld:9},'silver-pm':{ctp:17,ld:3},
  valley:{ctp:16,ld:7},ridge:{ctp:8,ld:18},ross:{ctp:11,ld:7},
- backyard:{ctp:9},links:{ctp:16,ld:14},lake:{ctp:3,ld:12},short:{ctp:14}
+ backyard:{ctp:9},links:{ctp:16,ld:14},lake:{ctp:3,ld:12},short:{ctp:14,ld:6}
 };
 export const wildCardSkillsRounds = ['valley','ridge','ross','backyard'];
