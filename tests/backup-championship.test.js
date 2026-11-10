@@ -7,8 +7,8 @@ import {defaultAllowance,strokesOnHole,netScore} from '../src/scoring-rules.js';
 const five=['Jimmy','Kevin','Jeff','Nate','Richie'];
 test('backup prize pools reconcile to $560 from six golfers',()=>{
  assert.equal(Object.values(backupPrizes).reduce((a,b)=>a+b,0),560);
- assert.equal(backupPrizes.threeDay,270);
- assert.equal(backupPrizes.grandNational,150);
+ assert.equal(backupPrizes.threeDay,260);
+ assert.equal(backupPrizes.grandNational,130);
 });
 test('all Grand National groups contain five golfers and exclude Brittany',()=>{
  for(const id of ['links','lake','short'])assert.deepEqual(backupGroups[id].flat().sort(),five.slice().sort());
@@ -46,7 +46,7 @@ test('Backup mode has no Wild Card leaderboard or prize pools',()=>{
  assert.deepEqual(result.boards.map(b=>b.id),['threeDay','grandNational']);
  assert.equal(Object.hasOwn(backupPrizes,'wild'),false);
  assert.equal(Object.hasOwn(backupPrizes,'wildSkills'),false);
- assert.deepEqual(backupPrizes,{threeDay:270,grandNational:150,threeDaySkills:100,grandNationalSkills:40});
+ assert.deepEqual(backupPrizes,{threeDay:260,grandNational:130,threeDaySkills:100,grandNationalSkills:70});
 });
 
 test('Ross Bridge earns 1.5x Backup championship points and Backyard stays half weight',()=>{
