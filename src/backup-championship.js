@@ -6,7 +6,7 @@ export const backupGroups={
  lake:[['Jimmy','Jeff','Kevin'],['Nate','Richie']],
  short:[['Kevin','Jeff','Nate'],['Jimmy','Richie']]
 };
-export const backupPrizes={threeDay:270,grandNational:150,threeDaySkills:100,grandNationalSkills:40};
+export const backupPrizes={threeDay:260,grandNational:130,threeDaySkills:100,grandNationalSkills:70};
 const six=names.slice(0,6),five=six.filter(n=>n!=='Brittany');
 const scales={six:[10,8,6,4,2,0],seven:[12,10,8,6,4,2,0],five:[10,7.5,5,2.5,0],threeTeams:[10,5,0],twoTeams:[5,0]};
 export function awardRanks(values,scale,descending=true){
@@ -73,5 +73,5 @@ export function backupChampionship(scores,holes,submissions=[],requireVerificati
   for(let h=1;h<=18;h++){const m=Math.min(...five.map(p=>shortNet(p,h)));const winners=five.filter(p=>shortNet(p,h)===m);for(const p of winners)credits[p]+=1/winners.length;}
   add('grandNational','short',awardRanks(credits,scales.five));
  }
- return {boards:[{id:'threeDay',name:'Three-Day Champion',values:threeDay,eligible:six,prize:270,rounds:details.threeDay.length,expected:6},{id:'grandNational',name:'Grand National Champion',values:grandNational,eligible:five,prize:150,rounds:details.grandNational.length,expected:3}],details,groups:backupGroups};
+ return {boards:[{id:'threeDay',name:'Three-Day Champion',values:threeDay,eligible:six,prize:260,rounds:details.threeDay.length,expected:6},{id:'grandNational',name:'Grand National Champion',values:grandNational,eligible:five,prize:130,rounds:details.grandNational.length,expected:3}],details,groups:backupGroups};
 }
